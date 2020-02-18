@@ -13,7 +13,6 @@ public:
 
 	void init();
 	void render();
-	void bindVertexArray(const int index, const float* vertices);
 
 	//Objects
 	enum VAO {
