@@ -1,0 +1,8 @@
+TODO
+
+Continue OpenGL tutorial.
+If desired, do SHADERS extra credit at bottom of tutorial.
+Current lesson: TEXTURES
+
+Things to do, not covered in tutorial:
+Load vertices from file. (Probably covered in Model Loading)

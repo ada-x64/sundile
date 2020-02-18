@@ -1,0 +1,8 @@
+
+*.opendb
+
+*.ipch
+
+.vs/glfw-test/v16/
+
+Debug/
