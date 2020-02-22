@@ -19,6 +19,9 @@
     <Filter Include="Resource Files\Vertex Shaders">
       <UniqueIdentifier>{ec5fa9a9-d400-4e8f-85e2-1ddefb227fea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Textures">
+      <UniqueIdentifier>{fc769703-f5da-4ac5-b5b1-f7c2466b3ca5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Renderer.cpp">
@@ -28,6 +31,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shaders\stb_image.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -57,5 +63,13 @@
     <None Include="shaders\passthrough.vert">
       <Filter>Resource Files\Vertex Shaders</Filter>
     </None>
+    <None Include="shaders\passthrough.frag">
+      <Filter>Resource Files\Fragment Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="textures\tex_crate.png">
+      <Filter>Resource Files\Textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>

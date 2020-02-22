@@ -4,6 +4,8 @@
 #include <GL/glew.h>
 #include <gl/freeglut.h>
 #include "Shader.h"
+#include <stb_image.h>
+
 class Renderer
 {
 public:
@@ -16,21 +18,25 @@ public:
 
 	//Objects
 	enum VAO {
-		vao_tri1,
-		vao_tri2,
+		vao0,
 		vao_num
 	};
 	enum VBO {
-		vbo_tri1,
-		vbo_tri2,
+		vbo0,
 		vbo_num
 	};
+	enum EBO {
+		ebo0,
+		ebo_num
+	};
 
-	unsigned int VAOs[vao_num], VBOs[vbo_num];
+	unsigned int VAOs[vao_num], VBOs[vbo_num], EBOs[ebo_num];
 
 	Shader* sp_yellow = new Shader("./shaders/passthrough.vert", "./shaders/yellow.frag");
 	Shader* sp_orange = new Shader("./shaders/passthrough.vert", "./shaders/orange.frag");
-
+	Shader* sp_passthrough = new Shader("./shaders/passthrough.vert", "./shaders/passthrough.frag");
+	
+	unsigned int texture;
 
 };
 
