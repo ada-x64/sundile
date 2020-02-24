@@ -1,19 +1,71 @@
 #include "Renderer.h"
 
 void Renderer::init() {
-	//All vertices go in this array
+	//Temporary manual model code
 	float vertices[] = {
-		// positions          // colors           // texture coords
-		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+	-0.5f, -0.5f, -0.5f,  1.f, 1.f, 1.f,  0.0f, 0.0f,
+	 0.5f, -0.5f, -0.5f,  1.f, 1.f, 1.f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.f, 1.f, 1.f,  1.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.f, 1.f, 1.f,  1.0f, 1.0f,
+	-0.5f,  0.5f, -0.5f,  1.f, 1.f, 1.f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  1.f, 1.f, 1.f,  0.0f, 0.0f,
+
+	-0.5f, -0.5f,  0.5f,  1.f, 1.f, 1.f,  0.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.f, 1.f, 1.f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.f, 1.f, 1.f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.f, 1.f, 1.f,  1.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  1.f, 1.f, 1.f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  1.f, 1.f, 1.f,  0.0f, 0.0f,
+
+	-0.5f,  0.5f,  0.5f,  1.f, 1.f, 1.f,  1.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  1.f, 1.f, 1.f,  1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  1.f, 1.f, 1.f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  1.f, 1.f, 1.f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  1.f, 1.f, 1.f,  0.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  1.f, 1.f, 1.f,  1.0f, 0.0f,
+
+	 0.5f,  0.5f,  0.5f,  1.f, 1.f, 1.f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.f, 1.f, 1.f,  1.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  1.f, 1.f, 1.f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  1.f, 1.f, 1.f,  0.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  1.f, 1.f, 1.f,  0.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.f, 1.f, 1.f,  1.0f, 0.0f,
+
+	-0.5f, -0.5f, -0.5f,  1.f, 1.f, 1.f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  1.f, 1.f, 1.f,  1.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  1.f, 1.f, 1.f,  1.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.f, 1.f, 1.f,  1.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  1.f, 1.f, 1.f,  0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  1.f, 1.f, 1.f,  0.0f, 1.0f,
+
+	-0.5f,  0.5f, -0.5f,  1.f, 1.f, 1.f,  0.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.f, 1.f, 1.f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.f, 1.f, 1.f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.f, 1.f, 1.f,  1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  1.f, 1.f, 1.f,  0.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  1.f, 1.f, 1.f,  0.0f, 1.0f
 	};
 
-	unsigned int indices[] = {
-		0, 1, 3,
-		1, 2, 3
-	};
+	//unsigned int indices[] = {
+	//	0, 1, 3, //front
+	//	1, 2, 3, 
+	//	3, 7, 6, //left
+	//	3, 2, 6,
+	//	7, 4, 3, //top
+	//	3, 4, 0,
+	//	0, 4, 1, //right
+	//	1, 5, 4,
+	//	4, 7, 6, //back
+	//	6, 4, 5,
+	//	5, 6, 2, //bottom
+	//	2, 5, 1,
+	//};
+
+
+	//General settings
+	glEnable(GL_DEPTH_TEST);
+	stbi_set_flip_vertically_on_load(true);
+
 
 	/* Objects */
 	//Generate
@@ -24,13 +76,17 @@ void Renderer::init() {
 	//Texture settings
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+
 
 	//Load texture
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
 	int width, height, numChannels;
-	unsigned char* data = stbi_load("./textures/tex_crate.png", &width, &height, &numChannels, 0);
+	unsigned char* data = stbi_load("./textures/wall.jpg", &width, &height, &numChannels, 0);
 	if (data) {
-		glGenTextures(1, &texture);
-		glBindTexture(GL_TEXTURE_2D, texture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
@@ -42,8 +98,10 @@ void Renderer::init() {
 	//Bind individual vertex arrays / buffers
 	glBindVertexArray(VAOs[0]);
 
+	/*
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	*/
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -61,10 +119,30 @@ void Renderer::init() {
 }
 
 void Renderer::render() {
+	//Clear screen
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//Set up shader
 	sp_passthrough->use();
+
+	//Apply camera
+	int loc_view = glGetUniformLocation(sp_passthrough->ID, "view");
+	glUniformMatrix4fv(loc_view, 1, GL_FALSE, glm::value_ptr(mat_view));
+
+	int loc_proj = glGetUniformLocation(sp_passthrough->ID, "projection");
+	glUniformMatrix4fv(loc_proj, 1, GL_FALSE, glm::value_ptr(mat_proj));
+
+	//Render
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glBindVertexArray(VAOs[0]);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	for (unsigned int i = 0; i < 1; i++) {
+		//Do this for each model
+		mat_model = glm::rotate(mat_model, glm::radians(sin(float(glfwGetTime()))), glm::vec3(0.f, 1.f, 0.f));
+		int loc_model = glGetUniformLocation(sp_passthrough->ID, "model");
+		glUniformMatrix4fv(loc_model, 1, GL_FALSE, glm::value_ptr(mat_model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+	}
 
 	glBindVertexArray(0);
 }

@@ -3,8 +3,12 @@
 #include <cstdio>
 #include <GL/glew.h>
 #include <gl/freeglut.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "Shader.h"
 #include <stb_image.h>
+#include <GLFW/glfw3.h>
 
 class Renderer
 {
@@ -38,5 +42,9 @@ public:
 	
 	unsigned int texture;
 
+	//Camera
+	glm::mat4 mat_model = glm::mat4(1.f);
+	glm::mat4 mat_view = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -3.f));
+	glm::mat4 mat_proj = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f); //Default camera
 };
 

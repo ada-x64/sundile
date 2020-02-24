@@ -6,3 +6,5 @@ Current lesson: TEXTURES
 
 Things to do, not covered in tutorial:
 Load vertices from file. (Probably covered in Model Loading)
+Figure out why I'm getting linear instead of neareset texture interpolation.
+Integrate pixel art scaling shader.

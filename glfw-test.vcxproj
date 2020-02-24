@@ -173,6 +173,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="textures\tex_crate.png" />
+    <Image Include="textures\wall.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
