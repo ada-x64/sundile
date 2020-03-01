@@ -1,10 +1,15 @@
 TODO
 
-Continue OpenGL tutorial.
-If desired, do SHADERS extra credit at bottom of tutorial.
-Current lesson: TEXTURES
+High Priority:
+. Debug Shader class.
+. Run unit tests on new Entity / Component architecture.
+. Define System class.
 
-Things to do, not covered in tutorial:
-Load vertices from file. (Probably covered in Model Loading)
-Figure out why I'm getting linear instead of neareset texture interpolation.
-Integrate pixel art scaling shader.
+Low Priority:
+. Load vertices from file. (Probably covered in Model Loading)
+	. Create Model class
+. Figure out why I'm getting linear instead of neareset texture interpolation.
+. Integrate pixel art scaling shader.
+. Integrate Sundile
+	. Create c_Camera -- allows GOs to act as camera
+	. Create c_Model -- allows GOs to render as models.

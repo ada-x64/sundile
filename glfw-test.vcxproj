@@ -156,12 +156,15 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="shaders\stb_image.c" />
+    <ClCompile Include="sundile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Sundile.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="components.txt" />
     <Text Include="_TODO.txt" />
     <Text Include="_ideas.txt" />
   </ItemGroup>

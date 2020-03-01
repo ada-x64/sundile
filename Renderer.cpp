@@ -1,5 +1,61 @@
 #include "Renderer.h"
 
+//Helpers
+static void error_callback(int error, const char* description) {
+	fprintf(stderr, "Error: %s\n", description);
+}
+
+void processInput(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
+}
+
+void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
+	glViewport(0, 0, width, height);
+}
+
+//Class functions
+Renderer::Renderer() {
+
+	//Preliminary
+	glfwSetErrorCallback(error_callback);
+
+	/* Initialize the library */
+	if (!glfwInit())
+		exit(EXIT_FAILURE);
+
+	//Set Minimum OpenGL Version
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+
+	//Apple compability
+#ifdef __APPLE__
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
+#endif
+
+	/* Create a windowed mode window and its OpenGL context */
+	window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World", NULL, NULL);
+	if (!window)
+	{
+		glfwTerminate();
+		exit(EXIT_FAILURE);
+	}
+
+	//Set up the window
+	glfwMakeContextCurrent(window);
+	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+	glfwSwapInterval(1);
+
+	//Start up GLEW
+	GLenum err = glewInit();
+	if (err != GLEW_OK) {
+		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+	}
+}
+
 void Renderer::init() {
 	//Temporary manual model code
 	float vertices[] = {
@@ -136,13 +192,14 @@ void Renderer::render() {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glBindVertexArray(VAOs[0]);
-	for (unsigned int i = 0; i < 1; i++) {
-		//Do this for each model
-		mat_model = glm::rotate(mat_model, glm::radians(sin(float(glfwGetTime()))), glm::vec3(0.f, 1.f, 0.f));
-		int loc_model = glGetUniformLocation(sp_passthrough->ID, "model");
-		glUniformMatrix4fv(loc_model, 1, GL_FALSE, glm::value_ptr(mat_model));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-	}
+	mat_model = glm::rotate(mat_model, glm::radians(sin(float(glfwGetTime()))), glm::vec3(0.f, 1.f, 0.f));
+	int loc_model = glGetUniformLocation(sp_passthrough->ID, "model");
+	glUniformMatrix4fv(loc_model, 1, GL_FALSE, glm::value_ptr(mat_model));
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	glBindVertexArray(0);
+
+	//Swap and poll IO
+	glfwSwapBuffers(window);
+	glfwPollEvents();
 }

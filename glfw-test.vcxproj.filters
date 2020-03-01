@@ -22,27 +22,51 @@
     <Filter Include="Resource Files\Textures">
       <UniqueIdentifier>{fc769703-f5da-4ac5-b5b1-f7c2466b3ca5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\GOs">
+      <UniqueIdentifier>{8930f3a8-3b62-4c94-a19e-c656331795f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Components">
+      <UniqueIdentifier>{798659cf-d17f-4316-8484-ba8963d42939}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components">
+      <UniqueIdentifier>{ef56db62-e2dd-4aa4-b09f-ca7c00140217}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GOs">
+      <UniqueIdentifier>{ba402016-7ac5-42d3-a3a9-061032ff25f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\System">
+      <UniqueIdentifier>{f6eb366f-fd9f-4806-8d3b-4dbb4281715b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\System">
+      <UniqueIdentifier>{ae527c78-c696-4c64-884a-295288adf28d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="sundile.cpp">
+      <Filter>Source Files\System</Filter>
+    </ClCompile>
     <ClCompile Include="Renderer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\System</Filter>
     </ClCompile>
     <ClCompile Include="Shader.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\System</Filter>
+    </ClCompile>
+    <ClCompile Include="shaders\stb_image.c">
+      <Filter>Source Files\System</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shaders\stb_image.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Sundile.h">
+      <Filter>Header Files\System</Filter>
+    </ClInclude>
     <ClInclude Include="Renderer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\System</Filter>
     </ClInclude>
     <ClInclude Include="Shader.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\System</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -50,6 +74,9 @@
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="_TODO.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="components.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>
