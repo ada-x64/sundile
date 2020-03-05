@@ -1,6 +1,6 @@
 #include "Renderer.h"
 
-//Helpers
+//Local Helpers
 static void error_callback(int error, const char* description) {
 	fprintf(stderr, "Error: %s\n", description);
 }
@@ -15,48 +15,14 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-//Class functions
-Renderer::Renderer() {
-
-	//Preliminary
-	glfwSetErrorCallback(error_callback);
-
-	/* Initialize the library */
-	if (!glfwInit())
-		exit(EXIT_FAILURE);
-
-	//Set Minimum OpenGL Version
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-
-	//Apple compability
-#ifdef __APPLE__
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
-#endif
-
-	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World", NULL, NULL);
-	if (!window)
-	{
-		glfwTerminate();
-		exit(EXIT_FAILURE);
-	}
-
-	//Set up the window
-	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-	glfwSwapInterval(1);
-
-	//Start up GLEW
-	GLenum err = glewInit();
-	if (err != GLEW_OK) {
-		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-	}
+//Loaders
+void Renderer::loadShaders() {
+	shaders.emplace("passthrough", new Shader("./shaders/passthrough.vert", "./shaders/passthrough.frag"));
+	//Shader* sp_orange = new Shader("./shaders/passthrough.vert", "./shaders/orange.frag");
+	//Shader* sp_passthrough = new Shader("./shaders/passthrough.vert", "./shaders/passthrough.frag");
 }
 
-void Renderer::init() {
+void Renderer::loadModels() {
 	//Temporary manual model code
 	float vertices[] = {
 	-0.5f, -0.5f, -0.5f,  1.f, 1.f, 1.f,  0.0f, 0.0f,
@@ -117,24 +83,25 @@ void Renderer::init() {
 	//	2, 5, 1,
 	//};
 
-
-	//General settings
-	glEnable(GL_DEPTH_TEST);
-	stbi_set_flip_vertically_on_load(true);
-
-
-	/* Objects */
-	//Generate
+	//Generate Buffers and Arrays
 	glGenBuffers(vbo_num, VBOs);
 	glGenBuffers(ebo_num, EBOs);
 	glGenVertexArrays(vao_num, VAOs);
 
+	//Bind
+	glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	//Bind individual vertex arrays / buffers
+	glBindVertexArray(VAOs[0]);
+}
+
+void Renderer::loadTextures() {
 	//Texture settings
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-
 
 	//Load texture
 	glGenTextures(1, &texture);
@@ -150,21 +117,73 @@ void Renderer::init() {
 		std::cout << "Failed to load texture!\n";
 	}
 	stbi_image_free(data);
+}
 
-	//Bind individual vertex arrays / buffers
-	glBindVertexArray(VAOs[0]);
+//Class functions
+Renderer::Renderer() {
+
+	//Preliminary
+	glfwSetErrorCallback(error_callback);
+
+	/* Initialize the library */
+	if (!glfwInit())
+		exit(EXIT_FAILURE);
+
+	//Set Minimum OpenGL Version
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+
+	//Apple compability
+#ifdef __APPLE__
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
+#endif
+
+	/* Create a windowed mode window and its OpenGL context */
+	window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World", NULL, NULL);
+	if (!window)
+	{
+		glfwTerminate();
+		exit(EXIT_FAILURE);
+	}
+
+	//Set up the window
+	glfwMakeContextCurrent(window);
+	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+	glfwSwapInterval(1);
+
+	//Start up GLEW
+	glewExperimental = GL_TRUE;
+	GLenum err = glewInit();
+	if (err != GLEW_OK) {
+		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+	}
+}
+
+void Renderer::init() {
+	//Set up
+	glEnable(GL_DEPTH_TEST);
+	stbi_set_flip_vertically_on_load(true);
+
+	//Load Models
+	loadModels();
 
 	/*
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	*/
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	//Load Shaders
+	loadShaders();
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(0*sizeof(float)));
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(6*sizeof(float)));
+	//Load Textures
+	loadTextures();
+
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
@@ -179,6 +198,7 @@ void Renderer::render() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//Set up shader
+	Shader* sp_passthrough = shaders["passthrough"];
 	sp_passthrough->use();
 
 	//Apply camera

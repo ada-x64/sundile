@@ -1,7 +1,6 @@
 TODO
 
 High Priority:
-. Debug Shader class.
 . Run unit tests on new Entity / Component architecture.
 . Define System class.
 

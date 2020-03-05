@@ -1,12 +1,10 @@
 #pragma once
+#include <map>
 #include <iostream>
-#include <cstdio>
-#include <GL/glew.h>
-#include <gl/freeglut.h>
+#include "Shader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "Shader.h"
 #include <stb_image.h>
 #include <GLFW/glfw3.h>
 
@@ -40,11 +38,17 @@ public:
 
 	unsigned int VAOs[vao_num], VBOs[vbo_num], EBOs[ebo_num];
 
-	Shader* sp_yellow = new Shader("./shaders/passthrough.vert", "./shaders/yellow.frag");
-	Shader* sp_orange = new Shader("./shaders/passthrough.vert", "./shaders/orange.frag");
-	Shader* sp_passthrough = new Shader("./shaders/passthrough.vert", "./shaders/passthrough.frag");
+	//Shaders
+	std::map<const char*,Shader*> shaders;
+	void loadShaders();
 	
+	//Models
+	//std::map<const char*, const Model*> models;
+	void loadModels();
+
+	//Textures
 	unsigned int texture;
+	void loadTextures();
 
 	//Camera
 	glm::mat4 mat_model = glm::mat4(1.f);
