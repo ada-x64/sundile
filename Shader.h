@@ -1,39 +1,48 @@
+//--
+//-- Shader.h
+//-- https://learnopengl.com/Getting-started/Shaders
+//--
 #pragma once
 #ifndef SHADER_H
 #define SHADER_H
 
-#include <cstdio>
-#include <GL/glew.h>
-#include <gl/freeglut.h>
+#include "Common.h"
+namespace sundile {
+	class Shader
+	{
+	private:
+		enum ERRTYPE {
+			ERRTYPE_SHADER_VERTEX,
+			ERRTYPE_SHADER_FRAGMENT,
+			ERRTYPE_PROGRAM,
+			ERRTYPE_LENGTH
+		};
 
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <assert.h>
+		void checkError(ERRTYPE type, unsigned int item);
 
-class Shader
-{
-private:
-	enum ERRTYPE {
-		ERRTYPE_SHADER_VERTEX,
-		ERRTYPE_SHADER_FRAGMENT,
-		ERRTYPE_PROGRAM,
-		ERRTYPE_LENGTH
+	public:
+		unsigned int ID;
+
+		Shader(const char* vertexPath, const char* fragmentPath);
+		~Shader();
+
+		void use();
+
+		static std::list<Shader*> inUse;
+
+		//Setters
+		void setBool(const std::string& name, bool value) const;
+		void setInt(const std::string& name, int value) const;
+		void setFloat(const std::string& name, float value) const;
+		void setVec2(const std::string& name, const glm::vec2& value) const;
+		void setVec2(const std::string& name, float x, float y) const;
+		void setVec3(const std::string& name, const glm::vec3& value) const;
+		void setVec3(const std::string& name, float x, float y, float z) const;
+		void setVec4(const std::string& name, const glm::vec4& value) const;
+		void setVec4(const std::string& name, float x, float y, float z, float w) const;
+		void setMat2(const std::string& name, const glm::mat2& mat) const;
+		void setMat3(const std::string& name, const glm::mat3& mat) const;
+		void setMat4(const std::string& name, const glm::mat4& mat) const;
 	};
-
-	void checkError(ERRTYPE type, unsigned int item);
-
-public:
-	unsigned int ID;
-
-	Shader(const char* vertexPath, const char* fragmentPath);
-	~Shader();
-
-	void use();
-	void setBool(const std::string& name, bool value) const;
-	void setInt(const std::string& name, int value) const;
-	void setFloat(const std::string& name, float value) const;
-};
-
+}
 #endif
