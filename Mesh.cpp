@@ -31,7 +31,7 @@ namespace sundile {
 
 			//e.g. "material.texture_diffuse1"
 			//NOTE: Shaders must declare uniform sampler2Ds using this naming convention or this will not work!
-			s.setFloat((/*"material." +*/ name + number).c_str(), i);
+			ShaderSystem::setFloat(s,(/*"material." +*/ name + number).c_str(), i);
 			glBindTexture(GL_TEXTURE_2D, textures[i].id);
 		}
 		glActiveTexture(GL_TEXTURE0);

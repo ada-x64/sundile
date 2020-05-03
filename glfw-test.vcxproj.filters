@@ -122,6 +122,9 @@
     <ClInclude Include="sundile.h">
       <Filter>Header Files\sundile</Filter>
     </ClInclude>
+    <ClInclude Include="System.h">
+      <Filter>Header Files\sundile\System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ecs.md">

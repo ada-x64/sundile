@@ -15,6 +15,7 @@ namespace sundile {
 			glEnable(GL_DEPTH_TEST);
 			stbi_set_flip_vertically_on_load(true);
 			Window::init();
+			passthrough = ShaderSystem::init("./shaders/passthrough.vert", "./shaders/passthrough.frag");
 		}
 
 		//--
@@ -26,7 +27,7 @@ namespace sundile {
 
 			//-- Apply camera
 			registry.view<Components::camera>().each([=](auto entity, auto& cam) {
-				passthrough.use();
+				ShaderSystem::use(passthrough);
 				int uView = glGetUniformLocation(passthrough.ID, "view");
 				glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(cam.lookat));
 
@@ -37,12 +38,12 @@ namespace sundile {
 
 
 			//-- Render visible models
-			for (Shader* shader : Shader::inUse) {
+			for (Shader shader : ShadersInUse) {
 				//-- Use current shader.
-				shader->use();
+				ShaderSystem::use(shader);
 
 				//-- Do passthrough (no shader component required)
-				if (shader == &passthrough) {
+				if (shader == passthrough) {
 					registry.view<Components::visible>().each([=](auto& entity, auto& vis) {
 						if (registry.has<Model>(entity)) {
 							//-- Set position
@@ -51,11 +52,11 @@ namespace sundile {
 								position& p = registry.get<position>(entity);
 								mat_model = glm::translate(mat_model, p.pos);
 							}
-							shader->setMat4("model", mat_model);
+							ShaderSystem::setMat4(shader,"model", mat_model);
 
 							//-- Draw model
 							Model model = registry.get<Model>(entity);
-							model.Draw(*shader);
+							model.Draw(shader);
 						}
 						else {
 							//is likely a tri, quad, or GUI element
@@ -65,7 +66,7 @@ namespace sundile {
 				else {
 					//-- Render those with the given shader. (This could probably be made more efficient ?)
 					registry.view<Components::visible, Shader>().each([=](auto& entity, auto& vis, auto& _s) {
-						if (&_s == shader) {
+						if (_s == shader) {
 							if (registry.has<Model>(entity)) {
 								//-- Set position
 								glm::mat4 mat_model = glm::mat4(1.f);
@@ -73,11 +74,11 @@ namespace sundile {
 									position& p = registry.get<Components::position>(entity);
 									mat_model = glm::translate(mat_model, p.pos);
 								}
-								shader->setMat4("model", mat_model);
+								ShaderSystem::setMat4(shader,"model", mat_model);
 
 								//-- Draw
 								Model model = registry.get<Model>(entity);
-								model.Draw(*shader);
+								model.Draw(shader);
 							}
 							else {
 								//is likely a tri, quad, or GUI element

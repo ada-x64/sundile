@@ -176,6 +176,7 @@
     <ClInclude Include="Model.h" />
     <ClInclude Include="cPhysics.h" />
     <ClInclude Include="sundile.h" />
+    <ClInclude Include="System.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="cVisible.h" />
     <ClInclude Include="Window.h" />

@@ -14,12 +14,10 @@ Note: Renderer MUST be defined AFTER Window, or it will cause OpenGL to crash.
 namespace sundile {
 	namespace Renderer
 	{
-		//Default shader
-		static Shader passthrough = Shader("./shaders/passthrough.vert", "./shaders/passthrough.frag");
+		static Shader passthrough;
 
 		void init();
 		void render();
-
 	}
 }
 

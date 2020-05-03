@@ -30,7 +30,7 @@ int main(void)
 		registry.assign<Model>(eTree, "./assets/Trees/OakTree1.fbx");
 		registry.assign<visible>(eTree);
 		registry.assign<position>(eTree, glm::vec3(10.f, 10.f, 0.f));
-		registry.assign<Shader>(eTree, "./shaders/passthrough.vert", "./shaders/tex_diffuse1.frag");
+		registry.assign<Shader>(eTree, ShaderSystem::init("./shaders/passthrough.vert", "./shaders/tex_diffuse1.frag"));
 
 		//TODO - Move this
 		setDependencies();
