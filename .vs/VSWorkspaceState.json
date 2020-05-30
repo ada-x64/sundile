@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\src"
   ],
-  "SelectedNode": "\\sundile.cpp",
+  "SelectedNode": "\\src\\Window.cpp",
   "PreviewInSolutionExplorer": false
 }

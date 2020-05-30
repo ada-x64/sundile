@@ -95,13 +95,13 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\dev\lib\nanogui\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\dev\lib\entt\single_include\entt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ShowProgress>NotSet</ShowProgress>
-      <AdditionalDependencies>./nanogui.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -158,31 +158,52 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Model.cpp" />
-    <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="stb.cpp" />
-    <ClCompile Include="Systems.cpp" />
-    <ClCompile Include="Window.cpp" />
+    <ClCompile Include="src\EventWrapper.cpp" />
+    <ClCompile Include="src\ext\imgui\imgui.cpp" />
+    <ClCompile Include="src\ext\imgui\imgui_demo.cpp" />
+    <ClCompile Include="src\ext\imgui\imgui_draw.cpp" />
+    <ClCompile Include="src\ext\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="src\ext\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="src\ext\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\ext\stb\stb.cpp" />
+    <ClCompile Include="src\ext\stb\stb_image.c" />
+    <ClCompile Include="src\GuiSystem.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\Model.cpp" />
+    <ClCompile Include="src\RenderSystem.cpp" />
+    <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\GameSystem.cpp" />
+    <ClCompile Include="src\systems\Camera.cpp" />
+    <ClCompile Include="src\systems\Physics.cpp" />
+    <ClCompile Include="src\systems\Visible.cpp" />
+    <ClCompile Include="src\WindowSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cCamera.h" />
-    <ClInclude Include="Common.h" />
-    <ClInclude Include="ComponentHeaders.h" />
-    <ClInclude Include="Components.h" />
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="Model.h" />
-    <ClInclude Include="cPhysics.h" />
-    <ClInclude Include="sundile.h" />
-    <ClInclude Include="System.h" />
-    <ClInclude Include="Utility.h" />
-    <ClInclude Include="cVisible.h" />
-    <ClInclude Include="Window.h" />
-    <ClInclude Include="Renderer.h" />
-    <ClInclude Include="Shader.h" />
-    <ClInclude Include="Systems.h" />
+    <ClInclude Include="src\ext\imgui\imconfig.h" />
+    <ClInclude Include="src\ext\imgui\imgui.h" />
+    <ClInclude Include="src\ext\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="src\ext\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="src\ext\imgui\imgui_internal.h" />
+    <ClInclude Include="src\ext\imgui\imstb_rectpack.h" />
+    <ClInclude Include="src\ext\imgui\imstb_textedit.h" />
+    <ClInclude Include="src\ext\imgui\imstb_truetype.h" />
+    <ClInclude Include="src\ext\stb\stb_image.h" />
+    <ClInclude Include="src\headers\components\Camera.h" />
+    <ClInclude Include="src\headers\components\Physics.h" />
+    <ClInclude Include="src\headers\components\Visible.h" />
+    <ClInclude Include="src\headers\sundile.h" />
+    <ClInclude Include="src\headers\sundile\Common.h" />
+    <ClInclude Include="src\headers\sundile\Components.h" />
+    <ClInclude Include="src\headers\sundile\EventWrapper.h" />
+    <ClInclude Include="src\headers\sundile\GuiSystem.h" />
+    <ClInclude Include="src\headers\sundile\Mesh.h" />
+    <ClInclude Include="src\headers\sundile\Model.h" />
+    <ClInclude Include="src\headers\sundile\RenderSystem.h" />
+    <ClInclude Include="src\headers\sundile\Shader.h" />
+    <ClInclude Include="src\headers\sundile\GameSystem.h" />
+    <ClInclude Include="src\headers\sundile\Utility.h" />
+    <ClInclude Include="src\headers\sundile\WindowSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="components.txt" />
