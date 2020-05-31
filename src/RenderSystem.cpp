@@ -6,8 +6,6 @@ namespace sundile {
 
 	namespace RenderSystem {
 		using namespace Components;
-		using namespace GameSystem;
-
 
 		//--
 		//-- Private functions 
@@ -18,7 +16,7 @@ namespace sundile {
 
 			void UpdateCamera(Renderer& rend) {
 				//-- Apply camera
-				rend.game->registry.view<camera>().each([=](auto entity, auto& cam) {
+				rend.registry->view<camera>().each([=](auto entity, auto& cam) {
 					ShaderSystem::use(rend.passthrough);
 					int uView = glGetUniformLocation(rend.passthrough, "view");
 					glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(cam.lookat));
@@ -28,9 +26,9 @@ namespace sundile {
 			void SetCamera(Renderer& rend) {
 				Shader passthrough = rend.passthrough;
 				SmartEVW evw = rend.evw;
-				Game* game = rend.game;
+
 				//-- Apply camera
-				game->registry.view<camera>().each([=](auto entity, auto& cam) {
+				rend.registry->view<camera>().each([=](auto entity, auto& cam) {
 					ShaderSystem::use(passthrough);
 					int uView = glGetUniformLocation(passthrough, "view");
 					glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(cam.lookat));
@@ -44,7 +42,6 @@ namespace sundile {
 			void RenderVisible(Renderer& rend) {
 				Shader passthrough = rend.passthrough;
 				SmartEVW evw = rend.evw;
-				Game* game = rend.game;
 
 				//-- Render visible models
 				for (Shader shader : ShaderRegistry) {
@@ -53,18 +50,18 @@ namespace sundile {
 
 					//-- Do passthrough (no shader component required)
 					if (shader == passthrough) {
-						game->registry.view<visible>().each([=](auto& entity, auto& vis) {
-							if (game->registry.has<Model>(entity)) {
+						rend.registry->view<visible>().each([=](auto& entity, auto& vis) {
+							if (rend.registry->has<Model>(entity)) {
 								//-- Set position
 								glm::mat4 mat_model = glm::mat4(1.f);
-								if (game->registry.has<position>(entity)) {
-									position& p = game->registry.get<position>(entity);
+								if (rend.registry->has<position>(entity)) {
+									position& p = rend.registry->get<position>(entity);
 									mat_model = glm::translate(mat_model, p.pos);
 								}
 								ShaderSystem::setMat4(shader, "model", mat_model);
 
 								//-- Draw model
-								Model model = game->registry.get<Model>(entity);
+								Model model = rend.registry->get<Model>(entity);
 								model.Draw(shader);
 							}
 							else {
@@ -74,19 +71,19 @@ namespace sundile {
 					}
 					else {
 						//-- Render those with the given shader. (This could probably be made more efficient ?)
-						game->registry.view<visible, Shader>().each([=](auto& entity, auto& vis, auto& _s) {
+						rend.registry->view<visible, Shader>().each([=](auto& entity, auto& vis, auto& _s) {
 							if (_s == shader) {
-								if (game->registry.has<Model>(entity)) {
+								if (rend.registry->has<Model>(entity)) {
 									//-- Set position
 									glm::mat4 mat_model = glm::mat4(1.f);
-									if (game->registry.has<position>(entity)) {
-										position& p = game->registry.get<Components::position>(entity);
+									if (rend.registry->has<position>(entity)) {
+										position& p = rend.registry->get<Components::position>(entity);
 										mat_model = glm::translate(mat_model, p.pos);
 									}
 									ShaderSystem::setMat4(shader, "model", mat_model);
 
 									//-- Draw
-									Model model = game->registry.get<Model>(entity);
+									Model model = rend.registry->get<Model>(entity);
 									model.Draw(shader);
 								}
 								else {
@@ -116,10 +113,10 @@ namespace sundile {
 		//--
 		//-- Init
 		//--
-		Renderer init(SmartEVW evw, Game& game) {
+		Renderer init(SmartEVW evw, SmartRegistry registry) {
 			Renderer rend;
 			rend.evw = evw;
-			rend.game = &game;
+			rend.registry = registry;
 			return init(rend);
 		}
 		Renderer init(Renderer& rend) {

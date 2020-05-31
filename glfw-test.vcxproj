@@ -173,7 +173,7 @@
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\RenderSystem.cpp" />
     <ClCompile Include="src\Shader.cpp" />
-    <ClCompile Include="src\GameSystem.cpp" />
+    <ClCompile Include="src\SimSystem.cpp" />
     <ClCompile Include="src\systems\Camera.cpp" />
     <ClCompile Include="src\systems\Physics.cpp" />
     <ClCompile Include="src\systems\Visible.cpp" />
@@ -201,7 +201,7 @@
     <ClInclude Include="src\headers\sundile\Model.h" />
     <ClInclude Include="src\headers\sundile\RenderSystem.h" />
     <ClInclude Include="src\headers\sundile\Shader.h" />
-    <ClInclude Include="src\headers\sundile\GameSystem.h" />
+    <ClInclude Include="src\headers\sundile\SimSystem.h" />
     <ClInclude Include="src\headers\sundile\Utility.h" />
     <ClInclude Include="src\headers\sundile\WindowSystem.h" />
   </ItemGroup>

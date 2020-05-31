@@ -5,9 +5,10 @@
 #pragma once
 #ifndef RENDERER_H
 #define RENDERER_H
-#include "GameSystem.h"
 #include "Shader.h"
 #include "Model.h"
+#include "EventWrapper.h"
+#include "AllComponents.h"
 
 namespace sundile {
 
@@ -15,12 +16,12 @@ namespace sundile {
 		const char* glsl_version = "#version 130";
 		Shader passthrough = ShaderSystem::init("assets/shaders/passthrough.vert", "assets/shaders/passthrough.frag");
 		SmartEVW evw;
-		Game* game;
+		SmartRegistry registry;
 	};
 
 	namespace RenderSystem
 	{
-		Renderer init(SmartEVW evw, Game& game);
+		Renderer init(SmartEVW evw, SmartRegistry registry);
 		Renderer init(Renderer& rend);
 		Renderer render(Renderer& rend);
 		void terminate(Renderer& rend);

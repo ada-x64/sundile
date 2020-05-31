@@ -1,9 +1,9 @@
 //--
-//-- GameSystem.cpp
+//-- SimSystem.cpp
 //--
-#include "./headers/sundile/GameSystem.h"
+#include "./headers/sundile/SimSystem.h"
 namespace sundile {
-	namespace GameSystem {
+	namespace SimSystem {
 		using namespace Components;
 
 		namespace /* Private */ {
@@ -12,10 +12,10 @@ namespace sundile {
 			//template <typename component, typename ...dependencies>
 			//void setDependencies(dependencies... args) {
 			//
-			//	registry.view<component>().each([=](auto entity, auto& comp) {
+			//	registry->view<component>().each([=](auto entity, auto& comp) {
 			//		for (auto arg : args) {
-			//			if (!registry.has<typeof(arg)>(entity)) {
-			//				registry.emplace<typeof(arg)>(entity);
+			//			if (!registry->has<typeof(arg)>(entity)) {
+			//				registry->emplace<typeof(arg)>(entity);
 			//			}
 			//		}
 			//	});
@@ -23,21 +23,21 @@ namespace sundile {
 			//
 			//template <typename component, typename ...dependencies>
 			//void connectDependencies() {
-			//	registry.on_construct<component>().connect(&setDependencies<...dependencies>);
+			//	registry->on_construct<component>().connect(&setDependencies<...dependencies>);
 			//}
 
 			//-- Rough dependencies function. Find a way to replace this eventually.
-			void setDependencies(Game& game) {
+			void setDependencies(SmartSim sim) {
 				//Camera
-				game.registry.view<camera>().each([&](auto entity, auto& cam) {
-					if (!game.registry.has<velocity>(entity)) {
-						game.registry.emplace<velocity>(entity, glm::vec3(0.f, 0.f, 0.f));
+				sim->registry->view<camera>().each([&](auto entity, auto& cam) {
+					if (!sim->registry->has<velocity>(entity)) {
+						sim->registry->emplace<velocity>(entity, glm::vec3(0.f, 0.f, 0.f));
 					}
 				});
 				//Velocity
-				game.registry.view<velocity>().each([&](auto entity, auto& vel) {
-					if (!game.registry.has<position>(entity)) {
-						game.registry.emplace<position>(entity, glm::vec3(0.f, 0.f, 0.f));
+				sim->registry->view<velocity>().each([&](auto entity, auto& vel) {
+					if (!sim->registry->has<position>(entity)) {
+						sim->registry->emplace<position>(entity, glm::vec3(0.f, 0.f, 0.f));
 					}
 				});
 			}
@@ -54,14 +54,14 @@ namespace sundile {
 				//-- Main button handling
 				//-- (eventually, handle this with events)
 				/**
-				game.registry.view<velocity>().each([&](auto entity, auto& _vel) {
+				sim->registry->view<velocity>().each([&](auto entity, auto& _vel) {
 					//-- Vars
 					glm::vec3& vel = _vel.vel;
 
 					//-- Camera Button Registration
-					if (game.registry.has<camera>(entity)) {
+					if (sim->registry->has<camera>(entity)) {
 						float camspeed = 1.f * deltaTime;
-						camera& cam = game.registry.get<camera>(entity);
+						camera& cam = sim->registry->get<camera>(entity);
 						glm::vec3& spd = cam.spd;
 
 						if (action == GLFW_PRESS) {
@@ -107,7 +107,7 @@ namespace sundile {
 
 					//-- Controllable button registration
 					/**
-					if (registry.has<controllable>(entity)) {
+					if (registry->has<controllable>(entity)) {
 						const float mvspd = 0.05f;
 						if (event.action == GLFW_PRESS) {
 							if (event.key == GLFW_KEY_UP)
@@ -144,40 +144,44 @@ namespace sundile {
 		//--
 		//-- Initialization
 		//-- 
-		Game init(SmartEVW evw) {
+		SmartSim init(SmartEVW evw) {
+			// Initialize
+			SmartSim sim = std::make_shared<Sim>();
+			sim->registry = std::make_shared<entt::registry>();
+			sim->evw = evw;
+			sim->renderer = RenderSystem::init(sim->evw, sim->registry);
+
 			// Connect event listeners
-			Game game;
-			game.evw = evw;
 			evw->dispatcher.sink<InputEvent>().connect<&handleInput>();
 			//evw->dispatcher.sink<WindowEvent>().connect<&windowTestEvent>();
 
 			//Set dependencies for created entites.
-			setDependencies(game);
-			return game;
+			setDependencies(sim);
+			return sim;
 		}
 
 		//--
 		//-- Main Loop
 		//--
-		void step(Game& game) {
+		void update(SmartSim sim) {
 
 			//-- Time
 			float currentTime = glfwGetTime();
-			game.deltaTime = currentTime - game.lastTime;
-			game.lastTime = currentTime;
+			sim->deltaTime = currentTime - sim->lastTime;
+			sim->lastTime = currentTime;
 
-			SmartEVW evw = game.evw;
+			SmartEVW evw = sim->evw;
 
 			//-- Velocity
-			game.registry.view<position, velocity>().each([&](auto entity, auto& _pos, auto& _vel) {
+			sim->registry->view<position, velocity>().each([&](auto entity, auto& _pos, auto& _vel) {
 				//-- Vars
 				glm::vec3& vel = _vel.vel;
 				glm::vec3& pos = _pos.pos;
 
 				//-- Camera
-				if (game.registry.has<camera>(entity)) {
+				if (sim->registry->has<camera>(entity)) {
 					//Get cam
-					camera& cam = game.registry.get<camera>(entity);
+					camera& cam = sim->registry->get<camera>(entity);
 					glm::vec3& spd = cam.spd;
 					vel += spd;
 
@@ -191,7 +195,7 @@ namespace sundile {
 					cam.target = cam.pos + glm::vec3(0.f, 1.f, -3.f);
 
 					//Do friction
-					float _fric = cam.fric * game.deltaTime;
+					float _fric = cam.fric * sim->deltaTime;
 					vel.x -= _fric * Utility::signum(vel.x);
 					if (abs(vel.x) < _fric)
 						vel.x = 0;
@@ -213,6 +217,12 @@ namespace sundile {
 					pos += vel;
 				}
 			});
+		}
+
+		void updateAll() {
+			for (auto sim : sims) {
+				update(sim);
+			}
 		}
 
 	}

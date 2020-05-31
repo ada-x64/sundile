@@ -8,6 +8,11 @@
 #define SUNDILE_ENTT_H
 
 namespace sundile {
+	//--
+	//-- Entt Wrappers
+	//--
+	typedef std::shared_ptr<entt::registry> SmartRegistry;
+
 
 	//--
 	//-- Events
@@ -31,7 +36,7 @@ namespace sundile {
 		updateWindow,
 		window_finishTermination,
 
-		// Game Events
+		// Sim Events
 
 		// Render Events
 
@@ -52,7 +57,7 @@ namespace sundile {
 	};
 
 
-	// To: GameSystem, GuiSystem, ProjectSystem
+	// To: SimSystem, GuiSystem, ProjectSystem
 	// From: WindowSystem
 	// Shorthand: "wev"
 	// Example: Key event, window resize event -- anything from GLFW
@@ -68,7 +73,7 @@ namespace sundile {
 		std::vector<t> vals;
 	};
 
-	// To: GameSystem, GuiSystem, ProjectSystem
+	// To: SimSystem, GuiSystem, ProjectSystem
 	// From: WindowSystem
 	// Shorthand: "iev"
 	// Example: Key input, mouse position update, mouse button clicked, etc.
@@ -88,16 +93,16 @@ namespace sundile {
 
 	};
 
-	// To: GameSystem
+	// To: SimSystem
 	// From: Component systems, GuiSystem
 	// Shorthand: "gev"
-	// Example: Send float modified in GUI to GameSystem; For component systems: idk yet lol
-	struct GameEvent : Event {
+	// Example: Send float modified in GUI to SimSystem; For component systems: idk yet lol
+	struct SimEvent : Event {
 
 	};
 	
 	// To: RenderSystem
-	// From: GameSystem
+	// From: SimSystem
 	// Shorthand: "rev"
 	// Example: Send renderable data to RenderSystem
 	struct RenderEvent : Event {
@@ -105,7 +110,7 @@ namespace sundile {
 	};
 
 	// To: GuiSystem
-	// From: GameSystem
+	// From: SimSystem
 	// Shorthand: "uev"
 	// Example: Send float to GUI for live editing.
 	struct GuiEvent : Event {
@@ -113,7 +118,7 @@ namespace sundile {
 	};
 
 	// To: ProjectSystem
-	// From: GuiSystem, GameSystem
+	// From: GuiSystem, SimSystem
 	// Shorthand: "pev"
 	// Example: Send relevant information to create snapshot, save or load project.
 	struct ProjEvent : Event {

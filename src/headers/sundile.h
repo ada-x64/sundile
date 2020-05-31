@@ -2,8 +2,8 @@
 //-- System
 #include "sundile/WindowSystem.h"
 #include "sundile/GuiSystem.h"
-#include "sundile/GameSystem.h"
-#include "sundile/RenderSystem.h" //Temporary solution! Automate game system inclusion.
+#include "sundile/SimSystem.h"
+#include "sundile/RenderSystem.h" //Temporary solution! Automate sim system inclusion.
 
 
 namespace sundile {

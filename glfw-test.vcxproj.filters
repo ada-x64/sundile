@@ -102,9 +102,6 @@
     <ClCompile Include="src\ext\imgui\imgui_impl_opengl3.cpp">
       <Filter>Source Files\ext\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="src\GameSystem.cpp">
-      <Filter>Source Files\sundile\sundile</Filter>
-    </ClCompile>
     <ClCompile Include="src\EventWrapper.cpp">
       <Filter>Source Files\sundile\sundile</Filter>
     </ClCompile>
@@ -115,6 +112,9 @@
       <Filter>Source Files\sundile\sundile</Filter>
     </ClCompile>
     <ClCompile Include="src\RenderSystem.cpp">
+      <Filter>Source Files\sundile\sundile</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SimSystem.cpp">
       <Filter>Source Files\sundile\sundile</Filter>
     </ClCompile>
   </ItemGroup>
@@ -176,9 +176,6 @@
     <ClInclude Include="src\ext\imgui\imgui_impl_opengl3.h">
       <Filter>Source Files\ext\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="src\headers\sundile\GameSystem.h">
-      <Filter>Header Files\sundile</Filter>
-    </ClInclude>
     <ClInclude Include="src\headers\sundile\EventWrapper.h">
       <Filter>Header Files\sundile</Filter>
     </ClInclude>
@@ -190,6 +187,9 @@
     </ClInclude>
     <ClInclude Include="src\headers\sundile\RenderSystem.h">
       <Filter>Header Files\game systems</Filter>
+    </ClInclude>
+    <ClInclude Include="src\headers\sundile\SimSystem.h">
+      <Filter>Header Files\sundile</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

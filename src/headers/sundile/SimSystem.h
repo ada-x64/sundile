@@ -1,5 +1,5 @@
 //--
-//-- GameSystem.h
+//-- SimSystem.h
 //--
 #pragma once
 #ifndef SYSTEMS_H
@@ -7,23 +7,28 @@
 #include "EventWrapper.h"
 #include "Components.h"
 #include "AllComponents.h"
+#include "RenderSystem.h"
 namespace sundile {
-
-	struct Game {
+	//Simulation struct
+	struct Sim {
 		SmartEVW evw;
-		entt::registry registry;
+		SmartRegistry registry;
+		Renderer renderer;
 
 		//-- When incrementing, "n * deltaTime" means "n per second".
 		float deltaTime = 0.f;
 		float lastTime = 0.f;
 	};
 
-	namespace GameSystem {
-		//--
-		//-- Function Members
-		//--
-		Game init(SmartEVW evw);
-		void step(Game& game, SmartEVW evw);
+	typedef std::shared_ptr<Sim> SmartSim;
+
+	namespace SimSystem {
+		inline std::vector<SmartSim> sims = std::vector<SmartSim>();
+
+
+		SmartSim init(SmartEVW evw);
+		void update(SmartSim game);
+		void updateAll();
 		//void render(SmartEVW evw);
 		//void terminate(SmartEVW evw);
 	};
