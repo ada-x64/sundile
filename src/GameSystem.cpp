@@ -149,7 +149,7 @@ namespace sundile {
 			Game game;
 			game.evw = evw;
 			evw->dispatcher.sink<InputEvent>().connect<&handleInput>();
-			evw->dispatcher.sink<WindowEvent>().connect<&windowTestEvent>();
+			//evw->dispatcher.sink<WindowEvent>().connect<&windowTestEvent>();
 
 			//Set dependencies for created entites.
 			setDependencies(game);

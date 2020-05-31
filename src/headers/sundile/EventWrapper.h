@@ -131,6 +131,7 @@ namespace sundile {
 		//--
 		//-- Get Events 
 		//-- 
+		template <typename t>
 		void getEvent(Event e);
 
 		void step();

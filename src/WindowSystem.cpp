@@ -8,15 +8,13 @@ namespace sundile {
 				fprintf(stderr, "GLFW Error: %s\n", description);
 			}
 			void keyCallback(GLFWwindow* w, int key, int scancode, int action, int mods) {
-				currentevw->getEvent(InputEvent { EventType::key, w,  key, scancode, action, mods  });
+				currentevw->dispatcher.enqueue<InputEvent>({ EventType::key, w,  key, scancode, action, mods  });
 			}
 			void mouseBtnCallback(GLFWwindow* w, int button, int actions, int mods) {
-				InputEvent wev{ EventType::mousebtn, w, button, GLFW_KEY_UNKNOWN, actions, mods };
-				currentevw->getEvent(wev);
+				currentevw->dispatcher.enqueue<InputEvent>({ EventType::mousebtn, w, button, GLFW_KEY_UNKNOWN, actions, mods });
 			}
 			void cursorPosCallback(GLFWwindow* w, double x, double y) {
-				TypedWindowEvent<double> wev{ EventType::cursorpos, w, {x,y} };
-				currentevw->getEvent(wev);
+				currentevw->dispatcher.enqueue<TypedWindowEvent<double>>({ EventType::cursorpos, w, {x,y} });
 			}
 			void framebufferSizeCallback(GLFWwindow* w, int width, int height) {
 				glViewport(0, 0, width, height);
@@ -134,6 +132,8 @@ namespace sundile {
 			glfwPollEvents();
 			currentevw->dispatcher.enqueue<Event>(DrawEvent {EventType::generic_draw});
 			currentevw->dispatcher.update<WindowEvent>();
+			currentevw->dispatcher.update<InputEvent>();
+			currentevw->dispatcher.update<TypedWindowEvent<double>>();
 
 			if (winc->windowShouldClose || glfwWindowShouldClose(currentwindow)) {
 				glfwSetWindowShouldClose(currentwindow, GLFW_TRUE);
@@ -155,7 +155,7 @@ namespace sundile {
 		//-- 
 		void terminate(SmartWindow winc) {
 			currentevw = winc->evw;
-			currentevw->getEvent(WindowEvent { EventType::terminateWindow, winc->window.get() });
+			currentevw->dispatcher.enqueue<WindowEvent>(WindowEvent { EventType::terminateWindow, winc->window.get() });
 			// should probably delete the window *after* all relevant calls are made.
 			// entt doesn't guarantee order when using dispatcher. will need to do this manually.
 		}
