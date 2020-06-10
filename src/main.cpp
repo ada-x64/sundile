@@ -8,43 +8,40 @@ int main(void)
 	using namespace sundile;
 
 	//Initialize
-	SmartEVW evw = std::make_shared<EventWrapper>();
-	SmartWindow winc_renderer = WindowSystem::init(evw);
-	SmartSim game = SimSystem::init(evw);
-	//Renderer renderer = RenderSystem::init(evw, game); TODO - automate this in SimSystem::init()
+	SmartEVW	evw			= EventSystem::create();
+	SmartWindow winc		= WindowSystem::init(evw, "Rendering window");
+	SmartWindow renderInfo	= WindowSystem::init(evw, 150, 600, "Render Info");
+	SmartSim	sim			= SimSystem::init(evw);
 
-	//Populate registry
+	//Populate registry - i.e., load scene
 	{
 		using namespace Components;
+		auto registry = sim->registry;
 
-		auto eCam = game->registry->create();
-		game->registry->emplace<camera>(eCam);
+		auto eCam = registry->create();
+		registry->emplace<camera>(eCam);
 
-		auto eMonkey = game->registry->create();
-		game->registry->emplace<Model>(eMonkey, "./assets/models/monkey.obj");
-		game->registry->emplace<visible>(eMonkey);
-		game->registry->emplace<position>(eMonkey, glm::vec3(0.f, 0.f, 0.f));
+		auto eMonkey = registry->create();
+		registry->emplace<Model>(eMonkey, "./assets/models/monkey.obj");
+		registry->emplace<visible>(eMonkey);
+		registry->emplace<position>(eMonkey, glm::vec3(0.f, 0.f, 0.f));
 
-		auto eTree = game->registry->create();
-		game->registry->emplace<Model>(eTree, "./assets/models/Trees/OakTree1.fbx");
-		game->registry->emplace<visible>(eTree);
-		game->registry->emplace<position>(eTree, glm::vec3(10.f, 10.f, 0.f));
-		game->registry->emplace<Shader>(eTree, ShaderSystem::init("./assets/shaders/passthrough.vert", "./assets/shaders/tex_diffuse1.frag"));
+		auto eTree = registry->create();
+		registry->emplace<Model>(eTree, "./assets/models/Trees/OakTree1.fbx");
+		registry->emplace<visible>(eTree);
+		registry->emplace<position>(eTree, glm::vec3(10.f, 10.f, 0.f));
+		registry->emplace<Shader>(eTree, ShaderSystem::init("./assets/shaders/passthrough.vert", "./assets/shaders/tex_diffuse1.frag"));
 	}
 
 
 	//main loop
-	while (WindowSystem::windows.size() > 0) {
-		WindowSystem::updateAll();
-		SimSystem::updateAll();
-		/**
-		for (auto window : WindowSystem::windows) {
-			//Update
-			WindowSystem::update(window);
-			SimSystem::step(game);
-			RenderSystem::render(renderer);
-		}
-		/**/
+	EventSystem::initAll();
+
+	while (EventSystem::run) {
+		EventSystem::updateAll();
 	}
+
+	EventSystem::terminateAll();
+
 	return 0;
 }

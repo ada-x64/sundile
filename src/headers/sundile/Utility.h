@@ -33,5 +33,10 @@ namespace sundile {
                 r += "&&";
             return r;
         }
+
+        template<typename T>
+        void removeErase(std::vector<T>& vec, T& member) {
+            vec.erase(std::remove(vec.begin(), vec.end(), member), vec.end());
+        }
 	}
 }

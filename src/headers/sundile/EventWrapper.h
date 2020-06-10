@@ -9,12 +9,6 @@
 
 namespace sundile {
 	//--
-	//-- Entt Wrappers
-	//--
-	typedef std::shared_ptr<entt::registry> SmartRegistry;
-
-
-	//--
 	//-- Events
 	//--
 
@@ -26,6 +20,23 @@ namespace sundile {
 		generic_project,
 		generic_render,
 		generic_window,
+
+		// Main Loop Events
+		init,
+
+		preStep,
+		step,
+		postStep,
+
+		preRender,
+		render,
+		postRender,
+
+		preDrawGui,
+		drawGui,
+		postDrawGui,
+
+		terminate,
 
 		// Window Events
 		cursorpos,
@@ -51,13 +62,29 @@ namespace sundile {
 	// To: Any
 	// From: Any
 	// Shorthand: "ev"
+	// Example: Main loop events (carry no information)
 	// Event base class
 	struct Event {
 		EventType type;
 	};
 
+	struct initEvent		{ EventType type = EventType::init; };
 
-	// To: SimSystem, GuiSystem, ProjectSystem
+	struct preStepEvent		{ EventType type = EventType::preStep; };
+	struct stepEvent		{ EventType type = EventType::step; };
+	struct postStepEvent	{ EventType type = EventType::postStep; };
+	
+	struct preRenderEvent	{ EventType type = EventType::preRender; };
+	struct renderEvent		{ EventType type = EventType::render; };
+	struct postRenderEvent	{ EventType type = EventType::postRender; };
+
+	struct preDrawGuiEvent	{ EventType type = EventType::preDrawGui; };
+	struct drawGuiEvent		{ EventType type = EventType::drawGui; };
+	struct postDrawGuiEvent { EventType type = EventType::postDrawGui; };
+
+	struct terminateEvent	{ EventType type = EventType::terminate; };
+
+	// To: SimSystem, GuiSystem, ProjectSystem, WindowSystem (termination)
 	// From: WindowSystem
 	// Shorthand: "wev"
 	// Example: Key event, window resize event -- anything from GLFW
@@ -132,16 +159,6 @@ namespace sundile {
 
 	struct EventWrapper {
 		entt::dispatcher dispatcher{};
-
-		//--
-		//-- Get Events 
-		//-- 
-		template <typename t>
-		void getEvent(Event e);
-
-		void step();
-		void terminate(); //needed?
-
 	};
 
 	struct EventWrapperDestroyer {
@@ -154,5 +171,25 @@ namespace sundile {
 	typedef std::shared_ptr<EventWrapper> SmartEVW;
 	//EVW for use by component systems.
 	typedef std::weak_ptr<EventWrapper> SafeEVW;
+
+	//Registry for use by Sundile internal systems.
+	typedef std::shared_ptr<entt::registry> SmartRegistry;
+	//Registry for component systems.
+	typedef std::weak_ptr<entt::registry> SafeRegistry;
+
+	namespace EventSystem {
+		inline bool run = true;
+		inline std::vector<SmartEVW> EVWs;
+
+		SmartEVW create();
+
+		void init(SmartEVW evw);
+		void update(SmartEVW evw);
+		void terminate(SmartEVW evw);
+
+		void initAll();
+		void updateAll();
+		void terminateAll();
+	}
 }
 #endif

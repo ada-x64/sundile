@@ -25,6 +25,9 @@
 //stb
 #include <stb_image.h>
 
+//algo
+#include <algorithm>
+
 //assimp
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -50,5 +53,8 @@
 #include "../../ext/imgui/imgui.h"
 #include "../../ext/imgui/imgui_impl_opengl3.h"
 #include "../../ext/imgui/imgui_impl_glfw.h"
+
+//Utility
+#include "./Utility.h"
 
 #endif
