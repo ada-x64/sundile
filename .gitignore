@@ -3,6 +3,9 @@
 
 *.ipch
 
-.vs/glfw-test/v16/
+.vs/
 
 Debug/
+
+*.vcxproj
+*.vcxproj.*
