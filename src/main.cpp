@@ -1,7 +1,7 @@
 //--
 //-- main.cpp
 //--
-#include "./headers/sundile.h"
+#include "./sundile/sundile.h"
 
 int main(void)
 {
@@ -10,7 +10,7 @@ int main(void)
 	//Initialize
 	SmartEVW	evw			= EventSystem::create();
 	SmartWindow winc		= WindowSystem::init(evw, "Rendering window");
-	SmartWindow renderInfo	= WindowSystem::init(evw, 150, 600, "Render Info");
+	//SmartWindow renderInfo	= WindowSystem::init(evw, 150, 600, "Render Info");
 	SmartSim	sim			= SimSystem::init(evw);
 
 	//Populate registry - i.e., load scene
