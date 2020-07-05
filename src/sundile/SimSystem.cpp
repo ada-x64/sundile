@@ -36,7 +36,7 @@ namespace sundile {
 				}
 
 				for (auto sim : sims) {
-					sim->evw->dispatcher.enqueue<SimInputEvent>(SimInputEvent{ wev.type, sim->deltaTime, wev.key, wev.scancode, wev.action, wev.mods });
+					sim->evw->dispatcher.trigger<SimInputEvent>(SimInputEvent{ wev.type, sim->registry, sim->deltaTime, wev.key, wev.scancode, wev.action, wev.mods });
 				}
 			}
 		}

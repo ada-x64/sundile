@@ -13,12 +13,12 @@ namespace sundile {
 		}
 
 		void init(SmartEVW evw) {
-			evw->dispatcher.update<initEvent>();
+			evw->dispatcher.trigger<initEvent>();
 		}
 
 		void initAll() {
 			for (SmartEVW evw : EVWs) {
-				evw->dispatcher.update<initEvent>();
+				evw->dispatcher.trigger<initEvent>({ EventType::init, evw });
 			}
 		}
 

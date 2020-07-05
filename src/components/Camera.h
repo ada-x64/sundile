@@ -5,7 +5,7 @@
 
 //test
 
-#include "../sundile/Components.h"
+// #include "../sundile/Components.h"
 #include "../components/Physics.h"
 
 COMPONENT_DEF_BEGIN(camera)

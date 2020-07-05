@@ -1,25 +1,23 @@
 #pragma once
-#include "../sundile/SimSystem.h"
+#include "../sundile/EventWrapper.h"
 #include "../components/Camera.h"
 
 //test
 
 SYSTEM_DEF_BEGIN(CameraSystem)
-inline SmartSim sim; 
 
 void catchInputEvent(const SimInputEvent& ev) {
 	//--
 	//-- Main button handling
-	//-- (eventually, handle this with events)
-	/**/
-	sim->registry->view<velocity>().each([&](auto entity, auto& _vel) {
+	//--
+	ev.registry->view<velocity>().each([&](auto entity, auto& _vel) {
 		//-- Vars
 		glm::vec3& vel = _vel.vel;
 
 		//-- Camera Button Registration
-		if (sim->registry->has<camera>(entity)) {
+		if (ev.registry->has<camera>(entity)) {
 			float camspeed = 1.f * float(ev.deltaTime);
-			camera& cam = sim->registry->get<camera>(entity);
+			camera& cam = ev.registry->get<camera>(entity);
 			glm::vec3& spd = cam.spd;
 
 			if (ev.action == GLFW_PRESS) {
@@ -65,8 +63,7 @@ void catchInputEvent(const SimInputEvent& ev) {
 		});
 }
 
-void init(SmartSim _sim) {
-	sim = _sim;
-	sim->evw->dispatcher.sink<SimInputEvent>().connect<&catchInputEvent>();
+void init(const initEvent& ev) {
+	ev.evw->dispatcher.sink<SimInputEvent>().connect<&catchInputEvent>();
 }
 SYSTEM_DEF_END
