@@ -1,0 +1,8 @@
+#define SUNDILE_BEGIN namespace sundile {
+#define SUNDILE_END }
+
+#define COMPONENT_DEF_BEGIN(name) namespace sundile { namespace Components { namespace name {
+#define COMPONENT_DEF_END }}}
+
+#define SYSTEM_DEF_BEGIN(name) namespace sundile { using namespace Components; namespace Systems { namespace name {
+#define SYSTEM_DEF_END }}}
