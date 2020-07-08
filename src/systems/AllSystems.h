@@ -4,7 +4,7 @@
 namespace sundile {
 	namespace Systems {
 		void init(SmartEVW evw) {
-			evw->dispatcher.sink<initEvent>().connect<CameraSystem::init>();
+			evw->dispatcher.sink<SimInitEvent>().connect<CameraSystem::init>();
 		}
 	}
 }

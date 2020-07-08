@@ -69,10 +69,8 @@ namespace sundile {
 			evw->dispatcher.sink<stepEvent>().connect<updateAll>();
 			evw->dispatcher.sink<WindowInputEvent>().connect<handleInput>();
 			evw->dispatcher.sink<DrawEvent>().connect<catchDrawEvent>();
-			//evw->dispatcher.sink<WindowEvent>().connect<&windowTestEvent>();
 
-			//Set dependencies for created entites.
-			//setDependencies(sim);
+			evw->dispatcher.trigger<SimInitEvent>(SimInitEvent{EventType::generic_game, sim->registry, 0.f, sim->evw});
 
 			//Add to sims
 			sims.push_back(sim);
@@ -94,6 +92,7 @@ namespace sundile {
 
 			//-- Update Events
 			evw->dispatcher.update<DrawEvent>();
+			evw->dispatcher.trigger<SimStepEvent>(SimStepEvent {EventType::generic_game, sim->registry });
 		}
 
 		void updateAll() {

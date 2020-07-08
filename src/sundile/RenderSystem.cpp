@@ -20,7 +20,10 @@ namespace sundile {
 					ShaderSystem::use(rend.passthrough);
 					int uView = glGetUniformLocation(rend.passthrough, "view");
 					glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(cam.lookat));
-					});
+
+					int uProj = glGetUniformLocation(rend.passthrough, "projection");
+					glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(cam.projection));
+				});
 			}
 
 			void SetCamera(Renderer& rend) {
@@ -35,7 +38,7 @@ namespace sundile {
 
 					int uProj = glGetUniformLocation(passthrough, "projection");
 					glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(cam.projection));
-					});
+				});
 
 			}
 

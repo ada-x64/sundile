@@ -49,6 +49,7 @@ namespace sundile {
 
 		// Main Loop Events
 		init,
+		emplace,
 
 		preStep,
 		step,
@@ -94,7 +95,10 @@ namespace sundile {
 		EventType type;
 	};
 
-	struct initEvent { EventType type = EventType::init; SmartEVW evw; };
+	struct initEvent {
+		EventType type = EventType::init;
+		SmartEVW evw;	
+	};
 
 	struct preStepEvent		{ EventType type = EventType::preStep; };
 	struct stepEvent		{ EventType type = EventType::step; };
@@ -154,12 +158,16 @@ namespace sundile {
 		SmartRegistry registry;
 		double deltaTime;
 	};
+	struct SimInitEvent : SimEvent {
+		SmartEVW evw;
+	};
 	struct SimInputEvent : SimEvent {
 		int key,
 			scancode,
 			action,
 			mods;
 	};
+	struct SimStepEvent : SimEvent {};
 	
 	// To: RenderSystem
 	// From: SimSystem
