@@ -36,7 +36,7 @@ namespace sundile {
 				}
 
 				for (auto sim : sims) {
-					sim->evw->dispatcher.enqueue<SimInputEvent>(SimInputEvent{ wev.type, sim->deltaTime, wev.key, wev.scancode, wev.action, wev.mods });
+					sim->evw->dispatcher.trigger<SimInputEvent>(SimInputEvent{ wev.type, sim->registry, sim->deltaTime, wev.key, wev.scancode, wev.action, wev.mods });
 				}
 			}
 		}
@@ -58,6 +58,12 @@ namespace sundile {
 		//--
 		//-- Initialization
 		//-- 
+		void catchInit(const initEvent& ev) {
+			for (auto sim : sims) {
+				ev.evw->dispatcher.trigger<SimInitEvent>(SimInitEvent{ EventType::generic_game, sim->registry, 0.f, sim->evw });
+			}
+		}
+
 		SmartSim init(SmartEVW evw) {
 			// Initialize
 			SmartSim sim = std::make_shared<Sim>();
@@ -69,10 +75,8 @@ namespace sundile {
 			evw->dispatcher.sink<stepEvent>().connect<updateAll>();
 			evw->dispatcher.sink<WindowInputEvent>().connect<handleInput>();
 			evw->dispatcher.sink<DrawEvent>().connect<catchDrawEvent>();
-			//evw->dispatcher.sink<WindowEvent>().connect<&windowTestEvent>();
+			evw->dispatcher.sink<initEvent>().connect<catchInit>();
 
-			//Set dependencies for created entites.
-			//setDependencies(sim);
 
 			//Add to sims
 			sims.push_back(sim);
@@ -94,6 +98,7 @@ namespace sundile {
 
 			//-- Update Events
 			evw->dispatcher.update<DrawEvent>();
+			evw->dispatcher.trigger<SimStepEvent>(SimStepEvent {EventType::generic_game, sim->registry });
 		}
 
 		void updateAll() {

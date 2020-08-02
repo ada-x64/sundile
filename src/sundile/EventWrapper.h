@@ -8,6 +8,32 @@
 #define SUNDILE_ENTT_H
 
 namespace sundile {
+
+	//--
+	//-- Wrappers
+	//--
+
+	struct EventWrapper {
+		entt::dispatcher dispatcher{};
+	};
+
+	struct EventWrapperDestroyer {
+		void operator()(EventWrapper* evw) {
+			delete evw;
+		}
+	};
+
+	//EVW for use by Sundile internal systems.
+	typedef std::shared_ptr<EventWrapper> SmartEVW;
+	//EVW for use by component systems.
+	typedef std::weak_ptr<EventWrapper> SafeEVW;
+
+	//Registry for use by Sundile internal systems.
+	typedef std::shared_ptr<entt::registry> SmartRegistry;
+	//Registry for component systems.
+	typedef std::weak_ptr<entt::registry> SafeRegistry;
+
+
 	//--
 	//-- Events
 	//--
@@ -23,6 +49,7 @@ namespace sundile {
 
 		// Main Loop Events
 		init,
+		emplace,
 
 		preStep,
 		step,
@@ -68,7 +95,10 @@ namespace sundile {
 		EventType type;
 	};
 
-	struct initEvent		{ EventType type = EventType::init; };
+	struct initEvent {
+		EventType type = EventType::init;
+		SmartEVW evw;	
+	};
 
 	struct preStepEvent		{ EventType type = EventType::preStep; };
 	struct stepEvent		{ EventType type = EventType::step; };
@@ -125,7 +155,11 @@ namespace sundile {
 	// Shorthand: "gev"
 	// Example: Send float modified in GUI to SimSystem; For component systems: idk yet lol
 	struct SimEvent : Event {
+		SmartRegistry registry;
 		double deltaTime;
+	};
+	struct SimInitEvent : SimEvent {
+		SmartEVW evw;
 	};
 	struct SimInputEvent : SimEvent {
 		int key,
@@ -133,6 +167,7 @@ namespace sundile {
 			action,
 			mods;
 	};
+	struct SimStepEvent : SimEvent {};
 	
 	// To: RenderSystem
 	// From: SimSystem
@@ -159,29 +194,6 @@ namespace sundile {
 	};
 
 
-	//--
-	//-- Wrapper
-	//--
-
-	struct EventWrapper {
-		entt::dispatcher dispatcher{};
-	};
-
-	struct EventWrapperDestroyer {
-		void operator()(EventWrapper* evw) {
-			delete evw;
-		}
-	};
-
-	//EVW for use by Sundile internal systems.
-	typedef std::shared_ptr<EventWrapper> SmartEVW;
-	//EVW for use by component systems.
-	typedef std::weak_ptr<EventWrapper> SafeEVW;
-
-	//Registry for use by Sundile internal systems.
-	typedef std::shared_ptr<entt::registry> SmartRegistry;
-	//Registry for component systems.
-	typedef std::weak_ptr<entt::registry> SafeRegistry;
 
 	namespace EventSystem {
 		inline bool run = true;
