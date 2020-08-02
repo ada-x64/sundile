@@ -3,3 +3,6 @@
 #include "../components/Camera.h"
 #include "../components/Physics.h"
 #include "../components/Visible.h"
+#include "../components/Light.h"
+#include "../components/Wireframe.h"
+#include "../components/Input.h"

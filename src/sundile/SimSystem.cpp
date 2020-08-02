@@ -58,6 +58,12 @@ namespace sundile {
 		//--
 		//-- Initialization
 		//-- 
+		void catchInit(const initEvent& ev) {
+			for (auto sim : sims) {
+				ev.evw->dispatcher.trigger<SimInitEvent>(SimInitEvent{ EventType::generic_game, sim->registry, 0.f, sim->evw });
+			}
+		}
+
 		SmartSim init(SmartEVW evw) {
 			// Initialize
 			SmartSim sim = std::make_shared<Sim>();
@@ -69,8 +75,8 @@ namespace sundile {
 			evw->dispatcher.sink<stepEvent>().connect<updateAll>();
 			evw->dispatcher.sink<WindowInputEvent>().connect<handleInput>();
 			evw->dispatcher.sink<DrawEvent>().connect<catchDrawEvent>();
+			evw->dispatcher.sink<initEvent>().connect<catchInit>();
 
-			evw->dispatcher.trigger<SimInitEvent>(SimInitEvent{EventType::generic_game, sim->registry, 0.f, sim->evw});
 
 			//Add to sims
 			sims.push_back(sim);

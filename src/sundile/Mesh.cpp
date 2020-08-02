@@ -3,6 +3,18 @@
 //--
 #include "Mesh.h"
 namespace sundile {
+
+	namespace {
+
+		void checkError() {
+			GLenum error = glGetError();
+			if (error) {
+				std::cout << "OPENGL ERROR::" << error << std::endl;
+				__debugbreak();
+			}
+		}
+	}
+
 	//--
 	//-- Public functions
 	//--
@@ -21,6 +33,7 @@ namespace sundile {
 		for (unsigned int i = 0; i < textures.size(); i++)
 		{
 			glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
+			checkError();
 			// retrieve texture number (the N in diffuse_textureN)
 			std::string number;
 			std::string name = textures[i].type;
@@ -33,13 +46,16 @@ namespace sundile {
 			//NOTE: Shaders must declare uniform sampler2Ds using this naming convention or this will not work!
 			ShaderSystem::setFloat(s,(/*"material." +*/ name + number).c_str(), i);
 			glBindTexture(GL_TEXTURE_2D, textures[i].id);
+			checkError();
 		}
 		glActiveTexture(GL_TEXTURE0);
+		checkError();
 
 		// draw mesh
 		glBindVertexArray(VAO);
 
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+		checkError();
 		glBindVertexArray(0);
 	}
 
@@ -71,5 +87,6 @@ namespace sundile {
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
 
 		glBindVertexArray(0);
+		checkError();
 	}
 }
