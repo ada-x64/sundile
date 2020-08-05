@@ -17,7 +17,7 @@ namespace sundile {
 				GLenum error = glGetError();
 				if (error) {
 					std::cout << "OPENGL ERROR::" << error << std::endl;
-					__debugbreak();
+					SUNDILE_DEBUG_BREAK
 				}
 			}
 
