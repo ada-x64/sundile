@@ -60,6 +60,7 @@
 #define SUNDILE_BEGIN namespace sundile {
 #define SUNDILE_END }
 
+//- TODO - create ifndef guards
 #define COMPONENT_DEF_BEGIN(name) namespace sundile { namespace Components { struct name/*:component*/ {
 #define COMPONENT_DEF_END };}}
 

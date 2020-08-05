@@ -3,6 +3,7 @@
 //--
 #include "Model.h"
 namespace sundile {
+
 	//--
 	//-- Local Helpers
 	//--
