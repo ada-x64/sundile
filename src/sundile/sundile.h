@@ -1,5 +1,5 @@
 #pragma once
 //-- System
-#include "sundile/WindowSystem.h"
-#include "sundile/GuiSystem.h"
-#include "sundile/SimSystem.h"
+#include "WindowSystem.h"
+#include "GuiSystem.h"
+#include "SimSystem.h"
