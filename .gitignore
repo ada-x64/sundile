@@ -6,3 +6,9 @@
 .vs/glfw-test/v16/
 
 Debug/
+
+.vscode/
+
+build/
+
+cpp.hint
