@@ -173,7 +173,7 @@ namespace sundile {
 	// From: SimSystem
 	// Shorthand: "rev"
 	// Example: Send renderable data to RenderSystem
-	struct RenderEvent : Event {
+	struct RenderEvent : SimEvent {
 
 	};
 
@@ -181,7 +181,7 @@ namespace sundile {
 	// From: SimSystem
 	// Shorthand: "uev"
 	// Example: Send float to GUI for live editing.
-	struct GuiEvent : Event {
+	struct GuiEvent : SimEvent {
 
 	};
 
@@ -189,7 +189,7 @@ namespace sundile {
 	// From: GuiSystem, SimSystem
 	// Shorthand: "pev"
 	// Example: Send relevant information to create snapshot, save or load project.
-	struct ProjEvent : Event {
+	struct ProjEvent : SimEvent {
 
 	};
 

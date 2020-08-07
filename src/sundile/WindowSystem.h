@@ -22,7 +22,7 @@ namespace sundile {
 		int				WIDTH				= 800;
 		int				HEIGHT				= 600;
 		bool			windowShouldClose	= false;
-		const char*		name = "sundile";
+		const char*		name				= "sundile";
 
 		bool operator == (WindowContainer & other) {
 			return (this->window.get() == other.window.get());

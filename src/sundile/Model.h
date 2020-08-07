@@ -21,6 +21,7 @@ namespace sundile {
         {
             loadModel(path);
         }
+        Model() {};
         void Draw(Shader shader);
 
     private:

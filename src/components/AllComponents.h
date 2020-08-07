@@ -6,3 +6,4 @@
 #include "../components/Light.h"
 #include "../components/Wireframe.h"
 #include "../components/Input.h"
+#include "../components/GuiElement.h"

@@ -6,13 +6,11 @@
 #define SYSTEMS_H
 #include "EventWrapper.h"
 #include "Components.h"
-#include "RenderSystem.h"
 namespace sundile {
 	//Simulation struct
 	struct Sim {
 		SmartEVW evw;
 		SmartRegistry registry;
-		Renderer renderer;
 
 		//-- When incrementing, "n * deltaTime" means "n per second".
 		float deltaTime = 0.f;

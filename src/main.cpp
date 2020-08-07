@@ -10,31 +10,65 @@ int main(void)
 
 	//Initialize
 	SmartEVW	evw			= EventSystem::create();
-	SmartWindow winc		= WindowSystem::init(evw, "Rendering window");
-	//SmartWindow renderInfo	= WindowSystem::init(evw, 150, 600, "Render Info");
+	SmartWindow winc		= WindowSystem::init(evw, 1280, 720);
 	SmartSim	sim			= SimSystem::init(evw);
 	Systems::init(evw);
+	Systems::GuiSystem::init(winc->window.get(), "#version 130"); //blehhhhh
 	EventSystem::initAll();
 
 	//Populate registry - i.e., load scene
 	{
+		//Prelim
 		using namespace Components;
 		auto registry = sim->registry;
 
+		//Assets
+		Model suzanne = Model("./assets/models/monkey.obj");
+
+		//Renderer
+		auto eRenderer = registry->create();
+		registry->emplace<Renderer>(eRenderer);
+
+		//GUI
+		int ww = winc->WIDTH;
+		int wh = winc->HEIGHT;
+		int viewport_w = 800;
+		int viewport_h = 600;
+		int viewport_x = ww / 2 - viewport_w/2;
+		int viewport_y = wh / 2 - viewport_h/2;
+		glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
+
+		auto eGUI = registry->create();
+		guiElement mainMenu;
+		mainMenu.renderFunc = []() {
+			using namespace ImGui;
+			Begin("Main Menu");
+			BeginMenuBar();
+			Text("hey");
+			EndMenuBar();
+			End();
+		};
+		registry->emplace<guiElement>(eGUI, mainMenu);
+
+		//Camera
 		auto eCam = registry->create();
 		registry->emplace<camera>(eCam);
 		registry->emplace<input>(eCam);
 
+		//Suzannes in a Circle
 		int count = 8;
 		for (int i = 0; i < count; i++) {
 			auto eMonkey = registry->create();
-			registry->emplace<Model>(eMonkey, "./assets/models/monkey.obj");
+			auto& model = registry->emplace<Model>(eMonkey);
+			model = suzanne;
 			registry->emplace<visible>(eMonkey);
 			registry->emplace<position>(eMonkey, glm::vec3(10*cos(i * 2*glm::pi<float>()/ count), 0.f, 10*sin(i * 2*glm::pi<float>()/ count)));
 		}
 
+		//Light of our lives
 		auto eLightMonkey = registry->create();
-		registry->emplace<Model>(eLightMonkey, "./assets/models/monkey.obj");
+		auto& model = registry->emplace<Model>(eLightMonkey);
+		model = suzanne;
 		registry->emplace<visible>(eLightMonkey);
 		registry->emplace<position>(eLightMonkey, glm::vec3(0.f, 0.f, 0.f));
 		Shader lightsource = ShaderSystem::init("./assets/shaders/passthrough.vert", "./assets/shaders/light.frag");
