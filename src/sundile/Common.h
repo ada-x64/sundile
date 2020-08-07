@@ -49,9 +49,9 @@
 #include <GLFW/glfw3.h>
 
 //imgui
-#include "ext/imgui/imgui.h"
-#include "ext/imgui/imgui_impl_opengl3.h"
-#include "ext/imgui/imgui_impl_glfw.h"
+#include <imgui.h>
+#include "ext/imgui_impl_opengl3.h"
+#include "ext/imgui_impl_glfw.h"
 
 //Utility
 #include "./Utility.h"

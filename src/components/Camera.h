@@ -1,11 +1,7 @@
-#pragma once
 //--
 //-- Camera.h
 //--
-
-//test
-
-// #include "../sundile/Components.h"
+#pragma once
 #include "../components/Physics.h"
 #include "glm/gtx/rotate_vector.hpp"
 
