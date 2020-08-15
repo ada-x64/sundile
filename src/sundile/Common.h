@@ -40,8 +40,8 @@
 #include <glm/gtc/quaternion.hpp>
 
 //gl
-#include <gl/glew.h>
-#include <gl/freeglut.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 
 //entt
 #include "ext/entt.hpp"
