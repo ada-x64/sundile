@@ -45,7 +45,7 @@ namespace sundile {
 		//--
 		//-- Create and Initialize
 		//--
-		Shader init(Shader& s, const char* vertexPath, const char* fragmentPath) {
+		Shader init(Shader& s, fs::path vertexPath, fs::path fragmentPath) {
 
 			// 1. retrieve the vertex/fragment source code from filePath
 			std::string vertexCode;
@@ -60,13 +60,13 @@ namespace sundile {
 				if (!vShaderFile) {
 					std::cout << "ERROR::SHADER::VERTEX::FILE_NOT_SUCCESSFULLY_READ\n";
 					std::cerr << strerror(errno) << '\n';
-					std::cout << "(don't forget to reset CMake when including new assets)\n";
+					std::cout << "(don't forget to reconfigure CMake when including new assets)\n";
 					__debugbreak();
 				}
 				if (!fShaderFile) {
 					std::cout << "ERROR::SHADER::FRAGMENT::FILE_NOT_SUCCESSFULLY_READ\n";
 					std::cerr << strerror(errno) << '\n';
-					std::cout << "(don't forget to reset CMake when including new assets)\n";
+					std::cout << "(don't forget to reconfigure CMake when including new assets)\n";
 					__debugbreak();
 				}
 				std::stringstream vShaderStream, fShaderStream;
@@ -143,7 +143,7 @@ namespace sundile {
 			}
 
 		}
-		Shader init(const char* vertexPath, const char* fragmentPath) {
+		Shader init(fs::path vertexPath, fs::path fragmentPath) {
 			Shader s;
 			return init(s, vertexPath, fragmentPath);
 		}

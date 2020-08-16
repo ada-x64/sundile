@@ -12,6 +12,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 //std assert
 #include <assert.h>
