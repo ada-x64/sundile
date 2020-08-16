@@ -2,11 +2,16 @@
 #include "../sundile/EventWrapper.h"
 #include "CameraSystem.h"
 #include "InputSystem.h"
+#include "GuiSystem.h"
+#include "RenderSystem.h"
+
 namespace sundile {
 	namespace Systems {
 		void init(SmartEVW evw) {
 			evw->dispatcher.sink<SimInitEvent>().connect<CameraSystem::init>();
 			evw->dispatcher.sink<SimInitEvent>().connect<InputSystem::init>();
+			evw->dispatcher.sink<SimInitEvent>().connect<RenderSystem::init>();
+			evw->dispatcher.sink<SimInitEvent>().connect<GuiSystem::simInit>();
 		}
 	}
 }

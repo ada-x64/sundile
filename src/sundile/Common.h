@@ -12,6 +12,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 //std assert
 #include <assert.h>
@@ -40,8 +42,8 @@
 #include <glm/gtc/quaternion.hpp>
 
 //gl
-#include <gl/glew.h>
-#include <gl/freeglut.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 
 //entt
 #include "ext/entt.hpp"
@@ -49,9 +51,9 @@
 #include <GLFW/glfw3.h>
 
 //imgui
-#include "ext/imgui/imgui.h"
-#include "ext/imgui/imgui_impl_opengl3.h"
-#include "ext/imgui/imgui_impl_glfw.h"
+#include <imgui.h>
+#include "ext/imgui_impl_opengl3.h"
+#include "ext/imgui_impl_glfw.h"
 
 //Utility
 #include "./Utility.h"
@@ -66,5 +68,12 @@
 
 #define SYSTEM_DEF_BEGIN(name) namespace sundile { using namespace Components; namespace Systems { namespace name {
 #define SYSTEM_DEF_END }}}
+
+// Macros
+#ifdef _MSC_VER
+#define SUNDILE_DEBUG_BREAK __debug_break();
+#else
+#define SUNDILE_DEBUG_BREAK assert(0);
+#endif
 
 #endif

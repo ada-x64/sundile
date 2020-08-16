@@ -20,7 +20,7 @@ namespace sundile {
 				{
 					glGetShaderInfoLog(item, 512, NULL, infoLog);
 					std::cout << "ERROR::SHADER::" << type << "::COMPILATION_FAILED\n" << infoLog << std::endl;
-					__debugbreak();
+					SUNDILE_DEBUG_BREAK
 				}
 			}
 			if (type == "program")
@@ -29,7 +29,7 @@ namespace sundile {
 				if (!success) {
 					glGetProgramInfoLog(item, 512, NULL, infoLog);
 					std::cout << "ERROR::SHADER::PROGRAM::COMPILATION_FAILED\n" << infoLog << std::endl;
-					__debugbreak();
+					SUNDILE_DEBUG_BREAK
 				}
 			}
 		}
@@ -38,14 +38,14 @@ namespace sundile {
 			GLenum error = glGetError();
 			if (error) {
 				std::cout << "OPENGL ERROR::" << error << std::endl;
-				__debugbreak();
+				SUNDILE_DEBUG_BREAK
 			}
 		}
 
 		//--
 		//-- Create and Initialize
 		//--
-		Shader init(Shader& s, const char* vertexPath, const char* fragmentPath) {
+		Shader init(Shader& s, fs::path vertexPath, fs::path fragmentPath) {
 
 			// 1. retrieve the vertex/fragment source code from filePath
 			std::string vertexCode;
@@ -61,13 +61,13 @@ namespace sundile {
 					std::cout << "ERROR::SHADER::VERTEX::FILE_NOT_SUCCESSFULLY_READ\n";
 					std::cerr << strerror(errno) << '\n';
 					std::cout << "(don't forget to reset CMake when including new assets)\n";
-					__debugbreak();
+					SUNDILE_DEBUG_BREAK
 				}
 				if (!fShaderFile) {
 					std::cout << "ERROR::SHADER::FRAGMENT::FILE_NOT_SUCCESSFULLY_READ\n";
 					std::cerr << strerror(errno) << '\n';
 					std::cout << "(don't forget to reset CMake when including new assets)\n";
-					__debugbreak();
+					SUNDILE_DEBUG_BREAK
 				}
 				std::stringstream vShaderStream, fShaderStream;
 				// read file's buffer contents into streams
@@ -83,7 +83,7 @@ namespace sundile {
 			catch (std::ifstream::failure e)
 			{
 				std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
-				__debugbreak();
+				SUNDILE_DEBUG_BREAK
 			}
 			const char* vShaderCode = vertexCode.c_str();
 			const char* fShaderCode = fragmentCode.c_str();
@@ -103,7 +103,7 @@ namespace sundile {
 			{
 				glGetShaderInfoLog(vertex, 512, NULL, infoLog);
 				std::cout << "ERROR::SHADER::VERTEX::"<< vertexPath <<"::COMPILATION FAILED WITH INFO LOG:\n" << infoLog << std::endl;
-				__debugbreak();
+				SUNDILE_DEBUG_BREAK
 			}
 
 			// similiar for Fragment Shader
@@ -117,7 +117,7 @@ namespace sundile {
 			{
 				glGetShaderInfoLog(fragment, 512, NULL, infoLog);
 				std::cout << "ERROR::SHADER::FRAGMENT::" << fragmentPath << "::COMPILATION FAILED WITH INFO LOG:\n" << infoLog << std::endl;
-				__debugbreak();
+				SUNDILE_DEBUG_BREAK
 			};
 
 			// shader Program
@@ -138,12 +138,12 @@ namespace sundile {
 			else {
 				glGetProgramInfoLog(s, 512, NULL, infoLog);
 				std::cout << "ERROR::SHADER::PROGRAM::"<<s<<"=(" << vertexPath << "," << fragmentPath << ")::COMPILATION FAILED WITH INFO LOG:\n" << infoLog << std::endl;
-				__debugbreak();
+				SUNDILE_DEBUG_BREAK
 				return 0;
 			}
 
 		}
-		Shader init(const char* vertexPath, const char* fragmentPath) {
+		Shader init(fs::path vertexPath, fs::path fragmentPath) {
 			Shader s;
 			return init(s, vertexPath, fragmentPath);
 		}

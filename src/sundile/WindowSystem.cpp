@@ -76,7 +76,7 @@ namespace sundile {
 					window->evw->dispatcher.update<WindowInputEvent>();
 					window->evw->dispatcher.update<TypedWindowEvent<double>>();
 
-					window->evw->dispatcher.enqueue<DrawEvent>({ EventType::generic_draw });
+					//window->evw->dispatcher.enqueue<DrawEvent>({ EventType::generic_draw });
 				}
 
 				if (termination_called)

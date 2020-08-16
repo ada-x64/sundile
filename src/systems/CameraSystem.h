@@ -30,35 +30,33 @@ void catchCursorEvent(const TypedWindowEvent<double>& ev) { //TODO - move this t
 }
 
 void catchStepEvent(const SimStepEvent& ev) {
+	using namespace glm;
 	ev.registry->view<camera, input>().each([&](auto entity, camera& cam, input& Input) {
 
 		//
 		//Identity and inverse.
-		glm::mat4 T = glm::mat4(1.f);
-		glm::mat4 Mi = glm::inverse(cam.model);
-		glm::vec3& dir = cam.dir;
-		glm::vec3& pos = cam.pos;
-		glm::vec3& spd = cam.spd;
-		constexpr float pi = glm::pi<float>();
+		mat4 T = mat4(1.f);
+		mat4 Mi = inverse(cam.model);
+		vec3& dir = cam.dir;
+		vec3& pos = cam.pos;
+		vec3& spd = cam.spd;
+		float pi = glm::pi<float>();
 
 		//
 		//Rotation
-		glm::vec3 newdir = glm::vec3(0.f);
+		vec3 newdir = vec3(0.f);
 		if (cursorpos != cursorpos_prev) {
 			float scale = pi;
-			//glm::vec3 axis = glm::vec3(0, 1, 0);
 
 			if (Input.held[btn::mb_left]) {
 				float xdif = (cursorpos.x - cursorpos_prev.x);
 				float radians = xdif * scale;
 				newdir.y += radians;
-				//axis = glm::vec3(0, 1, 0);
 			}
 			if (Input.held[btn::mb_right]) {
 				float ydif = (cursorpos.y - cursorpos_prev.y);
 				float radians = ydif * scale;
 				newdir.x += radians;
-				//axis = glm::vec3(1, 0, 0);
 			}
 
 			/**
@@ -82,6 +80,24 @@ void catchStepEvent(const SimStepEvent& ev) {
 		if (Input.held[btn::left]) {
 			newspd.x -= movspd;
 		}
+		dir += newdir;
+
+		float xlim = pi / 2.f - pi / 16.f;
+		if (abs(dir.x) > xlim) {
+			dir.x = xlim * sign(dir.x);
+		}
+
+		T = rotate(T, dir.x, vec3(1, 0, 0));
+		T = rotate(T, dir.y, vec3(0, 1, 0));
+		T = rotate(T, dir.z, vec3(0, 0, 1));
+
+		//
+		//Translation
+		float movspd = -.1f;
+		vec3 newspd = vec3(0.f);
+		if (Input.held[btn::left]) {
+			newspd.x -= movspd;
+		}
 		if (Input.held[btn::right]) {
 			newspd.x += movspd;
 		}
@@ -99,25 +115,25 @@ void catchStepEvent(const SimStepEvent& ev) {
 		}
 
 		//Clamp speed, do friction (probably a better way to do this)
-		float absx = glm::abs(newspd.x);
-		newspd.x -= glm::sign(newspd.x) * cam.fric;
-		if (absx < glm::abs(cam.fric)) newspd.x = 0.f;
+		float absx = abs(newspd.x);
+		newspd.x -= sign(newspd.x) * cam.fric;
+		if (absx < abs(cam.fric)) newspd.x = 0.f;
 		if (absx > cam.maxspd) newspd.x = absx * cam.maxspd;
 
-		float absy = glm::abs(newspd.y);
-		newspd.y -= glm::sign(newspd.y) * cam.fric;
-		if (glm::abs(newspd.y) < glm::abs(cam.fric)) newspd.y = 0.f;
+		float absy = abs(newspd.y);
+		newspd.y -= sign(newspd.y) * cam.fric;
+		if (abs(newspd.y) < abs(cam.fric)) newspd.y = 0.f;
 		if (absy > cam.maxspd) newspd.y = absy * cam.maxspd;
 
-		float absz = glm::abs(newspd.z);
-		newspd.z -= glm::sign(newspd.z) * cam.fric;
-		if (glm::abs(newspd.z) < glm::abs(cam.fric)) newspd.z = 0.f;
+		float absz = abs(newspd.z);
+		newspd.z -= sign(newspd.z) * cam.fric;
+		if (abs(newspd.z) < abs(cam.fric)) newspd.z = 0.f;
 		if (absz > cam.maxspd) newspd.z = absz * cam.maxspd;
 
 		//Do the translation
-		newspd = glm::rotateY(newspd, -dir.y);
+		newspd = rotateY(newspd, -dir.y);
 		cam.spd += newspd;
-		T = glm::translate(T, cam.spd);
+		T = translate(T, cam.spd);
 
 		//set cursor position
 		cursorpos_prev = cursorpos;

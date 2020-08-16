@@ -27,8 +27,8 @@ namespace sundile {
 		void checkError(const char* type, unsigned int item);
 
 		//-- Create and Initialize
-		Shader init(Shader& s, const char* vertexPath, const char* fragmentPath);
-		Shader init(const char* vertexPath, const char* fragmentPath);
+		Shader init(Shader& s, fs::path vertexPath, fs::path fragmentPath);
+		Shader init(fs::path vertexPath, fs::path fragmentPath);
 
 		//-- Use
 		void use(Shader s);
