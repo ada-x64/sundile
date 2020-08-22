@@ -4,9 +4,22 @@
 #include "sundile/sundile.h"
 #include "systems/AllSystems.h"
 
+#include <filesystem>
+//Filesystem test
+void listCWD(std::filesystem::path path, bool recursive = false) {
+	for (const auto& entry : std::filesystem::directory_iterator(path)) {
+		std::cout << entry.path() << std::endl;
+		if (recursive && entry.is_directory()) {
+			listCWD(entry.path(), true);
+		}
+	}
+}
+
 int main(void)
 {
 	using namespace sundile;
+
+	//listCWD("./", true);
 
 	//Initialize
 	SmartEVW	evw			= EventSystem::create();
@@ -43,9 +56,7 @@ int main(void)
 		mainMenu.renderFunc = []() {
 			using namespace ImGui;
 			Begin("Main Menu");
-			BeginMenuBar();
 			Text("hey");
-			EndMenuBar();
 			End();
 		};
 		registry->emplace<guiElement>(eGUI, mainMenu);
@@ -71,7 +82,7 @@ int main(void)
 		model = suzanne;
 		registry->emplace<visible>(eLightMonkey);
 		registry->emplace<position>(eLightMonkey, glm::vec3(0.f, 0.f, 0.f));
-		Shader lightsource = ShaderSystem::init("./assets/shaders/passthrough.vert", "./assets/shaders/light.frag");
+		Shader lightsource = ShaderSystem::init("./assets/shaders/passthrough.vert", "./assets/shaders/light_global.frag");
 		ShaderSystem::use(lightsource);
 		ShaderSystem::setVec4(lightsource, "color", { 1.f,1.f,1.f,1.f });
 		registry->emplace<Shader>(eLightMonkey, lightsource);

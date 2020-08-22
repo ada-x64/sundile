@@ -45,7 +45,7 @@ namespace sundile {
 		//--
 		//-- Create and Initialize
 		//--
-		Shader init(Shader& s, const char* vertexPath, const char* fragmentPath) {
+		Shader init(Shader& s, fs::path vertexPath, fs::path fragmentPath) {
 
 			// 1. retrieve the vertex/fragment source code from filePath
 			std::string vertexCode;
@@ -143,7 +143,7 @@ namespace sundile {
 			}
 
 		}
-		Shader init(const char* vertexPath, const char* fragmentPath) {
+		Shader init(fs::path vertexPath, fs::path fragmentPath) {
 			Shader s;
 			return init(s, vertexPath, fragmentPath);
 		}
