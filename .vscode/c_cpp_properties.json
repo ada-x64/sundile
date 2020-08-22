@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "~/dev/lib/vcpkg/**"
+            ],
+            "defines": [],
+            "macFrameworkPath": [],
+            "compilerPath": "/usr/bin/clang++",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x86",
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "compilerArgs": [ "lstdc++"]
+        }
+    ],
+    "version": 4
+}
