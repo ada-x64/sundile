@@ -29,6 +29,11 @@ void catchCursorEvent(const TypedWindowEvent<double>& ev) { //TODO - move this t
 	delete height;
 }
 
+void catchGuiEvent(const GuiEvent ev) {
+	//TODO: lock controls when window is out of focus
+	printf("Gui event caught! Event: %f", ev.content);
+}
+
 void catchStepEvent(const SimStepEvent& ev) {
 	using namespace glm;
 	ev.registry->view<camera, input>().each([&](auto entity, camera& cam, input& Input) {
@@ -66,19 +71,6 @@ void catchStepEvent(const SimStepEvent& ev) {
 					radians, axis),
 				cam.pos);
 			/**/
-		}
-		dir += newdir;
-
-		T = glm::rotate(T, dir.x, glm::vec3(1, 0, 0));
-		T = glm::rotate(T, dir.y, glm::vec3(0, 1, 0));
-		T = glm::rotate(T, dir.z, glm::vec3(0, 0, 1));
-
-		//
-		//Translation
-		float movspd = -.1f;
-		glm::vec3 newspd = glm::vec3(0.f);
-		if (Input.held[btn::left]) {
-			newspd.x -= movspd;
 		}
 		dir += newdir;
 
@@ -177,6 +169,7 @@ void catchStepEvent(const SimStepEvent& ev) {
 void init(const SimInitEvent& ev) {
 	ev.evw->dispatcher.sink<SimStepEvent>().connect<&catchStepEvent>();
 	ev.evw->dispatcher.sink< TypedWindowEvent<double>>().connect<&catchCursorEvent>();
+	ev.evw->dispatcher.sink<GuiEvent>().connect<&catchGuiEvent>();
 
 	//dependencies
 	ev.registry->on_construct<camera>().connect<&entt::registry::emplace_or_replace<velocity>>();

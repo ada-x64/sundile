@@ -1,5 +1,5 @@
 //--
-//-- GuiSystem.cpp
+//-- GuiSystem.h
 //--
 
 #include "../components/GuiElement.h"
@@ -9,13 +9,12 @@ SYSTEM_DEF_BEGIN(GuiSystem)
 ImGuiContext* ctx = ImGui::CreateContext();
 ImGuiIO& io = ImGui::GetIO();
 
-void render(const GuiEvent& ev) {
+void render(const RenderGuiEvent& ev) {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
 	//Render all GUI elements here
-	//TODO - Create c_GuiElement and iterate through them here.
 	ev.registry->view<guiElement>().each([&](auto& e, guiElement& el) {
 		el.renderFunc();
 		});
@@ -31,7 +30,7 @@ void terminate(const terminateEvent& ev) {
 }
 
 void simInit(const SimInitEvent& ev) {
-	ev.evw->dispatcher.sink<GuiEvent>().connect<render>();
+	ev.evw->dispatcher.sink<RenderGuiEvent>().connect<render>();
 	ev.evw->dispatcher.sink<terminateEvent>().connect<terminate>();
 }
 

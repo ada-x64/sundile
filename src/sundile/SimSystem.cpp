@@ -15,13 +15,24 @@ namespace sundile {
 			}
 
 			for (auto sim : sims) {
-				sim->evw->dispatcher.trigger<SimInputEvent>(SimInputEvent{ wev.type, sim->registry, sim->deltaTime, wev.key, wev.scancode, wev.action, wev.mods });
+				SimInputEvent ev;
+				ev.registry = sim->registry;
+				ev.deltaTime = sim->deltaTime;
+				ev.key = wev.key;
+				ev.scancode = wev.scancode;
+				ev.action = wev.action;
+				ev.mods = wev.mods;
+				sim->evw->dispatcher.trigger<SimInputEvent>(ev);
 			}
 		}
 
 		void catchInit(const initEvent& ev) {
 			for (auto sim : sims) {
-				ev.evw->dispatcher.trigger<SimInitEvent>(SimInitEvent{ EventType::generic_game, sim->registry, 0.f, sim->evw });
+				SimInitEvent ev;
+				ev.registry = sim->registry;
+				ev.deltaTime = 0.f;
+				ev.evw = sim->evw;
+				ev.evw->dispatcher.trigger<SimInitEvent>(ev);
 			}
 		}
 
@@ -56,12 +67,18 @@ namespace sundile {
 			SmartEVW evw = sim->evw;
 
 			//-- Update Events
-			SimStepEvent sev = { EventType::generic_game, sim->registry };
-			RenderEvent rev = { EventType::generic_render, sim->registry, sim->deltaTime };
-			GuiEvent gev = { EventType::generic_gui, sim->registry, sim->deltaTime };
+			SimStepEvent sev;
+			sev.registry = sim->registry;
+			sev.deltaTime = sim->deltaTime;
 			evw->dispatcher.trigger<SimStepEvent>(sev);
+			RenderEvent rev;
+			rev.registry = sim->registry;
+			rev.deltaTime = sim->deltaTime;
 			evw->dispatcher.trigger<RenderEvent>(rev);
-			evw->dispatcher.trigger<GuiEvent>(gev);
+			RenderGuiEvent gev;
+			gev.registry = sim->registry;
+			gev.deltaTime = sim->deltaTime;
+			evw->dispatcher.trigger<RenderGuiEvent>(gev);
 		}
 
 		void updateAll() {

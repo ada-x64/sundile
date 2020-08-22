@@ -3,6 +3,7 @@ file(GLOB_RECURSE SUNDILE_FILES "*.h" "*.cpp")
 add_library(sundile ${SUNDILE_FILES})
 
 message("COMPILING SUNDILE...")
+message("CMAKE_MODULE_PATH: ${CMAKE_PREFIX_PATH}")
 #
 # packages & libraries
 find_package(assimp REQUIRED)

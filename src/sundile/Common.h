@@ -71,7 +71,7 @@ namespace fs = std::filesystem;
 
 // Macros
 #ifdef _MSC_VER
-#define SUNDILE_DEBUG_BREAK __debug_break();
+#define SUNDILE_DEBUG_BREAK assert(0);//__debug_break();
 #else
 #define SUNDILE_DEBUG_BREAK assert(0);
 #endif

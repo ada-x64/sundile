@@ -18,22 +18,8 @@ namespace sundile {
 
 		void initAll() {
 			for (SmartEVW evw : EVWs) {
-				evw->dispatcher.trigger<initEvent>({ EventType::init, evw });
+				evw->dispatcher.trigger<initEvent>();
 			}
-		}
-
-		void update(SmartEVW evw) {
-			evw->dispatcher.update<preStepEvent>();
-			evw->dispatcher.update<stepEvent>();
-			evw->dispatcher.update<postStepEvent>();
-
-			evw->dispatcher.update<preRenderEvent>();
-			evw->dispatcher.update<renderEvent>();
-			evw->dispatcher.update<postRenderEvent>();
-
-			evw->dispatcher.update<preDrawGuiEvent>();
-			evw->dispatcher.update<drawGuiEvent>();
-			evw->dispatcher.update<postDrawGuiEvent>();
 		}
 
 		void updateAll() {
@@ -46,14 +32,6 @@ namespace sundile {
 				evw->dispatcher.trigger<preStepEvent>();
 				evw->dispatcher.trigger<stepEvent>();
 				evw->dispatcher.trigger<postStepEvent>();
-								
-				evw->dispatcher.trigger<preRenderEvent>();
-				evw->dispatcher.trigger<renderEvent>();
-				evw->dispatcher.trigger<postRenderEvent>();
-								
-				evw->dispatcher.trigger<preDrawGuiEvent>();
-				evw->dispatcher.trigger<drawGuiEvent>();
-				evw->dispatcher.trigger<postDrawGuiEvent>();
 			}
 		}
 

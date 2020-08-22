@@ -43,23 +43,37 @@ int main(void)
 		registry->emplace<Renderer>(eRenderer);
 
 		//GUI
-		int ww = winc->WIDTH;
-		int wh = winc->HEIGHT;
-		int viewport_w = 800;
-		int viewport_h = 600;
-		int viewport_x = ww / 2 - viewport_w/2;
-		int viewport_y = wh / 2 - viewport_h/2;
+		float ww = winc->WIDTH;
+		float wh = winc->HEIGHT;
+		float viewport_w = 800;
+		float viewport_h = 600;
+		float viewport_x = ww / 2 - viewport_w/2;
+		float viewport_y = wh / 2 - viewport_h/2;
 		glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
 
-		auto eGUI = registry->create();
-		guiElement mainMenu;
-		mainMenu.renderFunc = []() {
+		auto renderWindow = registry->create();
+		registry->emplace<guiElement>(renderWindow, [&]() {
+			using namespace ImGui;
+			SetNextWindowBgAlpha(0.f);
+			SetNextWindowSizeConstraints({ viewport_w, viewport_h }, { viewport_w, viewport_h });
+			Begin("rendering frame");
+			auto pos = ImGui::GetWindowPos();
+			SetWindowSize({ 800, 600 });
+			glViewport(pos.x, -pos.y+101 , viewport_w, viewport_h); //magic number here - don't know what the vertical offset between imgui and gl is. i guess it's 101.
+			End();
+
+			GuiEvent e; //TODO: make this better
+			e.content = GuiEventContent{ ImGui::IsWindowFocused() };
+			sim->evw->dispatcher.trigger<GuiEvent>(e);
+		});
+
+		auto mainMenu = registry->create();
+		registry->emplace<guiElement>(mainMenu, []() {
 			using namespace ImGui;
 			Begin("Main Menu");
 			Text("hey");
 			End();
-		};
-		registry->emplace<guiElement>(eGUI, mainMenu);
+		});
 
 		//Camera
 		auto eCam = registry->create();

@@ -8,21 +8,38 @@ namespace sundile {
 				fprintf(stderr, "GLFW Error: %s\n", description);
 			}
 			void keyCallback(GLFWwindow* w, int key, int scancode, int action, int mods) {
-				currentevw->dispatcher.enqueue<WindowInputEvent>({ EventType::key, w,  key, scancode, action, mods  });
+				WindowInputEvent ev;
+				ev.window = w;
+				ev.key = key;
+				ev.scancode = scancode;
+				ev.action = action;
+				ev.mods = mods;
+				currentevw->dispatcher.enqueue<WindowInputEvent>( ev );
 			}
 			void mouseBtnCallback(GLFWwindow* w, int button, int actions, int mods) {
-				currentevw->dispatcher.enqueue<WindowInputEvent>({ EventType::mousebtn, w, button, GLFW_KEY_UNKNOWN, actions, mods });
+				WindowInputEvent ev;
+				ev.window = w;
+				ev.key = button;
+				ev.scancode = GLFW_KEY_UNKNOWN;
+				ev.action = actions;
+				ev.mods = mods;
+				currentevw->dispatcher.enqueue<WindowInputEvent>(ev);
 			}
 			void cursorPosCallback(GLFWwindow* w, double x, double y) {
-				currentevw->dispatcher.enqueue<TypedWindowEvent<double>>({ EventType::cursorpos, w, {x,y} });
+				TypedWindowEvent<double> ev;
+				ev.window = w;
+				ev.vals = std::vector<double>{ x,y };
+				currentevw->dispatcher.enqueue<TypedWindowEvent<double>>(ev);
 			}
 			void framebufferSizeCallback(GLFWwindow* w, int width, int height) {
 				glViewport(0, 0, width, height);
-				//TypedWindowEvent<int> wev{ EventType::framebufferSize, w, {width, height} };
+				//TypedWindowEvent<int> wev{  w, {width, height} };
 				//currentevw->getEvent(wev);
 			}
 			void windowCloseCallback(GLFWwindow* w) {
-				currentevw->dispatcher.enqueue<WindowEvent>({ EventType::terminateWindow, w });
+				WindowEvent ev;
+				ev.window = w;
+				currentevw->dispatcher.enqueue<WindowEvent>(ev);
 
 			}
 			//etc.
@@ -42,9 +59,12 @@ namespace sundile {
 		namespace /* Event catchers */ {
 
 			void catchWindowEvent(const WindowEvent& wev) {
+				//replace with terminate window event
+				/**
 				if (wev.type == EventType::terminateWindow) {
 					terminate(getSmartWindow(wev.window));
 				}
+				/**/
 			}
 
 			void preupdate(SmartWindow& winc) {
@@ -55,7 +75,9 @@ namespace sundile {
 				glfwPollEvents();
 
 				if (winc->windowShouldClose) {
-					currentevw->dispatcher.enqueue<WindowEvent>({ EventType::terminateWindow, winc->window.get() });
+					WindowEvent ev;
+					ev.window = winc->window.get();
+					currentevw->dispatcher.enqueue<WindowEvent>(ev);
 					glfwSetWindowShouldClose(currentwindow, GLFW_TRUE);
 				}
 			}
@@ -125,7 +147,7 @@ namespace sundile {
 
 			preupdate(winc);
 
-			currentevw->dispatcher.enqueue<Event>(DrawEvent{ EventType::generic_draw });
+			//currentevw->dispatcher.enqueue<Event>(DrawEvent{ EventType::generic_draw });
 			currentevw->dispatcher.update<WindowEvent>();
 			currentevw->dispatcher.update<WindowInputEvent>();
 			currentevw->dispatcher.update<TypedWindowEvent<double>>();
@@ -139,7 +161,9 @@ namespace sundile {
 		// Manually terminate a window.
 		void terminate(SmartWindow winc) {
 			currentevw = winc->evw;
-			currentevw->dispatcher.enqueue<WindowEvent>({ EventType::window_finishTermination, winc->window.get() });
+			WindowEvent ev;
+			ev.window = winc->window.get();
+			currentevw->dispatcher.enqueue<WindowEvent>(ev);
 			winc->window.reset();
 			currentwindow = nullptr;
 			termination_called = true;
