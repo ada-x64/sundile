@@ -215,6 +215,100 @@ namespace sundile {
 			return init(evw, winc);
 		}
 
+		SmartWindow initFullscreen(SmartEVW evw, const char* title) {
+
+			SmartWindow winc = std::make_shared<WindowContainer>();
+			winc->name = title;
+
+			// Init GLFW
+			if (!GLFWinitialized) { initGLFW(); }
+
+			// Preliminary
+			currentevw = evw;
+
+			// Create a windowed mode window and its OpenGL context
+			auto monitor = glfwGetPrimaryMonitor();
+			auto mode = glfwGetVideoMode(monitor);
+			glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+			glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+			glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+			glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+			auto winptr = glfwCreateWindow(mode->width, mode->height, winc->name, monitor, NULL);
+			if (!winptr)
+			{
+				glfwTerminate();
+				exit(EXIT_FAILURE);
+			}
+
+			//Set up winc
+			winc->window = SmartGLFWwindow(winptr);
+			winc->evw = currentevw;
+
+			// Set up the window
+			glfwMakeContextCurrent(winc->window.get());
+			glfwSwapInterval(1);
+
+			// Init GLEW
+			if (!GLEWinitialized) { initGLEW(); }
+
+			// Set up event handlers
+			setCallbacks(winc->window.get());
+			setEventCallbacks(currentevw);
+
+			//Add to vector and return.
+			windows.push_back(winc);
+
+			return winc;
+		}
+		SmartWindow initWindowedFullscreen(SmartEVW evw, const char* title) {
+
+			SmartWindow winc = std::make_shared<WindowContainer>();
+			winc->name = title;
+
+			// Init GLFW
+			if (!GLFWinitialized) { initGLFW(); }
+
+			// Preliminary
+			currentevw = evw;
+
+			// Create a windowed mode window and its OpenGL context
+			auto monitor = glfwGetPrimaryMonitor();
+			auto mode = glfwGetVideoMode(monitor);
+			glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+			glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+			glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+			glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+
+			auto winptr = glfwCreateWindow(mode->width, mode->height, winc->name, NULL, NULL);
+			if (!winptr)
+			{
+				glfwTerminate();
+				exit(EXIT_FAILURE);
+			}
+
+			//Set up winc
+			winc->window = SmartGLFWwindow(winptr);
+			winc->evw = currentevw;
+
+			// Set up the window
+			glfwMakeContextCurrent(winc->window.get());
+			glfwSwapInterval(1);
+
+			// Init GLEW
+			if (!GLEWinitialized) { initGLEW(); }
+
+			// Set up event handlers
+			setCallbacks(winc->window.get());
+			setEventCallbacks(currentevw);
+
+			//Add to vector and return.
+			windows.push_back(winc);
+
+			return winc;
+		}
+
 		SmartWindow init(SmartEVW evw, const char* name) {
 			SmartWindow winc = std::make_shared<WindowContainer>();
 			winc->name = name;

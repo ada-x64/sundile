@@ -51,6 +51,8 @@ namespace sundile {
 		SmartWindow init(SmartEVW evw, int width, int height);
 		SmartWindow init(SmartEVW evw, int width, int height, const char* name);
 		SmartWindow init(SmartEVW evw, SmartWindow winc);
+		SmartWindow initFullscreen(SmartEVW evw, const char* name = "sundile");
+		SmartWindow initWindowedFullscreen(SmartEVW evw, const char* name = "sundile");
 
 		//-- Main
 		void update(SmartWindow winc);
