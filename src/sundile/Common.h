@@ -42,8 +42,14 @@ namespace fs = std::filesystem;
 #include <glm/gtc/quaternion.hpp>
 
 //gl
+#ifdef APPLE
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#include <GLUT/glut.h>
+#else
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+#endif
 
 //entt
 #include "ext/entt.hpp"
