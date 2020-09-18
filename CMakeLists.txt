@@ -5,7 +5,7 @@ if(${CMAKE_VERSION} VERSION_LESS 3.12)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 endif()
 
-message("COMPILING MAIN...")
+message(DEBUG "COMPILING MAIN...")
 
 #
 # sundile settings
@@ -17,6 +17,7 @@ project (sproj
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 
+#
 #
 # define project
 add_executable (sproj src/main.cpp)

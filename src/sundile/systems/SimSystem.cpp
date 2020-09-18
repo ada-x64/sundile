@@ -4,7 +4,6 @@
 #include "SimSystem.h"
 namespace sundile {
 	namespace SimSystem {
-		using namespace Components;
 
 		//Parses GLFW key events and passes appropriate information to other functions.
 		void handleInput(const WindowInputEvent& wev) {

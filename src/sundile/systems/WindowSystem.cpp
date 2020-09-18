@@ -129,6 +129,19 @@ namespace sundile {
 			return 0;
 		}
 
+		Vec2 getWindowSize(SmartWindow winc) {
+			int wwidth = 0, wheight = 0;
+			glfwGetWindowSize(winc->window.get(), &wwidth, &wheight);
+			if (wwidth && wheight) {
+				winc->HEIGHT = wwidth;
+				winc->WIDTH = wheight;
+			}
+			float width = static_cast<float>(winc->WIDTH);
+			float height = static_cast<float>(winc->HEIGHT);
+			return Vec2{ width, height };
+
+		}
+
 		// Remove-erase all empty windows, end the process if no windows are open.
 		void eraseEmptyWindows() {
 			windows.erase(std::remove_if(windows.begin(), windows.end(), [=](SmartWindow win) {

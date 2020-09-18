@@ -1,6 +1,5 @@
 #pragma once
-#include "../sundile/Components.h"
-
+#include "../sundile/sundile.h"
 //Default captured buttons.
 #ifndef SUNDILE_BTNS
 #define SUNDILE_BTNS
@@ -27,13 +26,13 @@ namespace sundile {
 #endif
 
 //TODO - probably should make this a part of sundile instead of an independent component
-COMPONENT_DEF_BEGIN(input)
+BEGIN_COMPONENT(input)
 
-bool pressed[btn::COUNT];
-bool held[btn::COUNT];
-bool released[btn::COUNT];
-glm::vec2 cursorpos;
-glm::vec2 cursorpos_prev;
+	bool pressed[btn::COUNT];
+	bool held[btn::COUNT];
+	bool released[btn::COUNT];
+	glm::vec2 cursorpos;
+	glm::vec2 cursorpos_prev;
 
-
-COMPONENT_DEF_END
+	NO_GUI
+END_COMPONENT

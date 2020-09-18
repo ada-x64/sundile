@@ -1,9 +1,6 @@
 #pragma once
-#include "../sundile/Components.h"
-namespace sundile {
-	namespace Components {
-		struct visible {
-			bool is_visible = true;
-		};
-	}
-}
+#include "../sundile/sundile.h"
+BEGIN_COMPONENT(visible)
+	bool is_visible = true;
+	NO_GUI
+END_COMPONENT

@@ -2,10 +2,12 @@
 //-- Entt.cpp
 //--
 
-#include "EventWrapper.h"
+#include "EventSystem.h"
+#include "Utility.h"
 
 namespace sundile {
 	namespace EventSystem {
+
 		SmartEVW create() {
 			SmartEVW evw = std::make_shared<EventWrapper>();
 			EVWs.push_back(evw);
@@ -37,13 +39,13 @@ namespace sundile {
 
 		void terminate(SmartEVW evw) {
 			evw->dispatcher.update<terminateEvent>();
-			Utility::removeErase<SmartEVW>(EVWs, evw);
+			removeErase<SmartEVW>(EVWs, evw);
 		}
 
 		void terminateAll() {
 			for (SmartEVW evw : EVWs) {
 				evw->dispatcher.update<terminateEvent>();
-				Utility::removeErase<SmartEVW>(EVWs, evw);
+				removeErase<SmartEVW>(EVWs, evw);
 			}
 		}
 	}

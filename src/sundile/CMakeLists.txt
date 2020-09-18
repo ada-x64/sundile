@@ -1,9 +1,10 @@
 # SUNDILE - CMAKE
 file(GLOB_RECURSE SUNDILE_FILES "*.h" "*.cpp")
+include_directories("headers" "systems" "ext")
 add_library(sundile ${SUNDILE_FILES})
 
-message("COMPILING SUNDILE...")
-message("CMAKE_MODULE_PATH: ${CMAKE_PREFIX_PATH}")
+message(DEBUG "COMPILING SUNDILE...")
+message(DEBUG "CMAKE_MODULE_PATH: ${CMAKE_PREFIX_PATH}")
 #
 # packages & libraries
 find_package(assimp REQUIRED)
@@ -11,6 +12,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(GLEW REQUIRED)
+#find_package(EnTT CONFIG REQUIRED) # vcpkg EnTT is way out of date
 set(ASSIMP_LIBS "${ASSIMP_LIBRARIES}")
 if (APPLE)
 	set(GLUT_LIBS "")
@@ -24,6 +26,7 @@ find_package(imgui CONFIG REQUIRED)
 
 
 target_link_libraries(sundile
+	#PUBLIC EnTT
 	PUBLIC glfw
 	PUBLIC glm
 	${GLUT_LIBS}

@@ -4,7 +4,7 @@
 #pragma once
 #ifndef WINDOW_H
 #define WINDOW_H
-#include "EventWrapper.h"
+#include "EventSystem.h"
 
 namespace sundile {
 
@@ -44,6 +44,7 @@ namespace sundile {
 		SmartWindow getSmartWindow(GLFWwindow* w);
 		void eraseEmptyWindows();
 		void initGLFW();
+		Vec2 getWindowSize(SmartWindow winc);
 
 		//-- Initialization
 		SmartWindow init(SmartEVW evw);
