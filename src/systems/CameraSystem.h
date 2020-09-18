@@ -173,7 +173,8 @@ BEGIN_SYSTEM(CameraSystem)
 		//dependencies
 		ev.registry->on_construct<camera>().connect<&entt::registry::emplace_or_replace<velocity>>();
 
-		defineGui<camera>([](camera c) {
+		defineGui<camera>([](std::any _c) {
+			camera c = std::any_cast<camera>(_c);
 			using namespace ImGui;
 			DragFloat3("pos", c.pos);
 			DragFloat3("front", c.front);

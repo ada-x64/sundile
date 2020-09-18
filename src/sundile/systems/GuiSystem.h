@@ -18,13 +18,14 @@ BEGIN_SYSTEM(GuiSystem)
 	ImGuiIO& io = ImGui::GetIO();
 	entt::entity current;
 
-	typedef std::pair<const char*, std::function<void(component)>> guiIndex;
+	//TODO: inheritance doesn't work like this. cannot upcast from 
+	typedef std::pair<const char*, std::function<void(std::any)>> guiIndex;
 	static std::vector<guiIndex> guiIndices;
 
 	typedef std::function<void()> guiRenderFunc;
 
 	void registerID(const char* name, entt::entity e) {
-		printf("registering guiID for entity %i\n", e);
+		printf("registering component guiID: entity %i::%s\n", e, name);
 		
 	}
 
@@ -145,14 +146,15 @@ END_SYSTEM
 
 
 namespace sundile {
+	using namespace Systems::GuiSystem;
 	template <typename T>
-	void defineGui(std::function<void(T)> f, char const* name = T::__name) {
-		Systems::GuiSystem::guiIndices.push_back(Systems::GuiSystem::guiIndex(name, f));
+	void defineGui(std::function<void(std::any)> f, const char* name = T::__name) {
+		guiIndices.push_back(guiIndex( name, f ));
 	}
 
 	template <typename T>
 	T __registerGui(entt::entity entity, T t) {
-		Systems::GuiSystem::registerID(t.__name, entity);
+		registerID(t.__name, entity);
 		return t;
 	}
 
