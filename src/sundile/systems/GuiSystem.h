@@ -26,7 +26,7 @@ BEGIN_SYSTEM(GuiSystem)
 
 	void registerID(const char* name, entt::entity e) {
 		printf("registering component guiID: entity %i::%s\n", e, name);
-		
+		//TODO
 	}
 
 	void refreshECS(SmartSim sim) {

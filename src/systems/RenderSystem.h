@@ -152,6 +152,8 @@ BEGIN_SYSTEM(RenderSystem)
 		glEnable(GL_DEPTH_TEST);
 		stbi_set_flip_vertically_on_load(true);
 		ev.registry->view<Renderer>().each([&](auto& e, auto& rend) {
+			//NOTE: This is not being set, causing OpenGL error 1281.
+			rend.passthrough = ShaderSystem::init("assets/shaders/passthrough.vert", "assets/shaders/passthrough.frag");
 			SetCamera(rend, ev);
 			});
 
