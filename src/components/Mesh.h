@@ -29,7 +29,7 @@ END_COMPONENT
 
 BEGIN_COMPONENT(Mesh)
 
-    Mesh(auto vertices, auto indices, auto textures) : vertices(vertices), indices(indices), textures(textures) {};
+    Mesh( std::vector<Vertex> vertices,  std::vector<unsigned int> indices, std::vector<Texture> textures) : vertices(vertices), indices(indices), textures(textures) {};
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     std::vector<Texture> textures;

@@ -8,7 +8,7 @@
 
 BEGIN_COMPONENT(guiElement)
 std::function<void()> renderFunc;
-guiElement(auto renderFunc) : renderFunc(renderFunc) {};
+guiElement(std::function<void()> renderFunc) : renderFunc(renderFunc) {};
 NO_GUI
 END_COMPONENT
 
