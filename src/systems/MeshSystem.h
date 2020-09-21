@@ -15,7 +15,7 @@ namespace {
 		}
 	}
 
-	void setupMesh(Mesh m)
+	Mesh setupMesh(Mesh m)
 	{
 		auto& VAO = m.VAO;
 		auto& VBO = m.VBO;
@@ -47,13 +47,14 @@ namespace {
 
 		glBindVertexArray(0);
 		checkError();
+		return m;
 	}
 }
 
 
 Mesh create(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures) {
 	Mesh m(vertices, indices, textures);
-	setupMesh(m);
+	m = setupMesh(m);
 	return m;
 }
 
@@ -89,6 +90,7 @@ void Draw(Mesh&& m, Shader s)
 
 	// draw mesh
 	glBindVertexArray(m.VAO);
+	checkError();
 
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	checkError();

@@ -66,4 +66,6 @@ namespace fs = std::filesystem;
 #include "Typenames.h"
 #include "Macros.h"
 
+//environment variables
+
 #endif

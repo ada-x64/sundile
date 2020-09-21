@@ -30,3 +30,4 @@ target_link_libraries(sproj
 #
 # misc
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/assets DESTINATION ${CMAKE_BINARY_DIR})
+set(ENV{SUNDILE_CWD} ${CMAKE_BINARY_DIR})

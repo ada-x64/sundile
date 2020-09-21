@@ -17,8 +17,8 @@ void listCWD(std::filesystem::path path, bool recursive = false) {
 int main(void)
 {
 	using namespace sundile;
-
-	//listCWD("./", true);
+	//listCWD("./",true);
+	//When ProjectSystem is implemented, will need to set a project root directory. for now, just ensure that you're executing the program from the same place it's stored :)
 
 	//Initialize
 	SmartEVW evw = EventSystem::create();

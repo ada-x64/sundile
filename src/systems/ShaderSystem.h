@@ -133,6 +133,8 @@ BEGIN_SYSTEM(ShaderSystem)
 		// delete the shaders as they're linked into our program now and no longer necessery
 		glDeleteShader(vertex);
 		glDeleteShader(fragment);
+		
+		checkError();
 
 		if (success) {
 			ShaderRegistry.push_back(s);
@@ -154,6 +156,7 @@ BEGIN_SYSTEM(ShaderSystem)
 	//-- Use
 	void use(Shader s) {
 		glUseProgram(s);
+		checkError();
 	};
 
 	//--

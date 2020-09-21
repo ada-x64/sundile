@@ -64,7 +64,10 @@ BEGIN_SYSTEM(RenderSystem)
 				if (shader == passthrough) {
 					registry->view<visible>().each([=](auto& entity, visible& vis) {
 						if (vis.is_visible) {
-							if (registry->has<Model>(entity)) {
+							//TODO: add a component which contains a vector of meshes and modles.
+							//get that component and loop over its contents.
+							//this allows for more than one mesh/model.
+							if (registry->has<Model>(entity)) { 
 								//-- Set position
 								glm::mat4 mat_model = glm::mat4(1.f);
 								if (registry->has<position>(entity)) {
