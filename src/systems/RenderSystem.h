@@ -33,7 +33,7 @@ BEGIN_SYSTEM(RenderSystem)
 				});
 		}
 
-		void SetCamera(Renderer& rend, const SimInitEvent& ev) {
+		void SetCamera(Renderer& rend, const RenderEvent& ev) {
 			Shader passthrough = rend.passthrough;
 			SmartRegistry registry = ev.registry;
 
@@ -141,21 +141,26 @@ BEGIN_SYSTEM(RenderSystem)
 	void catchRenderEvent(const RenderEvent& ev) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		ev.registry->view<Renderer>().each([&](auto& e, auto& rend) {
+			if (!rend.initialized) {
+				SetCamera(rend, ev);
+			}
 			UpdateCamera(rend, ev);
 			RenderVisible(rend, ev);
 			glBindVertexArray(0);
 			});
 	}
 
+	Renderer create(fs::path vert = "assets/shaders/passthrough.vert", fs::path frag = "assets/shaders/passthrough.frag") {
+		Renderer r;
+		r.passthrough = ShaderSystem::init(vert, frag);
+		checkError();
+		return r;
+	}
+
 	void init(const SimInitEvent& ev) {
 		//GL, STB
 		glEnable(GL_DEPTH_TEST);
 		stbi_set_flip_vertically_on_load(true);
-		ev.registry->view<Renderer>().each([&](auto& e, auto& rend) {
-			//NOTE: This is not being set, causing OpenGL error 1281.
-			rend.passthrough = ShaderSystem::init("assets/shaders/passthrough.vert", "assets/shaders/passthrough.frag");
-			SetCamera(rend, ev);
-			});
 
 		ev.evw->dispatcher.sink<RenderEvent>().connect<catchRenderEvent>();
 	}

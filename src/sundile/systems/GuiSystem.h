@@ -164,6 +164,7 @@ namespace sundile {
 	}
 	template <typename T>
 	T emplace(SmartRegistry registry, entt::entity entity) {
+		//if (T == Renderer) { printf("WARNING: This type must be created with TSystem::init()\n"); }
 		return __registerGui<T>(entity, registry->emplace<T>(entity));
 	}
 }

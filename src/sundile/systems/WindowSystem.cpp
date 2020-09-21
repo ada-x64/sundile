@@ -264,6 +264,7 @@ namespace sundile {
 
 			// Init GLEW
 			if (!GLEWinitialized) { initGLEW(); }
+			if (!GLFWinitialized) { initGLFW(); }
 
 			// Set up event handlers
 			setCallbacks(winc->window.get());

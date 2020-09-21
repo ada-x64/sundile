@@ -12,11 +12,17 @@
 
 namespace sundile {
 	namespace Systems {
-		void init(SmartEVW evw) {
+		void init(SmartEVW evw, SmartWindow winc, SmartSim sim) {
+#ifndef SUNDILE_EXPORT
+			Systems::GuiSystem::init(winc->window.get(), "#version 130"); //blehhhhh
+			Systems::GuiSystem::registerECS(winc, sim);
+#endif
 			evw->dispatcher.sink<SimInitEvent>().connect<CameraSystem::init>();
 			evw->dispatcher.sink<SimInitEvent>().connect<InputSystem::init>();
 			evw->dispatcher.sink<SimInitEvent>().connect<RenderSystem::init>();
 			evw->dispatcher.sink<SimInitEvent>().connect<GuiSystem::simInit>();
+
+			EventSystem::initAll();
 		}
 	}
 }

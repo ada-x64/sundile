@@ -4,7 +4,6 @@
 #include "components/AllComponents.h"
 #include "systems/AllSystems.h"
 
-#include <filesystem>
 //Filesystem test
 void listCWD(std::filesystem::path path, bool recursive = false) {
 	for (const auto& entry : std::filesystem::directory_iterator(path)) {
@@ -22,20 +21,14 @@ int main(void)
 	//listCWD("./", true);
 
 	//Initialize
-	SmartEVW	evw			= EventSystem::create();
-	WindowSystem::initGLFW();
-	glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
-	SmartWindow winc		= WindowSystem::initWindowedFullscreen(evw);
+	SmartEVW evw = EventSystem::create();
+	SmartSim sim = SimSystem::init(evw);
+	SmartWindow winc = WindowSystem::initWindowedFullscreen(evw);
 	winc->name = "sundile";
 	glfwSetWindowTitle(winc->window.get(), winc->name);
 	glfwSetWindowSizeLimits(winc->window.get(), winc->WIDTH, winc->HEIGHT, GLFW_DONT_CARE, GLFW_DONT_CARE);
-	SmartSim	sim			= SimSystem::init(evw);
-
-
-	Systems::init(evw);
-	Systems::GuiSystem::init(winc->window.get(), "#version 130"); //blehhhhh
-	Systems::GuiSystem::registerECS(winc, sim);
-	EventSystem::initAll();
+	
+	Systems::init(evw, winc, sim);
 
 	//Populate registry - i.e., load scene
 	{
@@ -49,7 +42,7 @@ int main(void)
 
 		//Renderer
 		auto eRenderer = registry->create();
-		emplace<Renderer>(registry,eRenderer);
+		emplace<Renderer>(registry,eRenderer,RenderSystem::create());
 
 		//--
 		//-- Camera
