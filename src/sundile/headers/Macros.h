@@ -71,6 +71,10 @@ static int num_systems=0;
 #define SUNDILE_DEBUG_BREAK assert(0);
 #endif
 
+//--
+//-- GL macros
+//--
+#define SUNDILE_GLSL_VERSION "#version 330 core"
 
 
 #endif

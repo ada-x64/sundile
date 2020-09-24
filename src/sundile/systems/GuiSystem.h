@@ -128,13 +128,17 @@ BEGIN_SYSTEM(GuiSystem)
 		ev.evw->dispatcher.sink<terminateEvent>().connect<terminate>();
 	}
 
-	void init(GLFWwindow* window, const char* glsl_version) {
+	void init(GLFWwindow* window) {
 		//Initalize
 		IMGUI_CHECKVERSION();
 		ImGui::StyleColorsDark();
 
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init(glsl_version);
+		// auto uc = glGetString(GL_SHADING_LANGUAGE_VERSION);
+		// std::string glsl_version(reinterpret_cast<char const*>(uc));
+		// glsl_version = "#version "+glsl_version;
+		// printf("glsl_version: %s",glsl_version.c_str());
+		ImGui_ImplOpenGL3_Init(SUNDILE_GLSL_VERSION);
 
 		//Setup font
 		unsigned char* tex_pixels = NULL;

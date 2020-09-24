@@ -44,7 +44,7 @@ namespace fs = std::filesystem;
 
 //gl
 #ifdef APPLE
-#include <OpenGL/gl.h>
+#include <OpenGL/gl3.h>
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
 #else

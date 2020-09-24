@@ -14,7 +14,7 @@ namespace sundile {
 	namespace Systems {
 		void init(SmartEVW evw, SmartWindow winc, SmartSim sim) {
 #ifndef SUNDILE_EXPORT
-			Systems::GuiSystem::init(winc->window.get(), "#version 130"); //blehhhhh
+			Systems::GuiSystem::init(winc->window.get()); //blehhhhh
 			Systems::GuiSystem::registerECS(winc, sim);
 #endif
 			evw->dispatcher.sink<SimInitEvent>().connect<CameraSystem::init>();
