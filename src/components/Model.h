@@ -14,6 +14,6 @@ BEGIN_COMPONENT(Model)
     std::string directory;
     std::vector<Mesh> meshes;
 
-    NO_GUI
+    
 END_COMPONENT
 #endif

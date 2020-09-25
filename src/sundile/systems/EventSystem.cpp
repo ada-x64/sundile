@@ -3,7 +3,7 @@
 //--
 
 #include "EventSystem.h"
-#include "Utility.h"
+#include "../globals/Utility.h"
 
 namespace sundile {
 	namespace EventSystem {

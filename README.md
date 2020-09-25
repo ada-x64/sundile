@@ -12,17 +12,32 @@ It depends on the following libraries:
 * [stb](https://github.com/nothings/stb)
 
 ## installation
-The CMake files used to build this project on my personal machines are provided as a basis for your own installations.
-The EnTT header is included in the source. You will need to include the rest of the dependencies on your own machine. I recommend using [vcpkg](https://github.com/Microsoft/vcpkg).
+The CMake files used to build this project on my personal machines are provided as a basis for your own installations. I am using Clang 10.0.0 for MSVC on Windows and Apple Clang for OS X.
+The headers for EnTT, stb, and ImGui GLFW/OpenGL implementations are shipped with the project. You will need to include the rest of the dependencies on your own machine. I recommend using [vcpkg](https://github.com/Microsoft/vcpkg).
+
+## usage
+Sundile is an ECS-based engine. To create a component, add your component header file to src/components. To add a system, add your system header file to src/headers. There are plenty of examples and I like to think they're fairly self-explanatroy :) In order for your components and systems to be visible to sundile, you will need to include them in src/components/AllComponents.h and src/systems/AllSystems.h, respectively.
 
 ## current status
-Development is active.
-It is being developed cross-platform on Windows 10 and OS X Catalina. Linux port coming soon.
+Development is active. Currently implementing GUI inspection tools.
+Sundile is being developed cross-platform in Visual Studio Code for Windows 10 and OS X Catalina. Linux port coming eventually.
+### TODO:
+* GUI Implementation
+    * Automatically register entities for GUI inspection on creation
+    * Allow GUI to modify values
+    * Create entities from sundile
+    * Hot load changes to preexisting systems/components
+    * Hot load systems/components on creation (requires automated inclusion)
+* Project System
+    * Create, load, and save scenes
+    * Implement scene tools
 
-## future plans
+## future plans / currently out of scope
 Depending on interest, I would love to create the following for this project:
-* GUI-based interface
-* Component package manager
+* Precompiled systems/component headers
+* Automated header inclusion
+* C++20 Module integration
+* Package manager for components, systems, and assets
 
 ## contribution
 yeah i mean if you want to! go for it! just like! let me know :)

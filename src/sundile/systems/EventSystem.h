@@ -1,7 +1,7 @@
 //--
 //-- EventWrapper.h
 //--
-#include "../headers/Common.h"
+#include "../globals/Common.h"
 
 #pragma once
 #ifndef SUNDILE_ENTT_H

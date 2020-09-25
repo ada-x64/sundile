@@ -34,5 +34,5 @@ BEGIN_COMPONENT(input)
 	glm::vec2 cursorpos;
 	glm::vec2 cursorpos_prev;
 
-	NO_GUI
+	
 END_COMPONENT

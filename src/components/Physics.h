@@ -2,8 +2,6 @@
 #include "../sundile/sundile.h"
 BEGIN_COMPONENT(position)
 	glm::vec3 pos;
-	BEGIN_GUI(position)
-	END_GUI
 END_COMPONENT
 
 //Gives euler angles (x, y, z)
@@ -46,9 +44,6 @@ BEGIN_COMPONENT(orientation)
 		);
 		return dir;
 	}
-
-	BEGIN_GUI(position)
-	END_GUI
 END_COMPONENT
 
 
@@ -58,6 +53,4 @@ END_COMPONENT
 //	vec3 vel {left/right, front/back, up/down}
 BEGIN_COMPONENT(velocity)
 	glm::vec3 vel;
-	BEGIN_GUI(velocity)
-	END_GUI
 END_COMPONENT 
