@@ -19,23 +19,72 @@ END_COMPONENT
 namespace sundile {
 	namespace GuiSystem {
 		using namespace Components;
-		ImGuiContext* ctx = ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO();
-		entt::entity current;
 
-		typedef std::pair<const char*, std::function<void(std::any)>> guiIndex;
-		static std::vector<guiIndex> guiIndices;
+		//-- Variables & Typedefs
+		typedef std::function<void(entt::meta_any)> guiRenderFunc;
+		struct guiIndex { const char* name; guiRenderFunc f; entt::id_type id; };
+		std::vector<guiIndex> guiIndices;
+		std::vector<entt::meta_any> metas;
 
-		typedef std::function<void()> guiRenderFunc;
 
-		void refreshECS(SmartSim sim) {
-			auto& registry = sim->registry;
-			registry->each([=](const entt::entity e) {
-				});
+
+		//-- Functions
+		auto checkContext() {
+			auto ctx = ImGui::GetCurrentContext();
+			if (!ctx) { ctx = ImGui::CreateContext(); ImGui::SetCurrentContext(ctx); }
+			return ctx;
 		}
 
+		void terminate(const terminateEvent& ev) {
+			ImGui_ImplOpenGL3_Shutdown();
+			ImGui_ImplGlfw_Shutdown();
+			ImGui::DestroyContext();
+		}
+
+		//TODO:
+		//Display all entities in a tree. (done)
+		//Show selected entities components in another tree. (done)
+		//Lookup guiRenderFunc using component's name and call it. (wip)
 		void renderInspector(SmartSim sim) {
-			//do stuff
+			checkContext();
+			auto registry = sim->registry;
+			//TODO:
+			//Refresh entity list on fousing the window
+			//Refresh component list on 
+			//This can be done by setting a listener to every entity in the primary registry ... is that a good idea?
+
+			registry->each([=](entt::entity e) {
+				std::string entt_name = "Entity #" + std::to_string(int(e)); //TODO: Allow rename
+				if (ImGui::TreeNode(entt_name.c_str())) {
+					if (registry->orphan(e)) return;
+					registry->visit(e, [=](const entt::id_type id) { //For some reason this iteration is making a lot of duplicate values
+						for (guiIndex i : guiIndices) {
+							for (auto meta : metas) {
+								auto meta_id = meta.type().type_id();
+								if (meta_id == id && ImGui::TreeNode(i.name)) {
+									i.f(meta);
+									ImGui::TreePop();
+								}
+							}
+						}
+					});
+					ImGui::TreePop();
+				}
+			});
+		}
+		void render(const RenderGuiEvent& ev) {
+			checkContext();
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+
+			//Render all GUI elements here
+			ev.registry->view<guiElement>().each([&](auto& e, guiElement& el) {
+				el.renderFunc();
+				});
+
+			ImGui::Render();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
 
 		void registerECS(SmartWindow winc, SmartSim sim) {
@@ -101,41 +150,21 @@ namespace sundile {
 				End();
 				});
 		}
-
-		void render(const RenderGuiEvent& ev) {
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
-			ImGui::NewFrame();
-
-			//Render all GUI elements here
-			ev.registry->view<guiElement>().each([&](auto& e, guiElement& el) {
-				el.renderFunc();
-				});
-
-			ImGui::Render();
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		}
-
-		void terminate(const terminateEvent& ev) {
-			ImGui_ImplOpenGL3_Shutdown();
-			ImGui_ImplGlfw_Shutdown();
-			ImGui::DestroyContext();
-		}
-
 		void simInit(const SimInitEvent& ev) {
 			ev.evw->dispatcher.sink<RenderGuiEvent>().connect<render>();
 			ev.evw->dispatcher.sink<terminateEvent>().connect<terminate>();
 		}
-
 		void init(SmartWindow winc, SmartSim sim, SmartEVW evw) {
 			//Initalize
 			IMGUI_CHECKVERSION();
+			checkContext();
 			ImGui::StyleColorsDark();
 
 			ImGui_ImplGlfw_InitForOpenGL(winc->window.get(), true);
 			ImGui_ImplOpenGL3_Init(SUNDILE_GLSL_VERSION);
 
 			//Setup font
+			ImGuiIO& io = ImGui::GetIO();
 			unsigned char* tex_pixels = NULL;
 			int tex_w, tex_h;
 			io.Fonts->GetTexDataAsRGBA32(&tex_pixels, &tex_w, &tex_h);
@@ -147,23 +176,49 @@ namespace sundile {
 
 	//-- Global scope definition function
 	template <typename T>
-	void defineGui(std::function<void(std::any)> f, const char* name = T::__name) {
-		GuiSystem::guiIndices.push_back(GuiSystem::guiIndex( name, f ));
+	void defineGui(GuiSystem::guiRenderFunc f, const char* name = T::__name) {
+		GuiSystem::guiIndices.push_back(GuiSystem::guiIndex{ name, f });
 	}
+
+	template <typename T>
+	T emplace(SmartRegistry registry, entt::entity entt) {
+		auto returned = registry->emplace<T>(entt);
+		auto meta = entt::meta_any(returned);
+		GuiSystem::metas.push_back(meta);
+		//TODO: Sink a function to remove meta from metas if necessary
+		return returned;
+	}
+
+	template <typename T, typename ...Args>
+	T emplace(SmartRegistry registry, entt::entity entt, Args ...args) {
+		auto returned = registry->emplace<T>(entt, args...);
+		auto meta = entt::meta_any(returned);
+		GuiSystem::metas.push_back(meta);
+		return returned;
+	}
+
 }
 
 #else //ifdef SUNDILE_EXPORT
 
 BEGIN_COMPONENT(guiElement) END_COMPONENT
 namespace GuiSystem {
-	void init(winc, sim) {}
+	void init(SmartWindow winc, SmartSim sim, SmartEVW evw) {}
 }
-
 
 namespace sundile {
 	template <typename T>
 	void defineGui(std::function<void(std::any)> f, const char* name = T::__name) {}
 }
+
+template <typename T>
+T emplace(SmartRegistry registry, entt::entity entt, T component) {
+	return registry->emplace<T>(component);
+}
+template <typename T, typename ...Args>
+T emplace(SmartRegistry registry, entt::entity entt, T component, Args ...args) {
+	return registry->emplace<T>(component, args);
+	}
 
 #endif //end ifdef SUNDILE_EXPORT
 #endif //end ifndef GUI_H

@@ -59,8 +59,8 @@ namespace fs = std::filesystem;
 
 //imgui
 #include <imgui.h>
-#include "../ext/imgui_impl_opengl3.h"
-#include "../ext/imgui_impl_glfw.h"
+#include "../ext/imgui/imgui_impl_opengl3.h"
+#include "../ext/imgui/imgui_impl_glfw.h"
 
 //sundile features
 #include "Typenames.h"
