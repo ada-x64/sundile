@@ -14,6 +14,7 @@ namespace sundile {
 		//-- When incrementing, "n * deltaTime" means "n per second".
 		float deltaTime = 0.f;
 		float lastTime = 0.f;
+		float currentTime = 0.0f;
 	};
 
 	typedef std::shared_ptr<Sim> SmartSim;

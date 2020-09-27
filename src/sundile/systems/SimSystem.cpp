@@ -59,9 +59,9 @@ namespace sundile {
 		void update(SmartSim sim) {
 
 			//-- Time
-			float currentTime = glfwGetTime();
-			sim->deltaTime = currentTime - sim->lastTime;
-			sim->lastTime = currentTime;
+			sim->currentTime = glfwGetTime();
+			sim->deltaTime = sim->currentTime - sim->lastTime;
+			sim->lastTime = sim->currentTime;
 
 			SmartEVW evw = sim->evw;
 
@@ -69,14 +69,19 @@ namespace sundile {
 			SimStepEvent sev;
 			sev.registry = sim->registry;
 			sev.deltaTime = sim->deltaTime;
+			sev.currentTime = sim->currentTime;
 			evw->dispatcher.trigger<SimStepEvent>(sev);
+
 			RenderEvent rev;
 			rev.registry = sim->registry;
 			rev.deltaTime = sim->deltaTime;
+			rev.currentTime = sim->currentTime;
 			evw->dispatcher.trigger<RenderEvent>(rev);
+
 			RenderGuiEvent gev;
 			gev.registry = sim->registry;
 			gev.deltaTime = sim->deltaTime;
+			gev.currentTime = sim->currentTime;
 			evw->dispatcher.trigger<RenderGuiEvent>(gev);
 		}
 

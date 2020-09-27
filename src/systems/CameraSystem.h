@@ -173,10 +173,10 @@ BEGIN_SYSTEM(CameraSystem)
 		//dependencies
 		ev.registry->on_construct<camera>().connect<&entt::registry::emplace_or_replace<velocity>>();
 
-		defineGui<camera>([](entt::meta_any _c) {
+		defineGui<camera>([](entt::meta_any& _c) { //TODO: Allow value changes.
 			using namespace ImGui;
 			camera* c = static_cast<camera*>(_c.data());
-			DragFloat3("pos", c->pos);
+			DragFloat3("pos", c->pos); //NOTE: Likely has to do with conversion from sundile::Vec3 to float*
 			DragFloat3("front", c->front);
 			DragFloat3("dir", c->dir);
 		});

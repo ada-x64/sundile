@@ -98,6 +98,7 @@ namespace sundile {
 	struct SimEvent : Event {
 		SmartRegistry registry;
 		float deltaTime;
+		float currentTime;
 	};
 	struct SimInitEvent : SimEvent {
 		SmartEVW evw;
