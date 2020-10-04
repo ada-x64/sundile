@@ -23,8 +23,8 @@ Development is active. Currently implementing GUI inspection tools.
 Sundile is being developed cross-platform in Visual Studio Code for Windows 10 and OS X Catalina. Linux port coming eventually.
 ### TODO:
 * GUI Implementation
-    * Automatically register entities for GUI inspection on creation
-    * Allow GUI to modify values
+    * ~Automatically register entities for GUI inspection on creation~
+    * ~Allow GUI to modify values~
     * Create entities from sundile
     * Hot load changes to preexisting systems/components
     * Hot load systems/components on creation (requires automated inclusion)
