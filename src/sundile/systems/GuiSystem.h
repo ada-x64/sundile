@@ -22,8 +22,15 @@ namespace sundile {
 		using namespace Components;
 
 		//-- Variables & Typedefs
-		typedef std::function<void(entt::meta_any)> guiRenderFunc;
-		void nullRenderFunc(entt::meta_any) { ImGui::Text("(empty)"); }
+		struct guiMeta {
+			void* ref = nullptr;
+			entt::id_type id = -1;
+			entt::entity entt;
+		};
+		guiMeta nullMeta;
+
+		typedef std::function<void(guiMeta&)> guiRenderFunc;
+		void nullRenderFunc(guiMeta&) { ImGui::Text("(empty)"); }
 
 		//Contains render functions
 		struct guiIndex {
@@ -34,7 +41,7 @@ namespace sundile {
 		//Contains metas, which have the actual values to be passed to the function stored in the corresponding guiIndex
 		struct listComponent {
 			guiIndex index;
-			entt::meta_any meta = nullptr;
+			guiMeta meta;
 		};
 		//Contains components
 		struct listEntity {
@@ -44,7 +51,7 @@ namespace sundile {
 		};
 
 		static std::vector<guiIndex> guiIndices;
-		static std::vector<entt::meta_any> metaList;
+		static std::vector<guiMeta> metaList;
 		static std::vector<listEntity> entityList;
 
 
@@ -64,7 +71,7 @@ namespace sundile {
 		}
 
 		//inspector front end, called every frame
-		void renderInspector(SmartSim sim) {
+		void renderInspector(const SmartSim& sim) {
 			auto ctx = checkContext();
 			
 			for (listEntity e : entityList) {
@@ -86,7 +93,7 @@ namespace sundile {
 		}
 
 		//back end - to be called according to a timer (every second?)
-		void refreshEntities(SimStepEvent sim) {
+		void refreshEntities(SimStepEvent& sim) {
 
 			//for every entity:
 			//	get the entity's component IDs.
@@ -125,7 +132,7 @@ namespace sundile {
 				if (!registry->orphan(e)) {
 					registry->visit(e, [&](const entt::id_type id) {
 						for (auto& meta : metaList) {
-							if (meta.type().type_id() == id) {
+							if (meta.id == id) {
 								//Find or create listComponent
 								listComponent component;
 								for (listComponent& c : guiEntity.componentList) {
@@ -136,13 +143,13 @@ namespace sundile {
 								}
 
 								//Initialize empty listComponent
-								if (component.meta == nullptr) {
+								if (component.meta.id == -1) {
 									//set meta
 									component.meta = meta;
 
 									//get guiIndex
 									for (guiIndex& i : guiIndices) {
-										if (i.id == component.meta.type().type_id()) {
+										if (i.id == component.meta.id) {
 											component.index = i;
 											break;
 										}
@@ -198,7 +205,7 @@ namespace sundile {
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
 
-		void registerECS(SmartWindow winc, SmartSim sim) {
+		void registerECS(SmartWindow& winc, SmartSim& sim) {
 			auto registry = sim->registry;
 			float ww = winc->WIDTH;
 			float wh = winc->HEIGHT;
@@ -299,21 +306,73 @@ namespace sundile {
 	T emplace(SmartRegistry registry, entt::entity entt) {
 		auto returned = registry->emplace<T>(entt);
 		auto meta = entt::meta_any(returned);
-		//printf("META REGISTERED FOR TYPE %s: %i \n", typeid(T).name(), meta.type().type_id());
-		GuiSystem::metaList.push_back(meta);
-		//TODO: Sink a function to remove meta from metas if necessary
+		GuiSystem::guiMeta gm{&returned, meta.type().type_id(), entt};
+		GuiSystem::metaList.push_back(gm);
+		assert(gm.ref == &returned);
+
+		//printf("emplace::type = %s / %i \n", typeid(T).name(), meta.type().type_id());
+		//printf("emplace::returned = %p\n", &returned);
+		//printf("emplace::meta.data() = %p\n", meta.data());
+
 		return returned;
 	}
 
 	template <typename T, typename ...Args>
-	T emplace(SmartRegistry registry, entt::entity entt, Args ...args) {
+	T emplace(SmartRegistry registry, entt::entity entt, Args &&...args) {
 		auto returned = registry->emplace<T>(entt, args...);
 		auto meta = entt::meta_any(returned);
-		//printf("META REGISTERED FOR TYPE %s: %i \n", typeid(T).name(), meta.type().type_id());
-		GuiSystem::metaList.push_back(meta);
+		GuiSystem::guiMeta gm{ &returned, meta.type().type_id(), entt };
+		GuiSystem::metaList.push_back(gm);
+		assert(gm.ref == &returned);
+		
+		//TODO: Reference pulled in CameraSystem::step::view is not the same as captured here. Why?
+			//Tried creating a view and getting that refrence. It was not the same.
+
+		//printf("emplace::type = %s / %i \n", typeid(T).name(), meta.type().type_id());
+		//printf("emplace::returned = %p\n", &returned);
+		//printf("emplace::meta.data() = %p\n", meta.data());
+
 		return returned;
 	}
 
+	//--
+	//-- ImGui Wrappers
+	//--
+	bool DragVec2(const char* name, Vec2& val, float v_speed = (1.0F), float v_min = (0.0F), float v_max = (0.0F), const char* format = "%.3f", float power = (1.0F)){
+		float f[2] = { val.x, val.y };
+		bool changed = ImGui::DragFloat2(name, f);
+		val = f;
+		return changed;
+	}
+	bool DragVec3(const char* name, Vec3& val, float v_speed = (1.0F), float v_min = (0.0F), float v_max = (0.0F), const char* format = "%.3f", float power = (1.0F)){
+		float f[3] = { val.x, val.y, val.z };
+		bool changed = ImGui::DragFloat3(name, f);
+		val = f;
+		return changed;
+}
+	bool DragVec4(const char* name, Vec4& val, float v_speed = (1.0F), float v_min = (0.0F), float v_max = (0.0F), const char* format = "%.3f", float power = (1.0F)){
+		float f[4] = { val.x, val.y, val.z, val.w };
+		bool changed = ImGui::DragFloat4(name, f);
+		val = f;
+		return changed;
+	}
+
+	template <typename T>
+	void updateGUI(entt::entity entt, T& value) {
+		using namespace GuiSystem;
+		for (auto& e : entityList) {
+			if (e.entity == entt) {
+				auto meta_any = entt::meta_any(value);
+				for (auto& c : e.componentList) {
+					if (c.meta.id == meta_any.type().type_id()) {
+						void* v = &value;
+						c.meta.ref = v;
+						return;
+					}
+				}
+			}
+		}
+	}
 }
 
 #else //ifdef SUNDILE_EXPORT
@@ -336,6 +395,9 @@ template <typename T, typename ...Args>
 T emplace(SmartRegistry registry, entt::entity entt, T component, Args ...args) {
 	return registry->emplace<T>(component, args);
 	}
+
+template <typename T>
+updateGUI(smartRegistry registry, entt::entity entt) {}
 
 #endif //end ifdef SUNDILE_EXPORT
 #endif //end ifndef GUI_H

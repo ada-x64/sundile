@@ -36,6 +36,8 @@ BEGIN_SYSTEM(CameraSystem)
 	void catchStepEvent(const SimStepEvent& ev) {
 		using namespace glm;
 		ev.registry->view<camera, input>().each([&](auto entity, camera& cam, input& Input) {
+			updateGUI<camera>(entity,cam);
+			printf("CameraSystem::catchStepEvent::entity = %i, cam = %p\n", int(entity), &cam);
 
 			//
 			//Identity and inverse.
@@ -165,6 +167,9 @@ BEGIN_SYSTEM(CameraSystem)
 		});
 	}
 
+
+
+
 	void init(const SimInitEvent& ev) {
 		ev.evw->dispatcher.sink<SimStepEvent>().connect<&catchStepEvent>();
 		ev.evw->dispatcher.sink< TypedWindowEvent<double>>().connect<&catchCursorEvent>();
@@ -173,12 +178,11 @@ BEGIN_SYSTEM(CameraSystem)
 		//dependencies
 		ev.registry->on_construct<camera>().connect<&entt::registry::emplace_or_replace<velocity>>();
 
-		defineGui<camera>([](entt::meta_any& _c) { //TODO: Allow value changes.
+		defineGui<camera>([](GuiSystem::guiMeta& meta) {
 			using namespace ImGui;
-			camera* c = static_cast<camera*>(_c.data());
-			DragFloat3("pos", c->pos); //NOTE: Likely has to do with conversion from sundile::Vec3 to float*
-			DragFloat3("front", c->front);
-			DragFloat3("dir", c->dir);
+			camera *c = (camera*)(meta.ref);
+			printf("CameraSystem::defineGui::c = %p\n", c);
+			DragFloat("maxspd", &(c->maxspd));
 		});
 	}
 
