@@ -1,9 +1,6 @@
 #pragma once
-#include "../sundile/Components.h"
-namespace sundile {
-	namespace Components {
-		struct wireframe {
-			bool is_wireframe = true;
-		};
-	}
-}
+#include "../sundile/sundile.h"
+BEGIN_COMPONENT(wireframe)
+	bool is_wireframe = true;
+	
+END_COMPONENT

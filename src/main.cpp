@@ -1,118 +1,90 @@
 //--
 //-- main.cpp
 //--
-#include "sundile/sundile.h"
+#include "components/AllComponents.h"
 #include "systems/AllSystems.h"
-
-#include <filesystem>
-//Filesystem test
-void listCWD(std::filesystem::path path, bool recursive = false) {
-	for (const auto& entry : std::filesystem::directory_iterator(path)) {
-		std::cout << entry.path() << std::endl;
-		if (recursive && entry.is_directory()) {
-			listCWD(entry.path(), true);
-		}
-	}
-}
 
 int main(void)
 {
 	using namespace sundile;
-
-	//listCWD("./", true);
+	//When ProjectSystem is implemented, will need to set a project root directory.
+	//For now, just ensure that you're executing the program from the same place it's stored :)
 
 	//Initialize
-	SmartEVW	evw			= EventSystem::create();
-	SmartWindow winc		= WindowSystem::init(evw, 1280, 720);
-	SmartSim	sim			= SimSystem::init(evw);
-	Systems::init(evw);
-	Systems::GuiSystem::init(winc->window.get(), "#version 130"); //blehhhhh
-	EventSystem::initAll();
+	SmartEVW evw = EventSystem::create();
+	SmartSim sim = SimSystem::init(evw);
+	SmartWindow winc = WindowSystem::initWindowedFullscreen(evw);
+	winc->name = "sundile";
+	glfwSetWindowTitle(winc->window.get(), winc->name);
+	glfwSetWindowSizeLimits(winc->window.get(), winc->WIDTH, winc->HEIGHT, GLFW_DONT_CARE, GLFW_DONT_CARE);
 
-	//Populate registry - i.e., load scene
+	GuiSystem::init(winc, sim, evw);
+	Systems::init(evw);
+
+	//Scene registration
 	{
 		//Prelim
 		using namespace Components;
+		using namespace Systems;
 		auto registry = sim->registry;
 
 		//Assets
-		Model suzanne = Model("./assets/models/monkey.obj");
+		Model suzanne = ModelSystem::loadModel("./assets/models/monkey.obj");
 
 		//Renderer
 		auto eRenderer = registry->create();
-		registry->emplace<Renderer>(eRenderer);
+		emplace<Renderer>(registry, eRenderer,RenderSystem::create());
 
-		//GUI
-		int ww = winc->WIDTH;
-		int wh = winc->HEIGHT;
-		int viewport_w = 800;
-		int viewport_h = 600;
-		int viewport_x = ww / 2 - viewport_w/2;
-		int viewport_y = wh / 2 - viewport_h/2;
-		glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
-
-		auto eGUI = registry->create();
-		guiElement mainMenu;
-		mainMenu.renderFunc = []() {
-			using namespace ImGui;
-			Begin("Main Menu");
-			Text("hey");
-			End();
-		};
-		registry->emplace<guiElement>(eGUI, mainMenu);
-
-		//Camera
+		//--
+		//-- Camera
 		auto eCam = registry->create();
-		registry->emplace<camera>(eCam);
-		registry->emplace<input>(eCam);
+		emplace<camera>(registry, eCam);
+		emplace<input>(registry, eCam);
 
-		//Suzannes in a Circle
+		//--
+		//-- Suzannes in a Circle
 		int count = 8;
 		for (int i = 0; i < count; i++) {
 			auto eMonkey = registry->create();
-			auto& model = registry->emplace<Model>(eMonkey);
-			model = suzanne;
-			registry->emplace<visible>(eMonkey);
-			registry->emplace<position>(eMonkey, glm::vec3(10*cos(i * 2*glm::pi<float>()/ count), 0.f, 10*sin(i * 2*glm::pi<float>()/ count)));
+			auto model = emplace<Model>(registry,  eMonkey, suzanne);
+			emplace<visible>(registry,  eMonkey);
+			position p;
+			p.pos = glm::vec3(10 * cos(i * 2 * glm::pi<float>() / count), 0.f, 10 * sin(i * 2 * glm::pi<float>() / count));
+			emplace<position>(registry,  eMonkey, p);
 		}
 
-		//Light of our lives
+		//--
+		//-- Light of our lives
 		auto eLightMonkey = registry->create();
-		auto& model = registry->emplace<Model>(eLightMonkey);
-		model = suzanne;
-		registry->emplace<visible>(eLightMonkey);
-		registry->emplace<position>(eLightMonkey, glm::vec3(0.f, 0.f, 0.f));
+		auto model = emplace<Model>(registry, eLightMonkey, suzanne);
+		emplace<visible>(registry, eLightMonkey);
+		position p; p.pos = { 0,0,0 };
+		emplace<position>(registry,  eLightMonkey, p);
 		Shader lightsource = ShaderSystem::init("./assets/shaders/passthrough.vert", "./assets/shaders/light_global.frag");
 		ShaderSystem::use(lightsource);
 		ShaderSystem::setVec4(lightsource, "color", { 1.f,1.f,1.f,1.f });
-		registry->emplace<Shader>(eLightMonkey, lightsource);
+		emplace<Shader>(registry, eLightMonkey, lightsource);
 
-		//auto eCoords = registry->create();
-		//Vertex v0{ glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
-		//Vertex vx{ glm::vec3(1.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
-		//Vertex vy{ glm::vec3(0.f, 1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
-		//Vertex vz{ glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(0.f, 0.f) };
-		//Vertex vnx{ glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
-		//Vertex vny{ glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
-		//Vertex vnz{ glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(0.f, 0.f) };
-		//Mesh coords = Mesh({ v0, vx, vy, vz, vnx, vny, vnz }, { 0,1,0, 0,2,0, 0,3,0, 0,4,0, 0,5,0, 0,6,0 }, {});
-		//registry->emplace<Mesh>(eCoords, coords);
-		//registry->emplace<wireframe>(eCoords);
-		//registry->emplace<visible>(eCoords);
-		//registry->emplace<position>(eCoords, glm::vec3(0.f, 0.f, 0.f));
-
+		//--
+		//-- Coord map
 		/**
-		auto eTree = registry->create();
-		registry->emplace<Model>(eTree, "./assets/models/Trees/OakTree1.fbx");
-		registry->emplace<visible>(eTree);
-		registry->emplace<position>(eTree, glm::vec3(10.f, 10.f, 0.f));
-		registry->emplace<Shader>(eTree, ShaderSystem::init("./assets/shaders/passthrough.vert", "./assets/shaders/tex_diffuse1.frag"));
+		auto eCoords = registry->create();
+		Vertex v0{ glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
+		Vertex vx{ glm::vec3(1.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
+		Vertex vy{ glm::vec3(0.f, 1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
+		Vertex vz{ glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(0.f, 0.f) };
+		Vertex vnx{ glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
+		Vertex vny{ glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
+		Vertex vnz{ glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(0.f, 0.f) };
+		Mesh coords = Mesh({ v0, vx, vy, vz, vnx, vny, vnz }, { 0,1,0, 0,2,0, 0,3,0, 0,4,0, 0,5,0, 0,6,0 }, {});
+		emplace<Mesh>(registry, eCoords, coords);
+		emplace<wireframe>(registry, eCoords);
+		emplace<visible>(registry, eCoords);
+		emplace<position>(registry, eCoords, glm::vec3(0.f, 0.f, 0.f));
 		/**/
 	}
 
-
 	//main loop
-
 	while (EventSystem::run) {
 		EventSystem::updateAll();
 	}

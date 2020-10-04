@@ -1,7 +1,7 @@
 //--
 //-- EventWrapper.h
 //--
-#include "Common.h"
+#include "../globals/Common.h"
 
 #pragma once
 #ifndef SUNDILE_ENTT_H
@@ -38,81 +38,22 @@ namespace sundile {
 	//-- Events
 	//--
 
-	enum class EventType { //Perhaps separate this into different enums?
-		// Generic Events
-		generic_draw,
-		generic_game,
-		generic_gui,
-		generic_project,
-		generic_render,
-		generic_window,
-
-		// Main Loop Events
-		init,
-		emplace,
-
-		preStep,
-		step,
-		postStep,
-
-		preRender,
-		render,
-		postRender,
-
-		preDrawGui,
-		drawGui,
-		postDrawGui,
-
-		terminate,
-
-		// Window Events
-		cursorpos,
-		framebufferSize,
-		key,
-		mousebtn,
-		terminateWindow,
-		updateWindow,
-		window_finishTermination,
-
-		// Sim Events
-
-		// Render Events
-
-		// Gui Events
-
-		// Project Events
-
-		// Count
-		__COUNT
-	};
-
 	// To: Any
 	// From: Any
 	// Shorthand: "ev"
 	// Example: Main loop events (carry no information)
 	// Event base class
-	struct Event {
-		EventType type;
-	};
+	struct Event {};
 
 	struct initEvent {
-		EventType type = EventType::init;
 		SmartEVW evw;	
 	};
 
-	struct preStepEvent		{ EventType type = EventType::preStep; };
-	struct stepEvent		{ EventType type = EventType::step; };
-	struct postStepEvent	{ EventType type = EventType::postStep; };
-	
-	struct preRenderEvent	{ EventType type = EventType::preRender; };
-	struct renderEvent		{ EventType type = EventType::render; };
-	struct postRenderEvent	{ EventType type = EventType::postRender; };
+	struct preStepEvent :Event {};
+	struct stepEvent :Event {};
+	struct postStepEvent:Event {};
 
-	struct preDrawGuiEvent	{ EventType type = EventType::preDrawGui; };
-	struct drawGuiEvent		{ EventType type = EventType::drawGui; };
-	struct postDrawGuiEvent { EventType type = EventType::postDrawGui; };
-
-	struct terminateEvent	{ EventType type = EventType::terminate; };
+	struct terminateEvent :Event {};
 
 	// To: SimSystem, GuiSystem, ProjectSystem, WindowSystem (termination)
 	// From: WindowSystem
@@ -156,7 +97,8 @@ namespace sundile {
 	// Example: Send float modified in GUI to SimSystem; For component systems: idk yet lol
 	struct SimEvent : Event {
 		SmartRegistry registry;
-		double deltaTime;
+		float deltaTime;
+		float currentTime;
 	};
 	struct SimInitEvent : SimEvent {
 		SmartEVW evw;
@@ -173,17 +115,19 @@ namespace sundile {
 	// From: SimSystem
 	// Shorthand: "rev"
 	// Example: Send renderable data to RenderSystem
-	struct RenderEvent : SimEvent {
-
-	};
+	struct RenderEvent : SimEvent {};
 
 	// To: GuiSystem
 	// From: SimSystem
 	// Shorthand: "uev"
 	// Example: Send float to GUI for live editing.
-	struct GuiEvent : SimEvent {
-
+	union GuiEventContent {
+		bool b;
 	};
+	struct GuiEvent : SimEvent {
+		GuiEventContent content;
+	};
+	struct RenderGuiEvent : SimEvent {};
 
 	// To: ProjectSystem
 	// From: GuiSystem, SimSystem
@@ -202,7 +146,6 @@ namespace sundile {
 		SmartEVW create();
 
 		void init(SmartEVW evw);
-		void update(SmartEVW evw);
 		void terminate(SmartEVW evw);
 
 		void initAll();
@@ -210,4 +153,6 @@ namespace sundile {
 		void terminateAll();
 	}
 }
+
+
 #endif

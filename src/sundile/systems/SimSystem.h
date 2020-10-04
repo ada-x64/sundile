@@ -4,8 +4,7 @@
 #pragma once
 #ifndef SYSTEMS_H
 #define SYSTEMS_H
-#include "EventWrapper.h"
-#include "Components.h"
+#include "EventSystem.h"
 namespace sundile {
 	//Simulation struct
 	struct Sim {
@@ -15,6 +14,7 @@ namespace sundile {
 		//-- When incrementing, "n * deltaTime" means "n per second".
 		float deltaTime = 0.f;
 		float lastTime = 0.f;
+		float currentTime = 0.0f;
 	};
 
 	typedef std::shared_ptr<Sim> SmartSim;

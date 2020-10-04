@@ -13,6 +13,7 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include <any>
 namespace fs = std::filesystem;
 
 //std assert
@@ -42,38 +43,29 @@ namespace fs = std::filesystem;
 #include <glm/gtc/quaternion.hpp>
 
 //gl
+#ifdef APPLE
+#include <OpenGL/gl3.h>
+#include <OpenGL/glu.h>
+#include <GLUT/glut.h>
+#else
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+#endif
 
 //entt
-#include "ext/entt.hpp"
+#include "../ext/entt.hpp"
 //glfw
 #include <GLFW/glfw3.h>
 
 //imgui
 #include <imgui.h>
-#include "ext/imgui_impl_opengl3.h"
-#include "ext/imgui_impl_glfw.h"
+#include "../ext/imgui/imgui_impl_opengl3.h"
+#include "../ext/imgui/imgui_impl_glfw.h"
 
-//Utility
-#include "./Utility.h"
+//sundile features
+#include "Typenames.h"
+#include "Macros.h"
 
-//Macros
-#define SUNDILE_BEGIN namespace sundile {
-#define SUNDILE_END }
-
-//- TODO - create ifndef guards
-#define COMPONENT_DEF_BEGIN(name) namespace sundile { namespace Components { struct name/*:component*/ {
-#define COMPONENT_DEF_END };}}
-
-#define SYSTEM_DEF_BEGIN(name) namespace sundile { using namespace Components; namespace Systems { namespace name {
-#define SYSTEM_DEF_END }}}
-
-// Macros
-#ifdef _MSC_VER
-#define SUNDILE_DEBUG_BREAK __debug_break();
-#else
-#define SUNDILE_DEBUG_BREAK assert(0);
-#endif
+//environment variables
 
 #endif

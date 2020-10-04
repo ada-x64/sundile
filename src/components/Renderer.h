@@ -2,7 +2,13 @@
 //-- Renderer.h
 //--
 #include "../sundile/sundile.h"
+#include "Shader.h"
 
-COMPONENT_DEF_BEGIN(Renderer)
-Shader passthrough = ShaderSystem::init("assets/shaders/passthrough.vert", "assets/shaders/passthrough.frag");
-COMPONENT_DEF_END
+#ifndef RENDERER_H
+#define RENDERER_H
+BEGIN_COMPONENT(Renderer)
+	Shader passthrough;
+	bool initialized = false;
+	
+END_COMPONENT
+#endif

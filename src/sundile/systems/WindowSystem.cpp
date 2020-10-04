@@ -8,21 +8,38 @@ namespace sundile {
 				fprintf(stderr, "GLFW Error: %s\n", description);
 			}
 			void keyCallback(GLFWwindow* w, int key, int scancode, int action, int mods) {
-				currentevw->dispatcher.enqueue<WindowInputEvent>({ EventType::key, w,  key, scancode, action, mods  });
+				WindowInputEvent ev;
+				ev.window = w;
+				ev.key = key;
+				ev.scancode = scancode;
+				ev.action = action;
+				ev.mods = mods;
+				currentevw->dispatcher.enqueue<WindowInputEvent>( ev );
 			}
 			void mouseBtnCallback(GLFWwindow* w, int button, int actions, int mods) {
-				currentevw->dispatcher.enqueue<WindowInputEvent>({ EventType::mousebtn, w, button, GLFW_KEY_UNKNOWN, actions, mods });
+				WindowInputEvent ev;
+				ev.window = w;
+				ev.key = button;
+				ev.scancode = GLFW_KEY_UNKNOWN;
+				ev.action = actions;
+				ev.mods = mods;
+				currentevw->dispatcher.enqueue<WindowInputEvent>(ev);
 			}
 			void cursorPosCallback(GLFWwindow* w, double x, double y) {
-				currentevw->dispatcher.enqueue<TypedWindowEvent<double>>({ EventType::cursorpos, w, {x,y} });
+				TypedWindowEvent<double> ev;
+				ev.window = w;
+				ev.vals = std::vector<double>{ x,y };
+				currentevw->dispatcher.enqueue<TypedWindowEvent<double>>(ev);
 			}
 			void framebufferSizeCallback(GLFWwindow* w, int width, int height) {
 				glViewport(0, 0, width, height);
-				//TypedWindowEvent<int> wev{ EventType::framebufferSize, w, {width, height} };
+				//TypedWindowEvent<int> wev{  w, {width, height} };
 				//currentevw->getEvent(wev);
 			}
 			void windowCloseCallback(GLFWwindow* w) {
-				currentevw->dispatcher.enqueue<WindowEvent>({ EventType::terminateWindow, w });
+				WindowEvent ev;
+				ev.window = w;
+				currentevw->dispatcher.enqueue<WindowEvent>(ev);
 
 			}
 			//etc.
@@ -42,9 +59,12 @@ namespace sundile {
 		namespace /* Event catchers */ {
 
 			void catchWindowEvent(const WindowEvent& wev) {
+				//replace with terminate window event
+				/**
 				if (wev.type == EventType::terminateWindow) {
 					terminate(getSmartWindow(wev.window));
 				}
+				/**/
 			}
 
 			void preupdate(SmartWindow& winc) {
@@ -55,7 +75,9 @@ namespace sundile {
 				glfwPollEvents();
 
 				if (winc->windowShouldClose) {
-					currentevw->dispatcher.enqueue<WindowEvent>({ EventType::terminateWindow, winc->window.get() });
+					WindowEvent ev;
+					ev.window = winc->window.get();
+					currentevw->dispatcher.enqueue<WindowEvent>(ev);
 					glfwSetWindowShouldClose(currentwindow, GLFW_TRUE);
 				}
 			}
@@ -107,6 +129,19 @@ namespace sundile {
 			return 0;
 		}
 
+		Vec2 getWindowSize(SmartWindow winc) {
+			int wwidth = 0, wheight = 0;
+			glfwGetWindowSize(winc->window.get(), &wwidth, &wheight);
+			if (wwidth && wheight) {
+				winc->HEIGHT = wwidth;
+				winc->WIDTH = wheight;
+			}
+			float width = static_cast<float>(winc->WIDTH);
+			float height = static_cast<float>(winc->HEIGHT);
+			return Vec2{ width, height };
+
+		}
+
 		// Remove-erase all empty windows, end the process if no windows are open.
 		void eraseEmptyWindows() {
 			windows.erase(std::remove_if(windows.begin(), windows.end(), [=](SmartWindow win) {
@@ -125,7 +160,7 @@ namespace sundile {
 
 			preupdate(winc);
 
-			currentevw->dispatcher.enqueue<Event>(DrawEvent{ EventType::generic_draw });
+			//currentevw->dispatcher.enqueue<Event>(DrawEvent{ EventType::generic_draw });
 			currentevw->dispatcher.update<WindowEvent>();
 			currentevw->dispatcher.update<WindowInputEvent>();
 			currentevw->dispatcher.update<TypedWindowEvent<double>>();
@@ -139,7 +174,9 @@ namespace sundile {
 		// Manually terminate a window.
 		void terminate(SmartWindow winc) {
 			currentevw = winc->evw;
-			currentevw->dispatcher.enqueue<WindowEvent>({ EventType::window_finishTermination, winc->window.get() });
+			WindowEvent ev;
+			ev.window = winc->window.get();
+			currentevw->dispatcher.enqueue<WindowEvent>(ev);
 			winc->window.reset();
 			currentwindow = nullptr;
 			termination_called = true;
@@ -189,6 +226,101 @@ namespace sundile {
 		SmartWindow init(SmartEVW evw) {
 			SmartWindow winc = std::make_shared<WindowContainer>();
 			return init(evw, winc);
+		}
+
+		SmartWindow initFullscreen(SmartEVW evw, const char* title) {
+
+			SmartWindow winc = std::make_shared<WindowContainer>();
+			winc->name = title;
+
+			// Init GLFW
+			if (!GLFWinitialized) { initGLFW(); }
+
+			// Preliminary
+			currentevw = evw;
+
+			// Create a windowed mode window and its OpenGL context
+			auto monitor = glfwGetPrimaryMonitor();
+			auto mode = glfwGetVideoMode(monitor);
+			glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+			glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+			glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+			glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+			auto winptr = glfwCreateWindow(mode->width, mode->height, winc->name, monitor, NULL);
+			if (!winptr)
+			{
+				glfwTerminate();
+				exit(EXIT_FAILURE);
+			}
+
+			//Set up winc
+			winc->window = SmartGLFWwindow(winptr);
+			winc->evw = currentevw;
+
+			// Set up the window
+			glfwMakeContextCurrent(winc->window.get());
+			glfwSwapInterval(1);
+
+			// Init GLEW
+			if (!GLEWinitialized) { initGLEW(); }
+			if (!GLFWinitialized) { initGLFW(); }
+
+			// Set up event handlers
+			setCallbacks(winc->window.get());
+			setEventCallbacks(currentevw);
+
+			//Add to vector and return.
+			windows.push_back(winc);
+
+			return winc;
+		}
+		SmartWindow initWindowedFullscreen(SmartEVW evw, const char* title) {
+
+			SmartWindow winc = std::make_shared<WindowContainer>();
+			winc->name = title;
+
+			// Init GLFW
+			if (!GLFWinitialized) { initGLFW(); }
+
+			// Preliminary
+			currentevw = evw;
+
+			// Create a windowed mode window and its OpenGL context
+			auto monitor = glfwGetPrimaryMonitor();
+			auto mode = glfwGetVideoMode(monitor);
+			glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+			glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+			glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+			glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+
+			auto winptr = glfwCreateWindow(mode->width, mode->height, winc->name, NULL, NULL);
+			if (!winptr)
+			{
+				glfwTerminate();
+				exit(EXIT_FAILURE);
+			}
+
+			//Set up winc
+			winc->window = SmartGLFWwindow(winptr);
+			winc->evw = currentevw;
+
+			// Set up the window
+			glfwMakeContextCurrent(winc->window.get());
+			glfwSwapInterval(1);
+
+			// Init GLEW
+			if (!GLEWinitialized) { initGLEW(); }
+
+			// Set up event handlers
+			setCallbacks(winc->window.get());
+			setEventCallbacks(currentevw);
+
+			//Add to vector and return.
+			windows.push_back(winc);
+
+			return winc;
 		}
 
 		SmartWindow init(SmartEVW evw, const char* name) {
