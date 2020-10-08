@@ -16,7 +16,7 @@ int main(void)
 	SmartWindow winc = WindowSystem::initWindowedFullscreen(evw);
 	winc->name = "sundile";
 	glfwSetWindowTitle(winc->window.get(), winc->name);
-	glfwSetWindowSizeLimits(winc->window.get(), winc->WIDTH, winc->HEIGHT, GLFW_DONT_CARE, GLFW_DONT_CARE);
+	glfwSetWindowSizeLimits(winc->window.get(), winc->WIDTH, winc->HEIGHT, winc->WIDTH, winc->HEIGHT);
 
 	GuiSystem::init(winc, sim, evw);
 	Systems::init(evw);

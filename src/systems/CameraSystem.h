@@ -30,14 +30,12 @@ BEGIN_SYSTEM(CameraSystem)
 
 	void catchGuiEvent(const GuiEvent ev) {
 		//TODO: lock controls when window is out of focus
-		//printf("Gui event caught! Event: %f", ev.content);
 	}
 
 	void catchStepEvent(const SimStepEvent& ev) {
 		using namespace glm;
 		ev.registry->view<camera, input>().each([&](auto entity, camera& cam, input& Input) {
 			updateGUI<camera>(entity,cam);
-			printf("CameraSystem::catchStepEvent::entity = %i, cam = %p\n", int(entity), &cam);
 
 			//
 			//Identity and inverse.
@@ -172,7 +170,7 @@ BEGIN_SYSTEM(CameraSystem)
 
 	void init(const SimInitEvent& ev) {
 		ev.evw->dispatcher.sink<SimStepEvent>().connect<&catchStepEvent>();
-		ev.evw->dispatcher.sink< TypedWindowEvent<double>>().connect<&catchCursorEvent>();
+		ev.evw->dispatcher.sink<TypedWindowEvent<double>>().connect<&catchCursorEvent>();
 		ev.evw->dispatcher.sink<GuiEvent>().connect<&catchGuiEvent>();
 
 		//dependencies
@@ -181,7 +179,6 @@ BEGIN_SYSTEM(CameraSystem)
 		defineGui<camera>([](GuiSystem::guiMeta& meta) {
 			using namespace ImGui;
 			camera *c = (camera*)(meta.ref);
-			printf("CameraSystem::defineGui::c = %p\n", c);
 			DragFloat("maxspd", &(c->maxspd));
 		});
 	}

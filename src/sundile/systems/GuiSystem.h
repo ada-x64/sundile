@@ -215,58 +215,42 @@ namespace sundile {
 			float viewport_y = wh / 2 - viewport_h / 2;
 			glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
 
-			auto renderWindow = registry->create();
-			registry->emplace<guiElement>(renderWindow, [=]() {
+			auto GUI = registry->create();
+			registry->emplace<guiElement>(GUI, [=]() {
 				using namespace ImGui;
-				//SetNextWindowBgAlpha(0.f);
-				//SetNextWindowSizeConstraints({ viewport_w, viewport_h }, { viewport_w, viewport_h });
-				//Begin("rendering frame");
-				//auto pos = ImGui::GetWindowPos();
-				//SetWindowSize({ 800, 600 });
-				//glViewport(pos.x, -pos.y, viewport_w, viewport_h); //magic number here - don't know what the vertical offset between imgui and gl is. i guess it's 101.
-				//End();
 
-				GuiEvent e; //TODO: make this better
-				e.content = GuiEventContent{ ImGui::IsWindowFocused() };
-				sim->evw->dispatcher.trigger<GuiEvent>(e);
-				});
+				//Main Menu Bar
+				if (BeginMainMenuBar()) {
+					if (BeginMenu("File")) {
+						ImGui::EndMenu();
+					}
+					if (BeginMenu("Scene")) {
+						ImGui::EndMenu();
+					}
+					if (BeginMenu("Window")) {
+						MenuItem("Show Entity Tools");
+						MenuItem("Show Entity Inspector");
+						MenuItem("Show Component Editor");
+						ImGui::EndMenu();
+					}
+					EndMainMenuBar();
+				}
 
-			auto inspector = registry->create();
-			ImVec2 inspectorSize = { 240, static_cast<float>(winc->WIDTH) };
-			registry->emplace<guiElement>(inspector, [=]() {
-
+				//ECS Tools
 				ImVec2 windowSize = WindowSystem::getWindowSize(winc);
+				if (GetMousePos().x > 7.f * windowSize.x / 8.f) {
 
-				using namespace ImGui;
-				SetNextWindowSize(inspectorSize);
-				SetNextWindowSizeConstraints({ inspectorSize.x, 120 }, { inspectorSize.x, inspectorSize.y });
-				//SetNextWindowPos({ windowSize.x - inspectorSize.x, 0 });
+					Begin("ECS Tools");
 
-				Begin("Inspector");
-				renderInspector(sim);
-				End();
-				});
+					BeginChild("Entity Inspector");
+					renderInspector(sim);
+					EndChild();
 
-			auto toolbar = registry->create();
-			ImVec2 toolbarSize = { 120, static_cast<float>(winc->WIDTH) };
-			registry->emplace<guiElement>(toolbar, [=]() {
+					End(); //ECS Tools
+				
+				}
+			});
 
-				ImVec2 windowSize = WindowSystem::getWindowSize(winc);
-
-				using namespace ImGui;
-				SetNextWindowSize(toolbarSize);
-				SetNextWindowSizeConstraints({ toolbarSize.x, 32 }, { windowSize.y, toolbarSize.y });
-				SetNextWindowPos({ windowSize.x - toolbarSize.x - inspectorSize.x, 0 }); //this should lock the toolbar to the right. it isn't doing that x(
-				SetWindowPos("Toolbar", { windowSize.x - toolbarSize.x - inspectorSize.x, 0 });
-
-				Begin("Toolbar");
-				Text("Entity tools:");
-				Button("Add");
-				Button("Select");
-				Button("Translate");
-				Button("Rotate");
-				End();
-				});
 		}
 		void simInit(const SimInitEvent& ev) {
 			ev.evw->dispatcher.sink<SimStepEvent>().connect<refreshEntities>();
@@ -309,11 +293,6 @@ namespace sundile {
 		GuiSystem::guiMeta gm{&returned, meta.type().type_id(), entt};
 		GuiSystem::metaList.push_back(gm);
 		assert(gm.ref == &returned);
-
-		//printf("emplace::type = %s / %i \n", typeid(T).name(), meta.type().type_id());
-		//printf("emplace::returned = %p\n", &returned);
-		//printf("emplace::meta.data() = %p\n", meta.data());
-
 		return returned;
 	}
 
@@ -324,14 +303,6 @@ namespace sundile {
 		GuiSystem::guiMeta gm{ &returned, meta.type().type_id(), entt };
 		GuiSystem::metaList.push_back(gm);
 		assert(gm.ref == &returned);
-		
-		//TODO: Reference pulled in CameraSystem::step::view is not the same as captured here. Why?
-			//Tried creating a view and getting that refrence. It was not the same.
-
-		//printf("emplace::type = %s / %i \n", typeid(T).name(), meta.type().type_id());
-		//printf("emplace::returned = %p\n", &returned);
-		//printf("emplace::meta.data() = %p\n", meta.data());
-
 		return returned;
 	}
 

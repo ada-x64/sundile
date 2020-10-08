@@ -83,6 +83,8 @@ namespace sundile {
 			mods;
 	};
 
+	struct WindowTerminateEvent : WindowEvent {};
+
 	// To: WindowSystem
 	// From: GuiSystem, RenderSystem
 	// Shorthand: "dev"
