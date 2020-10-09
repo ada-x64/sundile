@@ -10,7 +10,13 @@
 //--
 
 BEGIN_COMPONENT(guiElement)
+	enum key {
+		entityInspector,
+		componentInspector
+	};
+	std::map<const key, bool> state;
 	std::function<void()> renderFunc;
+	guiElement() : renderFunc([](){}) {};
 	guiElement(std::function<void()> renderFunc) : renderFunc(renderFunc) {};
 END_COMPONENT
 
@@ -71,7 +77,7 @@ namespace sundile {
 		}
 
 		//inspector front end, called every frame
-		void renderInspector(const SmartSim& sim) {
+		void EntityInspector(const SmartSim& sim) {
 			auto ctx = checkContext();
 			
 			for (listEntity e : entityList) {
@@ -216,10 +222,13 @@ namespace sundile {
 			glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
 
 			auto GUI = registry->create();
-			registry->emplace<guiElement>(GUI, [=]() {
+			auto& e = registry->emplace<guiElement>(GUI);
+			e.renderFunc = [&]() {
+				//Variables
 				using namespace ImGui;
+				ImVec2 windowSize = WindowSystem::getWindowSize(winc);
 
-				//Main Menu Bar
+				// Main Menu Bar
 				if (BeginMainMenuBar()) {
 					if (BeginMenu("File")) {
 						ImGui::EndMenu();
@@ -228,28 +237,33 @@ namespace sundile {
 						ImGui::EndMenu();
 					}
 					if (BeginMenu("Window")) {
-						MenuItem("Show Entity Tools");
-						MenuItem("Show Entity Inspector");
-						MenuItem("Show Component Editor");
+						std::string label;
+
+						label = e.state[e.entityInspector] ? "Hide Entity Inspector" : "Show Entity Inspector";
+						if (MenuItem(label.c_str()))
+							e.state[e.entityInspector] = !e.state[e.entityInspector];
+
+						label = e.state[e.componentInspector] ? "Hide Component Inspector" : "Show Component Inspector";
+						if (MenuItem(label.c_str()))
+							e.state[e.componentInspector] = !e.state[e.componentInspector];
+
 						ImGui::EndMenu();
 					}
 					EndMainMenuBar();
 				}
 
-				//ECS Tools
-				ImVec2 windowSize = WindowSystem::getWindowSize(winc);
-				if (GetMousePos().x > 7.f * windowSize.x / 8.f) {
-
+				//-- STATE ROUTER
+				// ECS Tools
+				if (e.state[e.entityInspector]) {
 					Begin("ECS Tools");
 
 					BeginChild("Entity Inspector");
-					renderInspector(sim);
+					EntityInspector(sim);
 					EndChild();
 
 					End(); //ECS Tools
-				
 				}
-			});
+			};
 
 		}
 		void simInit(const SimInitEvent& ev) {
