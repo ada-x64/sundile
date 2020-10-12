@@ -20,7 +20,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED on)
 #
 #
 # define project
-add_executable (sproj src/main.cpp)
+add_executable (sproj src/main.cpp "src/components/Transform.h")
 
 add_subdirectory("./src/sundile/")
 target_link_libraries(sproj

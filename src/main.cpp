@@ -31,15 +31,11 @@ int main(void)
 		//Assets
 		Model suzanne = ModelSystem::loadModel("./assets/models/monkey.obj");
 
-		//Renderer
 		auto eRenderer = registry->create();
 		emplace<Renderer>(registry, eRenderer,RenderSystem::create());
 
-		//--
-		//-- Camera
 		auto eCam = registry->create();
 		emplace<camera>(registry, eCam);
-		emplace<input>(registry, eCam);
 
 		//--
 		//-- Suzannes in a Circle

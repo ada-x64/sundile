@@ -1,7 +1,6 @@
 #pragma once
 #include "../sundile/sundile.h"
 #include "../components/Camera.h"
-#include "../components/Input.h"
 
 
 BEGIN_SYSTEM(CameraSystem)
@@ -34,13 +33,13 @@ BEGIN_SYSTEM(CameraSystem)
 	}
 	void stepEvent(const SimStepEvent& ev) {
 		using namespace glm;
-		ev.registry->view<camera, input>().each([&](auto entity, camera& cam, input& Input) {
+		ev.registry->view<camera>().each([&](auto entity, camera& cam) {
 			updateGUI<camera>(entity,cam);
 
 			//
 			//Identity and inverse.
 			mat4 T = mat4(1.f);
-			mat4 Mi = inverse(cam.model);
+			mat4 Mi = inverse(cam.T);
 			Vec3& dir = cam.dir;
 			Vec3& pos = cam.pos;
 			Vec3& spd = cam.spd;
@@ -52,24 +51,16 @@ BEGIN_SYSTEM(CameraSystem)
 			if (cursorpos != cursorpos_prev) {
 				float scale = pi;
 
-				if (Input.held[btn::mb_left]) {
+				if (InputSystem::isHeld(btn::mb_left)) {
 					float xdif = (cursorpos.x - cursorpos_prev.x);
 					float radians = xdif * scale;
 					newdir.y += radians;
 				}
-				if (Input.held[btn::mb_right]) {
+				if (InputSystem::isHeld(btn::mb_right)) {
 					float ydif = (cursorpos.y - cursorpos_prev.y);
 					float radians = ydif * scale;
 					newdir.x += radians;
 				}
-
-				/**
-				cam.model = glm::translate(
-					glm::rotate(
-						glm::translate(cam.model, -cam.pos),
-						radians, axis),
-					cam.pos);
-				/**/
 			}
 			dir += newdir;
 
@@ -86,22 +77,22 @@ BEGIN_SYSTEM(CameraSystem)
 			//Translation
 			float movspd = -.1f;
 			vec3 newspd = vec3(0.f);
-			if (Input.held[btn::left]) {
+			if (InputSystem::isHeld(btn::left)) {
 				newspd.x -= movspd;
 			}
-			if (Input.held[btn::right]) {
+			if (InputSystem::isHeld(btn::right)) {
 				newspd.x += movspd;
 			}
-			if (Input.held[btn::up]) {
+			if (InputSystem::isHeld(btn::up)) {
 				newspd.z -= movspd;
 			}
-			if (Input.held[btn::down]) {
+			if (InputSystem::isHeld(btn::down)) {
 				newspd.z += movspd;
 			}
-			if (Input.held[btn::trigger_left]) {
+			if (InputSystem::isHeld(btn::trigger_left)) {
 				newspd.y -= movspd;
 			}
-			if (Input.held[btn::trigger_right]) {
+			if (InputSystem::isHeld(btn::trigger_right)) {
 				newspd.y += movspd;
 			}
 
@@ -130,8 +121,7 @@ BEGIN_SYSTEM(CameraSystem)
 			cursorpos_prev = cursorpos;
 
 			//Set MVP
-			cam.model *= Mi * T;
-			cam.mvp = cam.model;
+			cam.T *= Mi * T;
 
 			//Log
 			/**

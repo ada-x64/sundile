@@ -272,7 +272,7 @@ namespace sundile {
 					EntityInspector(sim);
 					EndChild();
 
-					End(); //ECS Tools
+					End();
 				}
 			};
 		}

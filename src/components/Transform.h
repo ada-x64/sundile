@@ -1,5 +1,7 @@
 #pragma once
 #include "../sundile/sundile.h"
-BEGIN_COMPONENT(transform)
-	glm::mat4 mat;
-END_COMPONENT
+namespace sundile {
+	namespace Components {
+		typedef glm::mat4 transform;
+	}
+}

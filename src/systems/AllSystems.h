@@ -3,7 +3,6 @@
 //-- EXPORT functions
 //--
 #include "CameraSystem.h"
-#include "InputSystem.h"
 #include "MeshSystem.h"
 #include "ModelSystem.h"
 #include "PhysicsSystem.h"

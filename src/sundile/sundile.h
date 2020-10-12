@@ -4,3 +4,4 @@
 #include "systems/WindowSystem.h"
 #include "systems/SimSystem.h"
 #include "systems/GuiSystem.h"
+#include "systems/InputSystem.h"

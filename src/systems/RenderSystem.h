@@ -24,7 +24,7 @@ BEGIN_SYSTEM(RenderSystem)
 			registry->view<camera>().each([=](auto entity, auto& cam) {
 				ShaderSystem::use(passthrough);
 				int uView = glGetUniformLocation(passthrough, "view");
-				glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(cam.mvp));
+				glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(cam.T));
 				checkError();
 
 				int uProj = glGetUniformLocation(passthrough, "projection");
@@ -41,7 +41,7 @@ BEGIN_SYSTEM(RenderSystem)
 			registry->view<camera>().each([=](auto entity, auto& cam) {
 				ShaderSystem::use(passthrough);
 				int uView = glGetUniformLocation(passthrough, "view");
-				glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(cam.mvp));
+				glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(cam.T));
 				checkError();
 
 				int uProj = glGetUniformLocation(passthrough, "projection");
