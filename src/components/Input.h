@@ -1,31 +1,33 @@
 #pragma once
 #include "../sundile/sundile.h"
-//Default captured buttons.
-#ifndef SUNDILE_BTNS
-#define SUNDILE_BTNS
+//TODO - probably should make this a part of sundile instead of an independent component
 namespace sundile {
 	enum btn {
-		up,
-		down,
-		left,
-		right,
-		pad_up,
-		pad_down,
-		pad_left,
-		pad_right,
-		bumper_left,
-		bumper_right,
-		trigger_left,
-		trigger_right,
-		mb_left,
-		mb_middle,
-		mb_right,
+		up, //keyboard up
+		down, //keyboard down
+		left, //keyboard left
+		right, //keyboard right
+		btn1, //Y, Triangle
+		btn2, //B, Circle
+		btn3, //A, Cross
+		btn4, //X, Square
+		btn5, //L3
+		btn6, //R3
+		pad_up, //dpad up
+		pad_down, //dpad down
+		pad_left, //dpad left
+		pad_right, //dpad right
+		bumper_left, //L1
+		bumper_right, //R1
+		trigger_left, //L2
+		trigger_right, //R2
+		mb_left, //left mouse button
+		mb_middle, //right mouse button
+		mb_right, //middle mouse button / scroll wheel pressed
 		COUNT
 	};
 }
-#endif
 
-//TODO - probably should make this a part of sundile instead of an independent component
 BEGIN_COMPONENT(input)
 
 	bool pressed[btn::COUNT];

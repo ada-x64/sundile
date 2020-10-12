@@ -6,61 +6,64 @@
 #define GUI_H
 #ifndef SUNDILE_EXPORT
 //--
-//-- guiElement
-//--
-
-BEGIN_COMPONENT(guiElement)
-	enum key {
-		entityInspector,
-		componentInspector
-	};
-	std::map<const key, bool> state;
-	std::function<void()> renderFunc;
-	guiElement() : renderFunc([](){}) {};
-	guiElement(std::function<void()> renderFunc) : renderFunc(renderFunc) {};
-END_COMPONENT
-
-//--
 //-- GuiSystem
 //--
 namespace sundile {
+
+	enum GuiStateKey {
+		entityInspector,
+		componentInspector,
+		focusAny
+	};
+	namespace Components {};
+
 	namespace GuiSystem {
 		using namespace Components;
 
 		//-- Variables & Typedefs
+		// Contains typeinfo for registered components.
 		struct guiMeta {
 			void* ref = nullptr;
 			entt::id_type id = -1;
 			entt::entity entt;
 		};
-		guiMeta nullMeta;
 
+		// Contains the Dear IMGUI instructions for registered components
 		typedef std::function<void(guiMeta&)> guiRenderFunc;
+
+		// Null members
+		guiMeta nullMeta;
 		void nullRenderFunc(guiMeta&) { ImGui::Text("(empty)"); }
 
-		//Contains render functions
+		// Contains render functions
 		struct guiIndex {
 			std::string name = "(unregistered component(s))";
 			guiRenderFunc f = nullRenderFunc; //by default, do nothing
 			entt::id_type id = -1;
 		};
-		//Contains metas, which have the actual values to be passed to the function stored in the corresponding guiIndex
+		// Contains metas, which have the actual values to be passed to the function stored in the corresponding guiIndex
 		struct listComponent {
 			guiIndex index;
 			guiMeta meta;
 		};
-		//Contains components
+		// Contains components
 		struct listEntity {
 			entt::entity entity = entt::null;
 			std::string name = "(unset entity)";
 			std::vector<listComponent> componentList = {};
 		};
+		// Contains primary GUI
+		struct guiContainer {
+			std::map<const GuiStateKey, bool> state;
+			std::function<void()> renderFunc;
+			guiContainer() : renderFunc([](){}) {};
+			guiContainer(std::function<void()> renderFunc) : renderFunc(renderFunc) {};
+		};
 
+		// Vectors
 		static std::vector<guiIndex> guiIndices;
 		static std::vector<guiMeta> metaList;
 		static std::vector<listEntity> entityList;
-
-
 
 
 		//-- Functions
@@ -203,7 +206,7 @@ namespace sundile {
 			ImGui::NewFrame();
 
 			//Render all GUI elements here
-			ev.registry->view<guiElement>().each([&](auto& e, guiElement& el) {
+			ev.registry->view<guiContainer>().each([&](auto& e, guiContainer& el) {
 				el.renderFunc();
 				});
 
@@ -211,7 +214,7 @@ namespace sundile {
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
 
-		void registerECS(SmartWindow& winc, SmartSim& sim) {
+		void registerECS(SmartWindow& winc, SmartSim& sim, SmartEVW& evw) {
 			auto registry = sim->registry;
 			float ww = winc->WIDTH;
 			float wh = winc->HEIGHT;
@@ -222,11 +225,19 @@ namespace sundile {
 			glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
 
 			auto GUI = registry->create();
-			auto& e = registry->emplace<guiElement>(GUI);
-			e.renderFunc = [&]() {
+			auto& e = registry->emplace<guiContainer>(GUI);
+			e.renderFunc = [=, &e]() {
 				//Variables
 				using namespace ImGui;
+				using k = GuiStateKey;
 				ImVec2 windowSize = WindowSystem::getWindowSize(winc);
+				auto& io = ImGui::GetIO();
+
+				// Focus
+				if (io.WantCaptureMouse) {
+					GuiEvent event({ k::focusAny, true });
+					evw->dispatcher.trigger<GuiEvent>(event); //this isn't being copied correctly 
+				}
 
 				// Main Menu Bar
 				if (BeginMainMenuBar()) {
@@ -239,13 +250,13 @@ namespace sundile {
 					if (BeginMenu("Window")) {
 						std::string label;
 
-						label = e.state[e.entityInspector] ? "Hide Entity Inspector" : "Show Entity Inspector";
+						label = e.state[k::entityInspector] ? "Hide Entity Inspector" : "Show Entity Inspector";
 						if (MenuItem(label.c_str()))
-							e.state[e.entityInspector] = !e.state[e.entityInspector];
+							e.state[k::entityInspector] = !e.state[k::entityInspector];
 
-						label = e.state[e.componentInspector] ? "Hide Component Inspector" : "Show Component Inspector";
+						label = e.state[k::componentInspector] ? "Hide Component Inspector" : "Show Component Inspector";
 						if (MenuItem(label.c_str()))
-							e.state[e.componentInspector] = !e.state[e.componentInspector];
+							e.state[k::componentInspector] = !e.state[k::componentInspector];
 
 						ImGui::EndMenu();
 					}
@@ -254,7 +265,7 @@ namespace sundile {
 
 				//-- STATE ROUTER
 				// ECS Tools
-				if (e.state[e.entityInspector]) {
+				if (e.state[k::entityInspector]) {
 					Begin("ECS Tools");
 
 					BeginChild("Entity Inspector");
@@ -264,7 +275,6 @@ namespace sundile {
 					End(); //ECS Tools
 				}
 			};
-
 		}
 		void simInit(const SimInitEvent& ev) {
 			ev.evw->dispatcher.sink<SimStepEvent>().connect<refreshEntities>();
@@ -286,7 +296,7 @@ namespace sundile {
 			int tex_w, tex_h;
 			io.Fonts->GetTexDataAsRGBA32(&tex_pixels, &tex_w, &tex_h);
 
-			registerECS(winc, sim);
+			registerECS(winc, sim, evw);
 			evw->dispatcher.sink<SimInitEvent>().connect<GuiSystem::simInit>();
 		}
 	}
@@ -362,7 +372,6 @@ namespace sundile {
 
 #else //ifdef SUNDILE_EXPORT
 
-BEGIN_COMPONENT(guiElement) END_COMPONENT
 namespace GuiSystem {
 	void init(SmartWindow winc, SmartSim sim, SmartEVW evw) {}
 }

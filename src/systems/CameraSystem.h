@@ -5,9 +5,9 @@
 
 
 BEGIN_SYSTEM(CameraSystem)
+//TODO: remove these; get them from Input instead
 	inline glm::vec2 cursorpos;
 	inline glm::vec2 cursorpos_prev;
-
 
 	glm::vec3 rotatexy(glm::vec3 vec, float radians) {
 		//note: this is the passive transform, used for rotating axes
@@ -16,7 +16,7 @@ BEGIN_SYSTEM(CameraSystem)
 		return vec;
 	}
 
-	void catchCursorEvent(const TypedWindowEvent<double>& ev) { //TODO - move this to InputSystem
+	void cursorEvent(const TypedWindowEvent<double>& ev) { //TODO - move this to InputSystem
 		GLFWwindow* win = ev.window;
 	
 		int* width = new int;
@@ -27,12 +27,12 @@ BEGIN_SYSTEM(CameraSystem)
 		delete width;
 		delete height;
 	}
-
-	void catchGuiEvent(const GuiEvent ev) {
-		//TODO: lock controls when window is out of focus
+	void guiEvent(const GuiEvent& ev) {
+		if (ev.payload.key == GuiStateKey::focusAny && ev.payload.value) {
+			//lock controls
+		}
 	}
-
-	void catchStepEvent(const SimStepEvent& ev) {
+	void stepEvent(const SimStepEvent& ev) {
 		using namespace glm;
 		ev.registry->view<camera, input>().each([&](auto entity, camera& cam, input& Input) {
 			updateGUI<camera>(entity,cam);
@@ -165,13 +165,10 @@ BEGIN_SYSTEM(CameraSystem)
 		});
 	}
 
-
-
-
 	void init(const SimInitEvent& ev) {
-		ev.evw->dispatcher.sink<SimStepEvent>().connect<&catchStepEvent>();
-		ev.evw->dispatcher.sink<TypedWindowEvent<double>>().connect<&catchCursorEvent>();
-		ev.evw->dispatcher.sink<GuiEvent>().connect<&catchGuiEvent>();
+		ev.evw->dispatcher.sink<SimStepEvent>().connect<&stepEvent>();
+		ev.evw->dispatcher.sink<TypedWindowEvent<double>>().connect<&cursorEvent>();
+		ev.evw->dispatcher.sink<GuiEvent>().connect<&guiEvent>();
 
 		//dependencies
 		ev.registry->on_construct<camera>().connect<&entt::registry::emplace_or_replace<velocity>>();

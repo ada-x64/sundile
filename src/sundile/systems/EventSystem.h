@@ -34,48 +34,20 @@ namespace sundile {
 	typedef std::weak_ptr<entt::registry> SafeRegistry;
 
 
-	//--
-	//-- Events
-	//--
-
-	// To: Any
-	// From: Any
-	// Shorthand: "ev"
-	// Example: Main loop events (carry no information)
-	// Event base class
+	// GENERIC EVENTS
 	struct Event {};
-
-	struct initEvent {
-		SmartEVW evw;	
-	};
-
+	struct initEvent {SmartEVW evw;	};
 	struct preStepEvent :Event {};
 	struct stepEvent :Event {};
 	struct postStepEvent:Event {};
-
 	struct terminateEvent :Event {};
 
-	// To: SimSystem, GuiSystem, ProjectSystem, WindowSystem (termination)
-	// From: WindowSystem
-	// Shorthand: "wev"
-	// Example: Key event, window resize event -- anything from GLFW
-	// Types: generic_window, terminateWindow, updateWindow
-	struct WindowEvent : Event {
-		GLFWwindow* window;
-	};
+	// WINDOW EVENTS
+	struct WindowEvent : Event {GLFWwindow* window;};
 
-	// Internal, generic event type for GLFW events that aren't input-related
-	// Types: cursorpos, framebufferSize
 	template <typename t>
-	struct TypedWindowEvent : WindowEvent {
-		std::vector<t> vals;
-	};
+	struct TypedWindowEvent : WindowEvent {std::vector<t> vals;};
 
-	// To: SimSystem, GuiSystem, ProjectSystem
-	// From: WindowSystem
-	// Shorthand: "iev"
-	// Example: Key input, mouse position update, mouse button clicked, etc.
-	// Types: key, mouseBtn, ...
 	struct WindowInputEvent : WindowEvent {
 		int key,
 			scancode,
@@ -85,26 +57,14 @@ namespace sundile {
 
 	struct WindowTerminateEvent : WindowEvent {};
 
-	// To: WindowSystem
-	// From: GuiSystem, RenderSystem
-	// Shorthand: "dev"
-	// Example: Draw GUI or rendered scene.
-	struct DrawEvent : Event {
-
-	};
-
-	// To: SimSystem
-	// From: Component systems, GuiSystem
-	// Shorthand: "gev"
-	// Example: Send float modified in GUI to SimSystem; For component systems: idk yet lol
+	// SIM EVENTS
+	// This includes GUI and Project events
 	struct SimEvent : Event {
 		SmartRegistry registry;
 		float deltaTime;
 		float currentTime;
 	};
-	struct SimInitEvent : SimEvent {
-		SmartEVW evw;
-	};
+	struct SimInitEvent : SimEvent {SmartEVW evw;};
 	struct SimInputEvent : SimEvent {
 		int key,
 			scancode,
@@ -113,28 +73,23 @@ namespace sundile {
 	};
 	struct SimStepEvent : SimEvent {};
 	
-	// To: RenderSystem
-	// From: SimSystem
-	// Shorthand: "rev"
-	// Example: Send renderable data to RenderSystem
 	struct RenderEvent : SimEvent {};
 
-	// To: GuiSystem
-	// From: SimSystem
-	// Shorthand: "uev"
-	// Example: Send float to GUI for live editing.
-	union GuiEventContent {
-		bool b;
+	// GUI EVENTS
+	enum GuiStateKey;
+
+	struct GuiEventContent {
+		GuiStateKey key;
+		bool value;
+		GuiEventContent(GuiStateKey k, const bool v) : key(k), value(v) {};
 	};
 	struct GuiEvent : SimEvent {
-		GuiEventContent content;
+		 GuiEventContent payload;
+		 GuiEvent(GuiEventContent payload) : payload(payload) {};
 	};
 	struct RenderGuiEvent : SimEvent {};
 
-	// To: ProjectSystem
-	// From: GuiSystem, SimSystem
-	// Shorthand: "pev"
-	// Example: Send relevant information to create snapshot, save or load project.
+	// PROJECT EVENTS
 	struct ProjEvent : SimEvent {
 
 	};

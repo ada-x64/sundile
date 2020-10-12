@@ -34,6 +34,7 @@ namespace sundile {
 				evw->dispatcher.trigger<preStepEvent>();
 				evw->dispatcher.trigger<stepEvent>();
 				evw->dispatcher.trigger<postStepEvent>();
+				evw->dispatcher.clear();
 			}
 		}
 

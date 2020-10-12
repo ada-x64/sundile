@@ -8,7 +8,7 @@ BEGIN_SYSTEM(InputSystem)
 	//- Probably should make an IO component/system, and pass the component type so it parses the right function
 	//- enum components ?
 
-	void catchInputEvent(const SimInputEvent& ev) {
+	void inputEvent(const SimInputEvent& ev) {
 		ev.registry->view<input>().each([&](auto& entity, input& in) {
 			if (ev.action == GLFW_PRESS) {
 				switch (ev.key) {
@@ -76,7 +76,7 @@ BEGIN_SYSTEM(InputSystem)
 			}
 		});
 	}
-	void catchStepEvent(const SimStepEvent& ev) {
+	void stepEvent(const SimStepEvent& ev) {
 		ev.registry->view<input>().each([&](auto& entity, input& in) {
 			for (int i = 0; i < btn::COUNT; ++i) {
 				if (in.released[i] && !in.held[i]) {
@@ -94,8 +94,7 @@ BEGIN_SYSTEM(InputSystem)
 			}
 		});
 	}
-
-	void catchTypedWindowEvent(const TypedWindowEvent<double>& ev) { //convert to sim event?
+	void typedWindowEvent(const TypedWindowEvent<double>& ev) { //convert to sim event?
 		GLFWwindow* win = ev.window;
 
 		int* width = new int;
@@ -107,8 +106,8 @@ BEGIN_SYSTEM(InputSystem)
 	}
 
 	void init(const SimInitEvent& ev) {
-		ev.evw->dispatcher.sink<SimInputEvent>().connect<&catchInputEvent>();
-		ev.evw->dispatcher.sink<SimStepEvent>().connect<&catchStepEvent>();
-		ev.evw->dispatcher.sink< TypedWindowEvent<double>>().connect<&catchTypedWindowEvent>();
+		ev.evw->dispatcher.sink<SimInputEvent>().connect<&inputEvent>();
+		ev.evw->dispatcher.sink<SimStepEvent>().connect<&stepEvent>();
+		ev.evw->dispatcher.sink< TypedWindowEvent<double>>().connect<&typedWindowEvent>();
 	}
 END_SYSTEM
