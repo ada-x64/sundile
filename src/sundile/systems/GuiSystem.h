@@ -9,27 +9,33 @@
 //-- GuiSystem
 //--
 namespace sundile {
-
+	// for interaction with defineGui()
 	enum GuiStateKey {
 		entityInspector,
 		componentInspector,
 		focusAny
 	};
+	// Contains typeinfo for registered components.
+	struct guiMeta {
+		void* ref;
+		entt::id_type id = -1;
+		entt::entity entt;
+	};
+	// Contains the Dear IMGUI instructions for registered components
+	typedef std::function<void(guiMeta&)> guiRenderFunc;
+
+	template <typename T>
+	auto meta_cast(guiMeta meta) {
+		return (T*)(meta.ref);
+	}
+
 	namespace Components {};
 
 	namespace GuiSystem {
 		using namespace Components;
 
 		//-- Variables & Typedefs
-		// Contains typeinfo for registered components.
-		struct guiMeta {
-			void* ref = nullptr;
-			entt::id_type id = -1;
-			entt::entity entt;
-		};
 
-		// Contains the Dear IMGUI instructions for registered components
-		typedef std::function<void(guiMeta&)> guiRenderFunc;
 
 		// Null members
 		guiMeta nullMeta;
@@ -236,7 +242,7 @@ namespace sundile {
 				// Focus
 				if (io.WantCaptureMouse) {
 					GuiEvent event({ k::focusAny, true });
-					evw->dispatcher.trigger<GuiEvent>(event); //this isn't being copied correctly 
+					evw->dispatcher.trigger<GuiEvent>(event);
 				}
 
 				// Main Menu Bar
@@ -303,20 +309,35 @@ namespace sundile {
 
 	//-- Global scope definition function
 	template <typename T>
-	void defineGui(GuiSystem::guiRenderFunc f, std::string name = T::__name) {
+	void defineGui(guiRenderFunc f, std::string name = T::__name) {
 		T foo;
 		auto meta = entt::meta_any(foo);
 		printf("GUI DEFINED FOR TYPE %s\nTYPE_ID:%i\n", typeid(T).name(), meta.type().type_id());
 		GuiSystem::guiIndices.push_back(GuiSystem::guiIndex{ name, f, meta.type().type_id() });
+	}
+	template <typename T>
+	void updateGUI(entt::entity entt, T& value) {
+		using namespace GuiSystem;
+		for (auto& e : entityList) {
+			if (e.entity == entt) {
+				auto meta_any = entt::meta_any(value);
+				for (auto& c : e.componentList) {
+					if (c.meta.id == meta_any.type().type_id()) {
+						void* v = &value;
+						c.meta.ref = v;
+						return;
+					}
+				}
+			}
+		}
 	}
 
 	template <typename T>
 	T emplace(SmartRegistry registry, entt::entity entt) {
 		auto returned = registry->emplace<T>(entt);
 		auto meta = entt::meta_any(returned);
-		GuiSystem::guiMeta gm{&returned, meta.type().type_id(), entt};
+		guiMeta gm{&returned, meta.type().type_id(), entt};
 		GuiSystem::metaList.push_back(gm);
-		assert(gm.ref == &returned);
 		return returned;
 	}
 
@@ -324,14 +345,13 @@ namespace sundile {
 	T emplace(SmartRegistry registry, entt::entity entt, Args &&...args) {
 		auto returned = registry->emplace<T>(entt, args...);
 		auto meta = entt::meta_any(returned);
-		GuiSystem::guiMeta gm{ &returned, meta.type().type_id(), entt };
+		guiMeta gm{ &returned, meta.type().type_id(), entt };
 		GuiSystem::metaList.push_back(gm);
-		assert(gm.ref == &returned);
 		return returned;
 	}
 
 	//--
-	//-- ImGui Wrappers
+	//-- defineGui Helpers
 	//--
 	bool DragVec2(const char* name, Vec2& val, float v_speed = (1.0F), float v_min = (0.0F), float v_max = (0.0F), const char* format = "%.3f", float power = (1.0F)){
 		float f[2] = { val.x, val.y };
@@ -352,22 +372,9 @@ namespace sundile {
 		return changed;
 	}
 
-	template <typename T>
-	void updateGUI(entt::entity entt, T& value) {
-		using namespace GuiSystem;
-		for (auto& e : entityList) {
-			if (e.entity == entt) {
-				auto meta_any = entt::meta_any(value);
-				for (auto& c : e.componentList) {
-					if (c.meta.id == meta_any.type().type_id()) {
-						void* v = &value;
-						c.meta.ref = v;
-						return;
-					}
-				}
-			}
-		}
-	}
+
+
+
 }
 
 #else //ifdef SUNDILE_EXPORT

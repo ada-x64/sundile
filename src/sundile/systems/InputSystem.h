@@ -31,7 +31,7 @@ namespace sundile {
 		COUNT
 	};
 
-	typedef std::map<const btn, int> inputMap;
+	typedef std::multimap<btn, int> inputMap;
 }
 
 BEGIN_COMPONENT(input)
@@ -87,25 +87,29 @@ namespace sundile {
 		}
 
 		void inputEvent(const SimInputEvent& ev) {
-			if (ev.key != GLFW_PRESS && ev.key != GLFW_RELEASE) return;
+			if (ev.action != GLFW_PRESS && ev.action != GLFW_RELEASE) return;
 			ev.registry->view<input>().each([&](auto& entity, input& in) {
 				auto map = in.map;
-				auto valueToChange = ev.action == GLFW_PRESS ? in.pressed : in.released;
+				bool* valueToChange = ev.action == GLFW_PRESS ? in.pressed : in.released;
 				for (auto pair : map) {
 					if (ev.key == pair.second) {
 						valueToChange[pair.first] = true;
+						return;
 					}
 				}
 			});
 		}
 		void stepEvent(const SimStepEvent& ev) {
 			ev.registry->view<input>().each([&](auto& entity, input& in) {
+				updateGUI<input>(entity, in);
+
 				for (int i = 0; i < btn::COUNT; ++i) {
 					if (in.released[i] && !in.held[i]) {
 						in.released[i] = false;
 					}
 					if (in.released[i] && in.held[i]) {
 						in.held[i] = false;
+						in.pressed[i] = false;
 					}
 					if (in.pressed[i] && in.held[i]) {
 						in.pressed[i] = false;
@@ -114,6 +118,7 @@ namespace sundile {
 						in.held[i] = true;
 					}
 				}
+				current = in; //bad
 				});
 		}
 		void typedWindowEvent(const TypedWindowEvent<double>& ev) { //convert to sim event?
@@ -126,6 +131,15 @@ namespace sundile {
 			delete width;
 			delete height;
 		}
+
+		const char* getKeyNameByValue(int val) {
+			return val == GLFW_MOUSE_BUTTON_LEFT? "left mouse button": val == GLFW_MOUSE_BUTTON_RIGHT? "right mouse button": val == GLFW_MOUSE_BUTTON_MIDDLE? "middle mouse button":
+				val == GLFW_KEY_UP? "up arrow" : val == GLFW_KEY_DOWN? "down arrow": val == GLFW_KEY_LEFT? "left arrow": val == GLFW_KEY_RIGHT? "right arrow":
+				val == GLFW_KEY_RIGHT_CONTROL? "ctrl (right)": val == GLFW_KEY_RIGHT_ALT? "alt (right)": val == GLFW_KEY_RIGHT_SHIFT? "shift (right)":
+				val == GLFW_KEY_LEFT_CONTROL ? "ctrl (left)" : val == GLFW_KEY_LEFT_ALT ? "alt (left)" : val == GLFW_KEY_LEFT_SHIFT ? "shift (left)" :
+				val == GLFW_KEY_ENTER? "enter": val == GLFW_KEY_ESCAPE? "esc":
+				glfwGetKeyName(val, -1);
+		}
 		void init(const SimInitEvent& ev) {
 			ev.evw->dispatcher.sink<SimInputEvent>().connect<&inputEvent>();
 			ev.evw->dispatcher.sink<SimStepEvent>().connect<&stepEvent>();
@@ -133,11 +147,47 @@ namespace sundile {
 
 
 			auto eInput = ev.registry->create();
-			emplace<input>(ev.registry, eInput, current);
+			emplace<input>(ev.registry, eInput);
 
-			defineGui<input>([&](GuiSystem::guiMeta& meta) {
+			defineGui<input>([](guiMeta& meta) {
 				//TODO: allow user to modify input map and view input status
 				//TODO: debug - why did input stop working? Something to do with the emplacement above?
+				using namespace ImGui;
+				input* in = meta_cast<input>(meta); //This cast isn't working. The pointer is getting messed up somewhere along the way (misallocated)
+
+				std::map<const btn, const char*> nameMap = {
+					{btn::up, "up"},
+					{btn::down, "down"},
+					{btn::left, "left"},
+					{btn::right, "right"},
+					{btn::btn1, "btn1"},
+					{btn::btn2, "btn2"},
+					{btn::btn3, "btn3"},
+					{btn::btn4, "btn4"},
+					{btn::pad_up, "pad_up"},
+					{btn::pad_down, "pad_down"},
+					{btn::pad_left, "pad_left"},
+					{btn::pad_right, "pad_right"},
+					{btn::bumper_left, "bumper_left"},
+					{btn::bumper_right, "bumper_right"},
+					{btn::trigger_left, "trigger_left"},
+					{btn::trigger_right, "trigger_right"},
+					{btn::start, "start"},
+					{btn::select, "select"},
+					{btn::mb_left, "mb_left"},
+					{btn::mb_middle, "mb_middle"},
+					{btn::mb_right, "mb_right"}
+				};
+
+
+				for (auto pair : in->map) {
+					auto key = pair.first;
+					auto val = pair.second;
+					ImGui::Text("%s: %s",nameMap[key],getKeyNameByValue(val));
+					auto drawlist = GetWindowDrawList();
+					auto p = ImGui::GetCursorScreenPos();
+					drawlist->AddRectFilled({ p.x-8,p.y-8 }, { p.x+8,p.y+8 }, ImGui::ColorConvertFloat4ToU32({ static_cast<float>(in->pressed[key]), static_cast<float>(in->held[key]), static_cast<float>(in->released[key]), 1 }));
+				}
 			});
 		}
 	}
