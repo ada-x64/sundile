@@ -17,6 +17,7 @@ BEGIN_COMPONENT(camera)
 	float maxspd = 0.5f;
 	Vec2 cursorpos;
 	Vec2 cursorpos_prev;
+	bool locked = false;
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 	transform T =

@@ -7,7 +7,6 @@
 #include "EventSystem.h"
 
 namespace sundile {
-
 	struct SmartGLFWwindowDestroyer {
 		void operator()(GLFWwindow* ptr) {
 			glfwDestroyWindow(ptr);
@@ -19,17 +18,16 @@ namespace sundile {
 	{
 		SmartGLFWwindow	window;
 		SmartEVW		evw;
-		int				WIDTH				= 800;
-		int				HEIGHT				= 600;
-		bool			windowShouldClose	= false;
-		const char*		name				= "sundile";
+		int				WIDTH = 800;
+		int				HEIGHT = 600;
+		bool			windowShouldClose = false;
+		const char* name = "sundile";
 
-		bool operator == (WindowContainer & other) {
+		bool operator == (WindowContainer& other) {
 			return (this->window.get() == other.window.get());
 		}
 	};
 	typedef std::shared_ptr<WindowContainer> SmartWindow;
-
 
 	namespace WindowSystem {
 		inline SmartWindow emptywindow = std::make_shared<WindowContainer>();

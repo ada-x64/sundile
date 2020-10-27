@@ -20,7 +20,7 @@ namespace sundile {
 
 		void initAll() {
 			for (SmartEVW evw : EVWs) {
-				evw->dispatcher.trigger<initEvent>();
+				evw->dispatcher.trigger<initEvent>(evw);
 			}
 		}
 

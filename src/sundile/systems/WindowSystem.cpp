@@ -58,6 +58,12 @@ namespace sundile {
 
 		namespace /* Event catchers */ {
 
+			void eventSystemInit(const initEvent& ev) {
+				for (auto window : windows) {
+					ev.evw->dispatcher.trigger<WindowInitEvent>(window.get()->window.get());
+				}
+			}
+
 			void catchTerminateEvent(const WindowTerminateEvent& wev) {
 				terminate(getSmartWindow(wev.window));
 			}
@@ -109,6 +115,7 @@ namespace sundile {
 				evw->dispatcher.sink<WindowTerminateEvent>().connect<catchTerminateEvent>();
 				evw->dispatcher.sink<preStepEvent>().connect<updateAll>();
 				evw->dispatcher.sink<postStepEvent>().connect<postStep>();
+				evw->dispatcher.sink<initEvent>().connect<eventSystemInit>();
 			}
 		}
 		//-----------------------------------------------------------------------------------------
@@ -373,5 +380,6 @@ namespace sundile {
 
 			return winc;
 		}
+
 	}
 }
