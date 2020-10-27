@@ -6,3 +6,7 @@
 
 #define SYSTEM_DEF_BEGIN(name) namespace sundile { using namespace Components; namespace Systems { namespace name {
 #define SYSTEM_DEF_END }}}#define BEGIN_COMPONENT(name) namespace sundile { namespace Components { struct name:component { static constexpr char const* __name = #name;
+<<<<<<< HEAD
+=======
+#define BEGIN_COMPONENT(name) namespace sundile { namespace Components { struct name:component { static constexpr char const* __name = #name;
+>>>>>>> development

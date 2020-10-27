@@ -6,92 +6,174 @@
 #define GUI_H
 #ifndef SUNDILE_EXPORT
 //--
-//-- guiElement
-//--
-
-BEGIN_COMPONENT(guiElement)
-	std::function<void()> renderFunc;
-	guiElement(std::function<void()> renderFunc) : renderFunc(renderFunc) {};
-END_COMPONENT
-
-//--
 //-- GuiSystem
 //--
 namespace sundile {
+	// for interaction with defineGui()
+	enum GuiStateKey {
+		entityInspector,
+		componentInspector,
+		focusAny
+	};
+	// Contains typeinfo for registered components.
+	struct guiMeta {
+		void* ref;
+		entt::id_type id = -1;
+		entt::entity entt;
+	};
+	// Contains the Dear IMGUI instructions for registered components
+	typedef std::function<void(guiMeta&)> guiRenderFunc;
+
+	template <typename T>
+	auto meta_cast(guiMeta meta) {
+		return (T*)(meta.ref);
+	}
+
+	namespace Components {};
+
 	namespace GuiSystem {
 		using namespace Components;
 
 		//-- Variables & Typedefs
-		struct guiMeta {
-			void* ref = nullptr;
-			entt::id_type id = -1;
-			entt::entity entt;
-		};
+		// Null members
 		guiMeta nullMeta;
-
-		typedef std::function<void(guiMeta&)> guiRenderFunc;
 		void nullRenderFunc(guiMeta&) { ImGui::Text("(empty)"); }
 
-		//Contains render functions
+		// Contains render functions
 		struct guiIndex {
 			std::string name = "(unregistered component(s))";
 			guiRenderFunc f = nullRenderFunc; //by default, do nothing
 			entt::id_type id = -1;
 		};
-		//Contains metas, which have the actual values to be passed to the function stored in the corresponding guiIndex
+		// Contains metas, which have the actual values to be passed to the function stored in the corresponding guiIndex
 		struct listComponent {
 			guiIndex index;
 			guiMeta meta;
 		};
-		//Contains components
+		// Contains components
 		struct listEntity {
 			entt::entity entity = entt::null;
 			std::string name = "(unset entity)";
 			std::vector<listComponent> componentList = {};
 		};
+		// Contains primary GUI
+		struct guiContainer {
+			std::map<const GuiStateKey, bool> state;
+			std::function<void()> renderFunc;
+			guiContainer() : renderFunc([](){}) {};
+			guiContainer(std::function<void()> renderFunc) : renderFunc(renderFunc) {};
+		};
 
+		// Vectors
 		static std::vector<guiIndex> guiIndices;
 		static std::vector<guiMeta> metaList;
 		static std::vector<listEntity> entityList;
 
+		namespace /* Fonrt-end Helper functions */ {
 
+			auto checkContext() {
+				auto ctx = ImGui::GetCurrentContext();
+				if (!ctx) { ctx = ImGui::CreateContext(); ImGui::SetCurrentContext(ctx); }
+				return ctx;
+			}
+			void setState(const SmartRegistry& registry, const SmartEVW& evw, guiContainer& gui, GuiStateKey key, bool value) {
+				gui.state[key] = value;
+				GuiEvent event({ registry }, { key, value});
+				evw->dispatcher.trigger<GuiEvent>(event);
+			}
+			void terminate(const terminateEvent& ev) {
+				ImGui_ImplOpenGL3_Shutdown();
+				ImGui_ImplGlfw_Shutdown();
+				ImGui::DestroyContext();
+			}
 
-
-		//-- Functions
-		auto checkContext() {
-			auto ctx = ImGui::GetCurrentContext();
-			if (!ctx) { ctx = ImGui::CreateContext(); ImGui::SetCurrentContext(ctx); }
-			return ctx;
-		}
-
-		void terminate(const terminateEvent& ev) {
-			ImGui_ImplOpenGL3_Shutdown();
-			ImGui_ImplGlfw_Shutdown();
-			ImGui::DestroyContext();
-		}
-
-		//inspector front end, called every frame
-		void renderInspector(const SmartSim& sim) {
-			auto ctx = checkContext();
-			
-			for (listEntity e : entityList) {
-				if (ImGui::TreeNode(e.name.c_str())) {
-					if (e.componentList.empty()) {
-						ImGui::Text("(empty)");
-						ImGui::TreePop();
-						continue;
+			void stateSetter(const SmartRegistry& registry, const SmartEVW& evw, guiContainer& gui, ImVec2 windowSize) {
+				using namespace ImGui;
+				auto& io = ImGui::GetIO();
+				if (IsWindowFocused(ImGuiFocusedFlags_AnyWindow)) {
+					if (!gui.state[focusAny]) {
+						setState(registry, evw, gui, focusAny, true);
 					}
-					for (listComponent c : e.componentList) {
-						if (ImGui::TreeNode(c.index.name.c_str())) {
-							c.index.f(c.meta);
+				}
+				else if (gui.state[focusAny]) {
+					setState(registry, evw, gui, focusAny, false);
+				}
+			}
+
+			namespace /*inspectors*/ {
+				void EntityInspector(const SmartSim& sim) {
+					auto ctx = checkContext();
+
+					for (listEntity e : entityList) {
+						if (ImGui::TreeNode(e.name.c_str())) {
+							if (e.componentList.empty()) {
+								ImGui::Text("(empty)");
+								ImGui::TreePop();
+								continue;
+							}
+							for (listComponent c : e.componentList) {
+								if (ImGui::TreeNode(c.index.name.c_str())) {
+									c.index.f(c.meta);
+									ImGui::TreePop();
+								}
+							}
 							ImGui::TreePop();
 						}
 					}
-					ImGui::TreePop();
+				}
+				void ComponentInspector(const SmartSim& sim) {
+					using namespace ImGui;
+					Text("WIP");
 				}
 			}
-		}
 
+			void stateRouter(const SmartRegistry& registry, const SmartEVW& evw, const SmartSim& sim, guiContainer& gui, ImVec2 windowSize) {
+				using namespace ImGui;
+				// ECS Tools
+				if (gui.state[entityInspector]) {
+					Begin("Entity Inspector");
+					EntityInspector(sim);
+					End();
+				}
+				if (gui.state[componentInspector]) {
+					Begin("Component Inspector");
+					ComponentInspector(sim);
+					End();
+				}
+			}
+
+			void mainMenu(const SmartRegistry& registry, const SmartEVW& evw, guiContainer& gui, ImVec2 windowSize) {
+				using namespace ImGui;
+				auto& io = ImGui::GetIO();
+				if (BeginMainMenuBar()) {
+					if (BeginMenu("File")) {
+						ImGui::EndMenu();
+					}
+					if (BeginMenu("Scene")) {
+						ImGui::EndMenu();
+					}
+					if (BeginMenu("Window")) {
+						std::string label;
+
+						label = gui.state[entityInspector] ? "Hide Entity Inspector" : "Show Entity Inspector";
+						if (MenuItem(label.c_str()))
+							setState(registry, evw, gui, entityInspector, !gui.state[entityInspector]);
+
+						label = gui.state[componentInspector] ? "Hide Component Inspector" : "Show Component Inspector";
+						if (MenuItem(label.c_str()))
+							setState(registry, evw, gui, componentInspector, !gui.state[componentInspector]);
+
+						ImGui::EndMenu();
+					}
+					EndMainMenuBar();
+				}
+			}
+
+
+		};
+
+
+		//-- Functions
 		//back end - to be called according to a timer (every second?)
 		void refreshEntities(SimStepEvent& sim) {
 
@@ -197,7 +279,7 @@ namespace sundile {
 			ImGui::NewFrame();
 
 			//Render all GUI elements here
-			ev.registry->view<guiElement>().each([&](auto& e, guiElement& el) {
+			ev.registry->view<guiContainer>().each([&](auto& e, guiContainer& el) {
 				el.renderFunc();
 				});
 
@@ -205,7 +287,8 @@ namespace sundile {
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
 
-		void registerECS(SmartWindow& winc, SmartSim& sim) {
+		//This is the meat of the system!
+		void registerECS(SmartWindow& winc, SmartSim& sim, SmartEVW& evw) {
 			auto registry = sim->registry;
 			float ww = winc->WIDTH;
 			float wh = winc->HEIGHT;
@@ -215,58 +298,15 @@ namespace sundile {
 			float viewport_y = wh / 2 - viewport_h / 2;
 			glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
 
-			auto renderWindow = registry->create();
-			registry->emplace<guiElement>(renderWindow, [=]() {
-				using namespace ImGui;
-				//SetNextWindowBgAlpha(0.f);
-				//SetNextWindowSizeConstraints({ viewport_w, viewport_h }, { viewport_w, viewport_h });
-				//Begin("rendering frame");
-				//auto pos = ImGui::GetWindowPos();
-				//SetWindowSize({ 800, 600 });
-				//glViewport(pos.x, -pos.y, viewport_w, viewport_h); //magic number here - don't know what the vertical offset between imgui and gl is. i guess it's 101.
-				//End();
-
-				GuiEvent e; //TODO: make this better
-				e.content = GuiEventContent{ ImGui::IsWindowFocused() };
-				sim->evw->dispatcher.trigger<GuiEvent>(e);
-				});
-
-			auto inspector = registry->create();
-			ImVec2 inspectorSize = { 240, static_cast<float>(winc->WIDTH) };
-			registry->emplace<guiElement>(inspector, [=]() {
-
+			auto GUI = registry->create();
+			auto& e = registry->emplace<guiContainer>(GUI);
+			e.renderFunc = [=, &e]() {
 				ImVec2 windowSize = WindowSystem::getWindowSize(winc);
 
-				using namespace ImGui;
-				SetNextWindowSize(inspectorSize);
-				SetNextWindowSizeConstraints({ inspectorSize.x, 120 }, { inspectorSize.x, inspectorSize.y });
-				//SetNextWindowPos({ windowSize.x - inspectorSize.x, 0 });
-
-				Begin("Inspector");
-				renderInspector(sim);
-				End();
-				});
-
-			auto toolbar = registry->create();
-			ImVec2 toolbarSize = { 120, static_cast<float>(winc->WIDTH) };
-			registry->emplace<guiElement>(toolbar, [=]() {
-
-				ImVec2 windowSize = WindowSystem::getWindowSize(winc);
-
-				using namespace ImGui;
-				SetNextWindowSize(toolbarSize);
-				SetNextWindowSizeConstraints({ toolbarSize.x, 32 }, { windowSize.y, toolbarSize.y });
-				SetNextWindowPos({ windowSize.x - toolbarSize.x - inspectorSize.x, 0 }); //this should lock the toolbar to the right. it isn't doing that x(
-				SetWindowPos("Toolbar", { windowSize.x - toolbarSize.x - inspectorSize.x, 0 });
-
-				Begin("Toolbar");
-				Text("Entity tools:");
-				Button("Add");
-				Button("Select");
-				Button("Translate");
-				Button("Rotate");
-				End();
-				});
+				stateSetter(registry, evw, e, windowSize);
+				mainMenu(registry, evw, e, windowSize);
+				stateRouter(registry, evw, sim, e, windowSize);
+			};
 		}
 		void simInit(const SimInitEvent& ev) {
 			ev.evw->dispatcher.sink<SimStepEvent>().connect<refreshEntities>();
@@ -288,32 +328,42 @@ namespace sundile {
 			int tex_w, tex_h;
 			io.Fonts->GetTexDataAsRGBA32(&tex_pixels, &tex_w, &tex_h);
 
-			registerECS(winc, sim);
+			registerECS(winc, sim, evw);
 			evw->dispatcher.sink<SimInitEvent>().connect<GuiSystem::simInit>();
 		}
 	}
 
 	//-- Global scope definition function
 	template <typename T>
-	void defineGui(GuiSystem::guiRenderFunc f, std::string name = T::__name) {
+	void defineGui(guiRenderFunc f, std::string name = T::__name) {
 		T foo;
 		auto meta = entt::meta_any(foo);
 		printf("GUI DEFINED FOR TYPE %s\nTYPE_ID:%i\n", typeid(T).name(), meta.type().type_id());
 		GuiSystem::guiIndices.push_back(GuiSystem::guiIndex{ name, f, meta.type().type_id() });
+	}
+	template <typename T>
+	void updateGUI(entt::entity entt, T& value) {
+		using namespace GuiSystem;
+		for (auto& e : entityList) {
+			if (e.entity == entt) {
+				auto meta_any = entt::meta_any(value);
+				for (auto& c : e.componentList) {
+					if (c.meta.id == meta_any.type().type_id()) {
+						void* v = &value;
+						c.meta.ref = v;
+						return;
+					}
+				}
+			}
+		}
 	}
 
 	template <typename T>
 	T emplace(SmartRegistry registry, entt::entity entt) {
 		auto returned = registry->emplace<T>(entt);
 		auto meta = entt::meta_any(returned);
-		GuiSystem::guiMeta gm{&returned, meta.type().type_id(), entt};
+		guiMeta gm{&returned, meta.type().type_id(), entt};
 		GuiSystem::metaList.push_back(gm);
-		assert(gm.ref == &returned);
-
-		//printf("emplace::type = %s / %i \n", typeid(T).name(), meta.type().type_id());
-		//printf("emplace::returned = %p\n", &returned);
-		//printf("emplace::meta.data() = %p\n", meta.data());
-
 		return returned;
 	}
 
@@ -321,22 +371,13 @@ namespace sundile {
 	T emplace(SmartRegistry registry, entt::entity entt, Args &&...args) {
 		auto returned = registry->emplace<T>(entt, args...);
 		auto meta = entt::meta_any(returned);
-		GuiSystem::guiMeta gm{ &returned, meta.type().type_id(), entt };
+		guiMeta gm{ &returned, meta.type().type_id(), entt };
 		GuiSystem::metaList.push_back(gm);
-		assert(gm.ref == &returned);
-		
-		//TODO: Reference pulled in CameraSystem::step::view is not the same as captured here. Why?
-			//Tried creating a view and getting that refrence. It was not the same.
-
-		//printf("emplace::type = %s / %i \n", typeid(T).name(), meta.type().type_id());
-		//printf("emplace::returned = %p\n", &returned);
-		//printf("emplace::meta.data() = %p\n", meta.data());
-
 		return returned;
 	}
 
 	//--
-	//-- ImGui Wrappers
+	//-- defineGui Helpers
 	//--
 	bool DragVec2(const char* name, Vec2& val, float v_speed = (1.0F), float v_min = (0.0F), float v_max = (0.0F), const char* format = "%.3f", float power = (1.0F)){
 		float f[2] = { val.x, val.y };
@@ -357,27 +398,13 @@ namespace sundile {
 		return changed;
 	}
 
-	template <typename T>
-	void updateGUI(entt::entity entt, T& value) {
-		using namespace GuiSystem;
-		for (auto& e : entityList) {
-			if (e.entity == entt) {
-				auto meta_any = entt::meta_any(value);
-				for (auto& c : e.componentList) {
-					if (c.meta.id == meta_any.type().type_id()) {
-						void* v = &value;
-						c.meta.ref = v;
-						return;
-					}
-				}
-			}
-		}
-	}
+
+
+
 }
 
 #else //ifdef SUNDILE_EXPORT
 
-BEGIN_COMPONENT(guiElement) END_COMPONENT
 namespace GuiSystem {
 	void init(SmartWindow winc, SmartSim sim, SmartEVW evw) {}
 }

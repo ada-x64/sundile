@@ -16,7 +16,7 @@ int main(void)
 	SmartWindow winc = WindowSystem::initWindowedFullscreen(evw);
 	winc->name = "sundile";
 	glfwSetWindowTitle(winc->window.get(), winc->name);
-	glfwSetWindowSizeLimits(winc->window.get(), winc->WIDTH, winc->HEIGHT, GLFW_DONT_CARE, GLFW_DONT_CARE);
+	glfwSetWindowSizeLimits(winc->window.get(), winc->WIDTH, winc->HEIGHT, winc->WIDTH, winc->HEIGHT);
 
 	GuiSystem::init(winc, sim, evw);
 	Systems::init(evw);
@@ -31,15 +31,11 @@ int main(void)
 		//Assets
 		Model suzanne = ModelSystem::loadModel("./assets/models/monkey.obj");
 
-		//Renderer
 		auto eRenderer = registry->create();
 		emplace<Renderer>(registry, eRenderer,RenderSystem::create());
 
-		//--
-		//-- Camera
 		auto eCam = registry->create();
 		emplace<camera>(registry, eCam);
-		emplace<input>(registry, eCam);
 
 		//--
 		//-- Suzannes in a Circle

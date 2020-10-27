@@ -1,13 +1,9 @@
 #pragma once
 #include "../sundile/sundile.h"
 #include "../components/Camera.h"
-#include "../components/Input.h"
 
 
 BEGIN_SYSTEM(CameraSystem)
-	inline glm::vec2 cursorpos;
-	inline glm::vec2 cursorpos_prev;
-
 
 	glm::vec3 rotatexy(glm::vec3 vec, float radians) {
 		//note: this is the passive transform, used for rotating axes
@@ -16,33 +12,15 @@ BEGIN_SYSTEM(CameraSystem)
 		return vec;
 	}
 
-	void catchCursorEvent(const TypedWindowEvent<double>& ev) { //TODO - move this to InputSystem
-		GLFWwindow* win = ev.window;
-	
-		int* width = new int;
-		int* height = new int;
-		glfwGetFramebufferSize(win, width, height);
-
-		cursorpos = glm::vec2((ev.vals[0])/(*width), (ev.vals[1])/(*height)); //normalized :)
-		delete width;
-		delete height;
-	}
-
-	void catchGuiEvent(const GuiEvent ev) {
-		//TODO: lock controls when window is out of focus
-		//printf("Gui event caught! Event: %f", ev.content);
-	}
-
-	void catchStepEvent(const SimStepEvent& ev) {
+	void stepEvent(const SimStepEvent& ev) {
 		using namespace glm;
-		ev.registry->view<camera, input>().each([&](auto entity, camera& cam, input& Input) {
-			updateGUI<camera>(entity,cam);
-			printf("CameraSystem::catchStepEvent::entity = %i, cam = %p\n", int(entity), &cam);
+		ev.registry->view<camera>().each([&](auto entity, camera& cam) {
+			updateGUI<camera>(entity, cam);
 
 			//
 			//Identity and inverse.
 			mat4 T = mat4(1.f);
-			mat4 Mi = inverse(cam.model);
+			mat4 Mi = inverse(cam.T);
 			Vec3& dir = cam.dir;
 			Vec3& pos = cam.pos;
 			Vec3& spd = cam.spd;
@@ -51,27 +29,18 @@ BEGIN_SYSTEM(CameraSystem)
 			//
 			//Rotation
 			vec3 newdir = vec3(0.f);
-			if (cursorpos != cursorpos_prev) {
+			if (InputSystem::cursorStatus().isChanged()) {
 				float scale = pi;
+				Vec2 delta = InputSystem::cursorStatus().getDelta();
 
-				if (Input.held[btn::mb_left]) {
-					float xdif = (cursorpos.x - cursorpos_prev.x);
-					float radians = xdif * scale;
+				if (InputSystem::isHeld(btn::mb_left)) {
+					float radians = delta.x * scale;
 					newdir.y += radians;
 				}
-				if (Input.held[btn::mb_right]) {
-					float ydif = (cursorpos.y - cursorpos_prev.y);
-					float radians = ydif * scale;
+				if (InputSystem::isHeld(btn::mb_right)) {
+					float radians = delta.y * scale;
 					newdir.x += radians;
 				}
-
-				/**
-				cam.model = glm::translate(
-					glm::rotate(
-						glm::translate(cam.model, -cam.pos),
-						radians, axis),
-					cam.pos);
-				/**/
 			}
 			dir += newdir;
 
@@ -88,11 +57,23 @@ BEGIN_SYSTEM(CameraSystem)
 			//Translation
 			float movspd = -.1f;
 			vec3 newspd = vec3(0.f);
-			if (Input.held[btn::left]) {
+			if (InputSystem::isHeld(btn::left)) {
 				newspd.x -= movspd;
 			}
-			if (Input.held[btn::right]) {
+			if (InputSystem::isHeld(btn::right)) {
 				newspd.x += movspd;
+			}
+			if (InputSystem::isHeld(btn::up)) {
+				newspd.z -= movspd;
+			}
+			if (InputSystem::isHeld(btn::down)) {
+				newspd.z += movspd;
+			}
+			if (InputSystem::isHeld(btn::trigger_left)) {
+				newspd.y -= movspd;
+			}
+			if (InputSystem::isHeld(btn::trigger_right)) {
+				newspd.y += movspd;
 			}
 			if (Input.held[btn::up]) {
 				newspd.z -= movspd;
@@ -118,6 +99,17 @@ BEGIN_SYSTEM(CameraSystem)
 			if (abs(newspd.y) < abs(cam.fric)) newspd.y = 0.f;
 			if (absy > cam.maxspd) newspd.y = absy * cam.maxspd;
 
+			//Clamp speed, do friction (probably a better way to do this)
+			float absx = abs(newspd.x);
+			newspd.x -= sign(newspd.x) * cam.fric;
+			if (absx < abs(cam.fric)) newspd.x = 0.f;
+			if (absx > cam.maxspd) newspd.x = absx * cam.maxspd;
+
+			float absy = abs(newspd.y);
+			newspd.y -= sign(newspd.y) * cam.fric;
+			if (abs(newspd.y) < abs(cam.fric)) newspd.y = 0.f;
+			if (absy > cam.maxspd) newspd.y = absy * cam.maxspd;
+
 			float absz = abs(newspd.z);
 			newspd.z -= sign(newspd.z) * cam.fric;
 			if (abs(newspd.z) < abs(cam.fric)) newspd.z = 0.f;
@@ -128,60 +120,20 @@ BEGIN_SYSTEM(CameraSystem)
 			cam.spd += newspd;
 			T = translate(T, vec3(cam.spd));
 
-			//set cursor position
-			cursorpos_prev = cursorpos;
-
 			//Set MVP
-			cam.model *= Mi * T;
-			cam.mvp = cam.model;
-
-			//Log
-			/**
-			std::string Spos = "pos = (%f, %f, %f)\n";
-			std::string Sspd = "spd = (%f,%f,%f)\n";
-			std::string Sfront = "front = (%f,%f,%f)\n";
-			std::string Sdir = "dir = (%f, %f, %f)\n";
-			std::string Smvp = "mvp = (%f, %f, %f, %f)\n";
-			std::string ST = "T = (%f, %f, %f, %f)\n";
-			std::string SMi = "Mi = (%f, %f, %f, %f)\n";
-			std::string Sfinal = Spos + Sspd + Sfront + Sdir + Smvp + Smvp + Smvp + Smvp + ST + ST + ST + ST + SMi + SMi + SMi + SMi + '\n';
-			printf(Sfinal.c_str(),
-				cam.pos.x, cam.pos.y, cam.pos.z,
-				newspd.x, newspd.y, newspd.z,
-				cam.front.x, cam.front.y, cam.front.z,
-				cam.dir.x, cam.dir.y, cam.dir.z,
-				cam.mvp[0][0], cam.mvp[0][1], cam.mvp[0][2], cam.mvp[0][3],
-				cam.mvp[1][0], cam.mvp[1][1], cam.mvp[1][2], cam.mvp[1][3],
-				cam.mvp[2][0], cam.mvp[2][1], cam.mvp[2][2], cam.mvp[2][3],
-				cam.mvp[3][0], cam.mvp[3][1], cam.mvp[3][2], cam.mvp[3][3],
-				T[0][0], T[0][1], T[0][2], T[0][3],
-				T[1][0], T[1][1], T[1][2], T[1][3],
-				T[2][0], T[2][1], T[2][2], T[2][3],
-				T[3][0], T[3][1], T[3][2], T[3][3],
-				Mi[0][0], Mi[0][1], Mi[0][2], Mi[0][3],
-				Mi[1][0], Mi[1][1], Mi[1][2], Mi[1][3],
-				Mi[2][0], Mi[2][1], Mi[2][2], Mi[2][3],
-				Mi[3][0], Mi[3][1], Mi[3][2], Mi[3][3]
-			);
-			/**/
+			cam.T *= Mi * T;
 		});
 	}
 
-
-
-
 	void init(const SimInitEvent& ev) {
-		ev.evw->dispatcher.sink<SimStepEvent>().connect<&catchStepEvent>();
-		ev.evw->dispatcher.sink< TypedWindowEvent<double>>().connect<&catchCursorEvent>();
-		ev.evw->dispatcher.sink<GuiEvent>().connect<&catchGuiEvent>();
+		ev.evw->dispatcher.sink<SimStepEvent>().connect<&stepEvent>();
 
 		//dependencies
 		ev.registry->on_construct<camera>().connect<&entt::registry::emplace_or_replace<velocity>>();
 
-		defineGui<camera>([](GuiSystem::guiMeta& meta) {
+		defineGui<camera>([](guiMeta& meta) {
 			using namespace ImGui;
-			camera *c = (camera*)(meta.ref);
-			printf("CameraSystem::defineGui::c = %p\n", c);
+			camera* c = meta_cast<camera>(meta);
 			DragFloat("maxspd", &(c->maxspd));
 		});
 	}
