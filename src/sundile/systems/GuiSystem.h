@@ -9,12 +9,6 @@
 //-- GuiSystem
 //--
 namespace sundile {
-	// for interaction with defineGui()
-	enum GuiStateKey {
-		entityInspector,
-		componentInspector,
-		focusAny
-	};
 	// Contains typeinfo for registered components.
 	struct guiMeta {
 		void* ref;

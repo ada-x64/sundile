@@ -76,7 +76,12 @@ namespace sundile {
 	struct RenderEvent : SimEvent {};
 
 	// GUI EVENTS
-	enum GuiStateKey;
+	// for interaction with defineGui()
+	enum GuiStateKey {
+		entityInspector,
+		componentInspector,
+		focusAny
+	};
 
 	struct GuiEventContent {
 		GuiStateKey key;
