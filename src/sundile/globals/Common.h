@@ -63,7 +63,7 @@ namespace fs = std::filesystem;
 #include "../ext/imgui/imgui_impl_glfw.h"
 
 //sundile features
-#include "Typenames.h"
+#include "Math.h"
 #include "Macros.h"
 
 //environment variables

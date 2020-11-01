@@ -14,6 +14,7 @@ namespace sundile {
 		void init(SmartEVW evw) {
 			evw->dispatcher.sink<SimInitEvent>().connect<CameraSystem::init>();
 			evw->dispatcher.sink<SimInitEvent>().connect<InputSystem::init>();
+			evw->dispatcher.sink<WindowInitEvent>().connect<InputSystem::windowInit>();
 			evw->dispatcher.sink<SimInitEvent>().connect<RenderSystem::init>();
 
 			EventSystem::initAll();

@@ -22,7 +22,7 @@
 	Vec2 operator += (const Vec2 other) { this->x += other.x; this->y += other.y; return *this; }
 	Vec2 operator + (const Vec2 other) { return Vec2(x + other.x, y + other.y); }
 	Vec2 operator -= (const Vec2 other) { x -= other.x; y -= other.y; return *this; }
-	Vec2 operator - (const Vec2 other) { return Vec2(x + other.x, y + other.y); }
+	Vec2 operator - (const Vec2 other) { return Vec2(x - other.x, y - other.y); }
 };
 
  struct Vec3 {
@@ -42,7 +42,7 @@
 	Vec3 operator += (const Vec3 other) { x += other.x; y += other.y; z += other.z; return *this; }
 	Vec3 operator + (const Vec3 other) { return Vec3(x + other.x, y + other.y, z + other.z); }
 	Vec3 operator -= (const Vec3 other) { x -= other.x; y -= other.y; z -= other.z; return *this; }
-	Vec3 operator - (const Vec3 other) { return Vec3(x + other.x, y + other.y, z + other.z); }
+	Vec3 operator - (const Vec3 other) { return Vec3(x - other.x, y - other.y, z - other.z); }
 };
 
  struct Vec4 {
@@ -63,5 +63,5 @@
 	Vec4 operator += (const Vec4 other) { x += other.x; y += other.y; z += other.z; w += other.w; return *this; }
 	Vec4 operator + (const Vec4 other) { return Vec4(x + other.x, y + other.y, z + other.z, w + other.w); }
 	Vec4 operator -= (const Vec4 other) { x -= other.x; y -= other.y; z -= other.z; w -= other.w; return *this; }
-	Vec4 operator - (const Vec4 other) { return Vec4(x + other.x, y + other.y, z + other.z, w + other.w); }
+	Vec4 operator - (const Vec4 other) { return Vec4(x - other.x, y - other.y, z - other.z, w - other.w); }
 };

@@ -43,7 +43,12 @@ namespace sundile {
 	struct terminateEvent :Event {};
 
 	// WINDOW EVENTS
+
 	struct WindowEvent : Event {GLFWwindow* window;};
+
+	struct WindowInitEvent : WindowEvent {
+		WindowInitEvent(GLFWwindow* window) { this->window = window; };
+	};
 
 	template <typename t>
 	struct TypedWindowEvent : WindowEvent {std::vector<t> vals;};
@@ -63,6 +68,9 @@ namespace sundile {
 		SmartRegistry registry;
 		float deltaTime;
 		float currentTime;
+		SimEvent(SmartRegistry registry, float deltaTime, float currentTime) : registry(registry), deltaTime(deltaTime), currentTime(currentTime) {};
+		SimEvent(SmartRegistry registry) :registry(registry), deltaTime(-1), currentTime(-1) {};
+		SimEvent() = default;
 	};
 	struct SimInitEvent : SimEvent {SmartEVW evw;};
 	struct SimInputEvent : SimEvent {
@@ -90,7 +98,7 @@ namespace sundile {
 	};
 	struct GuiEvent : SimEvent {
 		 GuiEventContent payload;
-		 GuiEvent(GuiEventContent payload) : payload(payload) {};
+		 GuiEvent(SimEvent ev, GuiEventContent payload) : SimEvent(ev), payload(payload) {};
 	};
 	struct RenderGuiEvent : SimEvent {};
 

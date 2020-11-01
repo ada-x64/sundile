@@ -29,8 +29,6 @@ namespace sundile {
 		using namespace Components;
 
 		//-- Variables & Typedefs
-
-
 		// Null members
 		guiMeta nullMeta;
 		void nullRenderFunc(guiMeta&) { ImGui::Text("(empty)"); }
@@ -65,42 +63,111 @@ namespace sundile {
 		static std::vector<guiMeta> metaList;
 		static std::vector<listEntity> entityList;
 
+		namespace /* Fonrt-end Helper functions */ {
 
-		//-- Functions
-		auto checkContext() {
-			auto ctx = ImGui::GetCurrentContext();
-			if (!ctx) { ctx = ImGui::CreateContext(); ImGui::SetCurrentContext(ctx); }
-			return ctx;
-		}
+			auto checkContext() {
+				auto ctx = ImGui::GetCurrentContext();
+				if (!ctx) { ctx = ImGui::CreateContext(); ImGui::SetCurrentContext(ctx); }
+				return ctx;
+			}
+			void setState(const SmartRegistry& registry, const SmartEVW& evw, guiContainer& gui, GuiStateKey key, bool value) {
+				gui.state[key] = value;
+				GuiEvent event({ registry }, { key, value});
+				evw->dispatcher.trigger<GuiEvent>(event);
+			}
+			void terminate(const terminateEvent& ev) {
+				ImGui_ImplOpenGL3_Shutdown();
+				ImGui_ImplGlfw_Shutdown();
+				ImGui::DestroyContext();
+			}
 
-		void terminate(const terminateEvent& ev) {
-			ImGui_ImplOpenGL3_Shutdown();
-			ImGui_ImplGlfw_Shutdown();
-			ImGui::DestroyContext();
-		}
-
-		//inspector front end, called every frame
-		void EntityInspector(const SmartSim& sim) {
-			auto ctx = checkContext();
-			
-			for (listEntity e : entityList) {
-				if (ImGui::TreeNode(e.name.c_str())) {
-					if (e.componentList.empty()) {
-						ImGui::Text("(empty)");
-						ImGui::TreePop();
-						continue;
+			void stateSetter(const SmartRegistry& registry, const SmartEVW& evw, guiContainer& gui, ImVec2 windowSize) {
+				using namespace ImGui;
+				auto& io = ImGui::GetIO();
+				if (IsWindowFocused(ImGuiFocusedFlags_AnyWindow)) {
+					if (!gui.state[focusAny]) {
+						setState(registry, evw, gui, focusAny, true);
 					}
-					for (listComponent c : e.componentList) {
-						if (ImGui::TreeNode(c.index.name.c_str())) {
-							c.index.f(c.meta);
+				}
+				else if (gui.state[focusAny]) {
+					setState(registry, evw, gui, focusAny, false);
+				}
+			}
+
+			namespace /*inspectors*/ {
+				void EntityInspector(const SmartSim& sim) {
+					auto ctx = checkContext();
+
+					for (listEntity e : entityList) {
+						if (ImGui::TreeNode(e.name.c_str())) {
+							if (e.componentList.empty()) {
+								ImGui::Text("(empty)");
+								ImGui::TreePop();
+								continue;
+							}
+							for (listComponent c : e.componentList) {
+								if (ImGui::TreeNode(c.index.name.c_str())) {
+									c.index.f(c.meta);
+									ImGui::TreePop();
+								}
+							}
 							ImGui::TreePop();
 						}
 					}
-					ImGui::TreePop();
+				}
+				void ComponentInspector(const SmartSim& sim) {
+					using namespace ImGui;
+					Text("WIP");
 				}
 			}
-		}
 
+			void stateRouter(const SmartRegistry& registry, const SmartEVW& evw, const SmartSim& sim, guiContainer& gui, ImVec2 windowSize) {
+				using namespace ImGui;
+				// ECS Tools
+				if (gui.state[entityInspector]) {
+					Begin("Entity Inspector");
+					EntityInspector(sim);
+					End();
+				}
+				if (gui.state[componentInspector]) {
+					Begin("Component Inspector");
+					ComponentInspector(sim);
+					End();
+				}
+			}
+
+			void mainMenu(const SmartRegistry& registry, const SmartEVW& evw, guiContainer& gui, ImVec2 windowSize) {
+				using namespace ImGui;
+				auto& io = ImGui::GetIO();
+				if (BeginMainMenuBar()) {
+					if (BeginMenu("File")) {
+						ImGui::EndMenu();
+					}
+					if (BeginMenu("Scene")) {
+						ImGui::EndMenu();
+					}
+					if (BeginMenu("Window")) {
+						std::string label;
+
+						label = gui.state[entityInspector] ? "Hide Entity Inspector" : "Show Entity Inspector";
+						if (MenuItem(label.c_str()))
+							setState(registry, evw, gui, entityInspector, !gui.state[entityInspector]);
+
+						label = gui.state[componentInspector] ? "Hide Component Inspector" : "Show Component Inspector";
+						if (MenuItem(label.c_str()))
+							setState(registry, evw, gui, componentInspector, !gui.state[componentInspector]);
+
+						ImGui::EndMenu();
+					}
+					EndMainMenuBar();
+				}
+			}
+
+
+		};
+
+
+		//-- Functions
 		//back end - to be called according to a timer (every second?)
 		void refreshEntities(SimStepEvent& sim) {
 
@@ -214,6 +281,7 @@ namespace sundile {
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
 
+		//This is the meat of the system!
 		void registerECS(SmartWindow& winc, SmartSim& sim, SmartEVW& evw) {
 			auto registry = sim->registry;
 			float ww = winc->WIDTH;
@@ -227,53 +295,11 @@ namespace sundile {
 			auto GUI = registry->create();
 			auto& e = registry->emplace<guiContainer>(GUI);
 			e.renderFunc = [=, &e]() {
-				//Variables
-				using namespace ImGui;
-				using k = GuiStateKey;
 				ImVec2 windowSize = WindowSystem::getWindowSize(winc);
-				auto& io = ImGui::GetIO();
 
-				// Focus
-				if (io.WantCaptureMouse) {
-					GuiEvent event({ k::focusAny, true });
-					evw->dispatcher.trigger<GuiEvent>(event);
-				}
-
-				// Main Menu Bar
-				if (BeginMainMenuBar()) {
-					if (BeginMenu("File")) {
-						ImGui::EndMenu();
-					}
-					if (BeginMenu("Scene")) {
-						ImGui::EndMenu();
-					}
-					if (BeginMenu("Window")) {
-						std::string label;
-
-						label = e.state[k::entityInspector] ? "Hide Entity Inspector" : "Show Entity Inspector";
-						if (MenuItem(label.c_str()))
-							e.state[k::entityInspector] = !e.state[k::entityInspector];
-
-						label = e.state[k::componentInspector] ? "Hide Component Inspector" : "Show Component Inspector";
-						if (MenuItem(label.c_str()))
-							e.state[k::componentInspector] = !e.state[k::componentInspector];
-
-						ImGui::EndMenu();
-					}
-					EndMainMenuBar();
-				}
-
-				//-- STATE ROUTER
-				// ECS Tools
-				if (e.state[k::entityInspector]) {
-					Begin("ECS Tools");
-
-					BeginChild("Entity Inspector");
-					EntityInspector(sim);
-					EndChild();
-
-					End();
-				}
+				stateSetter(registry, evw, e, windowSize);
+				mainMenu(registry, evw, e, windowSize);
+				stateRouter(registry, evw, sim, e, windowSize);
 			};
 		}
 		void simInit(const SimInitEvent& ev) {
