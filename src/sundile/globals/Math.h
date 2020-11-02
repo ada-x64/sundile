@@ -2,7 +2,15 @@
 //-- Wrapper classes for glm, imgui, float*
 #include <imgui.h>
 #include <glm/glm.hpp>
+//c++20
+#ifdef WIN32
+#ifndef __cpp_lib_concepts
+#define __cpp_lib_concepts
+#endif
+#endif
+#include <concepts>
 //-- Wrapper for Vec2's
+
  struct Vec2 {
 	float x, y;
 	Vec2() :x(0), y(0) {};

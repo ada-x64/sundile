@@ -13,6 +13,5 @@ namespace sundile {
 		vec.erase(std::remove(vec.begin(), vec.end(), member), vec.end());
 	}
 
-
 }
 #endif

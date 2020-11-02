@@ -9,6 +9,6 @@
 BEGIN_COMPONENT(Renderer)
 	Shader passthrough;
 	bool initialized = false;
-	
+	Vec2 pos;
 END_COMPONENT
 #endif

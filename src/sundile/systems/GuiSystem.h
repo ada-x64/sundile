@@ -49,13 +49,16 @@ namespace sundile {
 		struct listComponent {
 			guiIndex index;
 			guiMeta meta;
+			bool operator ==(listComponent other) { return this->index.id == other.index.id; }
 		};
 		// Contains components
 		struct listEntity {
 			entt::entity entity = entt::null;
 			std::string name = "(unset entity)";
 			std::vector<listComponent> componentList = {};
+			bool operator ==(listEntity other) { return this->entity == other.entity; }
 		};
+		listEntity nullListEntity;
 		// Contains primary GUI
 		struct guiContainer {
 			std::map<const GuiStateKey, bool> state;
@@ -68,6 +71,50 @@ namespace sundile {
 		static std::vector<guiIndex> guiIndices;
 		static std::vector<guiMeta> metaList;
 		static std::vector<listEntity> entityList;
+
+		//Returns true if replaced
+		template<typename T>
+		bool addOrReplace(std::vector<T>& vec, T& element) {
+			for (auto it = vec.begin(); it < vec.end(); ++it) {
+				if (*it == element) {
+					*it = element;
+					return true;
+				}
+			}
+			vec.push_back(element);
+			return false;
+		}
+		template<typename T>
+		bool addOrReplace(std::vector<T*>& vec, T* element) {
+			for (auto it = vec.begin(); it < vec.end(); ++it) {
+				if (*it == element) {
+					*it = element;
+					return true;
+				}
+			}
+			vec.push_back(element);
+			return false;
+		}
+		//Returns T value or nullptr
+		template<typename T>
+		bool find(std::vector<T>& vec, T& element) {
+			for (auto it = vec.begin(); it < vec.end(); ++it) {
+				if (*it == element) {
+					return true;
+				}
+			}
+			return false;
+		}
+		//Returns T value or nullptr
+		template<typename T>
+		bool find(std::vector<T*>& vec, T* element) {
+			for (auto it = vec.begin(); it < vec.end(); ++it) {
+				if (*it == element) {
+					return true;
+				}
+			}
+			return false;
+		}
 
 		namespace /* Fonrt-end Helper functions */ {
 
@@ -101,25 +148,175 @@ namespace sundile {
 			}
 
 			namespace /*inspectors*/ {
+
+
+				/*
+				
+				# TODO:
+				
+				## Current bug:
+
+				Currently I think this is failing becase entitiesSelected and componentsSelected
+				are static and aren't being properly passed to the vector functions above.
+				I would like to replace them with something a bit more... efficient :)
+
+				I plan on eventually giving the GUI its own registry. Why not do it now?
+				This way we can have much finer control over GUI elements.
+
+				So:
+				1. Create a registry for the GUI
+				2. Create entities for the EntityInspector and ComponentInspector
+				3. On creation, emplace the relevant vectors
+				4. See if it works :)
+
+				Also, this file is getting BLOATED. Would be good to use a traditional .h/.cpp structure.
+				Probably one header and a couple implementations.
+				That way we can move the vector functions to Utility.h as well :)
+
+				## Other things TODO:
+
+				1. Implement Copy/Cut/Paste clipboard functions (with additional vectors)
+				2. Implement drag'n'drop reordering and component shuffling/exchange
+
+				*/
+
 				void EntityInspector(const SmartSim& sim) {
 					auto ctx = checkContext();
+					auto io = ImGui::GetIO();
+					static std::vector<listEntity*> entitiesSelected;
+					static std::vector<listComponent*> componentsSelected;
+					ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
 
-					for (listEntity e : entityList) {
-						if (ImGui::TreeNode(e.name.c_str())) {
+					//-- primary listing
+					for (listEntity& e : entityList) {
+						ImGuiTreeNodeFlags entityFlags = flags;
+						bool entitySelected = find(entitiesSelected, &e);
+
+						if (entitySelected)
+							entityFlags |= ImGuiTreeNodeFlags_Selected;
+
+						if (ImGui::TreeNodeEx(e.name.c_str(), entityFlags, e.name.c_str())) {
 							if (e.componentList.empty()) {
 								ImGui::Text("(empty)");
 								ImGui::TreePop();
 								continue;
 							}
-							for (listComponent c : e.componentList) {
-								if (ImGui::TreeNode(c.index.name.c_str())) {
+
+							for (listComponent& c : e.componentList) {
+								ImGuiTreeNodeFlags componentFlags = flags;
+								bool componentSelected = find(componentsSelected, &c);
+
+								if (componentSelected)
+									componentFlags |= ImGuiTreeNodeFlags_Selected;
+
+								if (ImGui::TreeNodeEx(c.index.name.c_str(), componentFlags, c.index.name.c_str())) {
 									c.index.f(c.meta);
 									ImGui::TreePop();
 								}
+
+								if (ImGui::IsItemClicked(0) || (!componentSelected && ImGui::IsItemClicked(1))) {
+									if (io.KeyCtrl) {
+										addOrReplace(entitiesSelected, &e);
+										addOrReplace(componentsSelected, &c);
+									}
+									else {
+										entitiesSelected.clear();
+										entitiesSelected.push_back(&e);
+										componentsSelected.clear();
+										componentsSelected.push_back(&c);
+									}
+								}
 							}
+
 							ImGui::TreePop();
 						}
+
+						if (ImGui::IsItemClicked(0) || (!entitySelected && ImGui::IsItemClicked(1))) {
+							if (io.KeyCtrl) {
+								addOrReplace(entitiesSelected, &e);
+
+								//temp
+								printf("logging selected list elements...\n");
+								for (auto e : entitiesSelected) {
+									printf("\"%s\": #%i\n", e->name.c_str(), e->entity);
+								}
+								for (auto c : componentsSelected) {
+									printf("\"%s\": #%i\n", c->index.name.c_str(), c->index.id);
+								}
+							}
+							else {
+								entitiesSelected.clear();
+								entitiesSelected.push_back(&e);
+
+								//temp
+								printf("logging selected list elements...\n");
+								for (auto e : entitiesSelected) {
+									printf("\"%s\": #%i\n", e->name.c_str(), e->entity);
+								}
+								for (auto c : componentsSelected) {
+									printf("\"%s\": #%i\n", c->index.name.c_str(), c->index.id);
+								}
+							}
+						}
 					}
+					
+					//-- right click menu
+
+					//note: probably not necessary to call this every time you click something
+					auto closeContextMenu = [&]() -> void {
+						entitiesSelected.clear();
+						componentsSelected.clear();
+					};
+
+					if (ImGui::BeginPopupContextWindow()) {
+
+						if (ImGui::MenuItem("Create Entity")) {
+							//temp
+							printf("logging selected list elements...\n");
+							for (auto e : entitiesSelected) {
+								printf("\"%s\": #%i\n", e->name.c_str(), e->entity);
+							}
+							for (auto c : componentsSelected) {
+								printf("\"%s\": #%i\n", c->index.name.c_str(), c->index.id);
+							}
+
+							closeContextMenu();
+						}
+
+						if (entitiesSelected.size()) {
+							std::string str = (entitiesSelected.size() == 1) ? "Entity" : "Entities";
+							if (entitiesSelected.size() == 1 && ImGui::MenuItem(("Rename "+str).c_str())) {
+								closeContextMenu();
+							}
+							if (ImGui::MenuItem(("Delete " + str).c_str())) {
+								closeContextMenu();
+							}
+							if (ImGui::MenuItem(("Copy " + str).c_str())) {
+								closeContextMenu();
+							}
+						}
+
+						if (componentsSelected.size()) {
+							std::string str = (componentsSelected.size() == 1) ? "Component" : "Components";
+							if (ImGui::MenuItem("Open in Component Inspector")) {
+								closeContextMenu();
+							}
+							if (ImGui::MenuItem(("Remove " + str).c_str())) {
+								closeContextMenu();
+							}
+							if (ImGui::MenuItem(("Copy " + str).c_str())) {
+								closeContextMenu();
+							}
+						}
+
+						//TODO: clipboard
+
+						ImGui::EndPopup();
+					}
+					else {
+						closeContextMenu();
+					}
+
 				}
 				void ComponentInspector(const SmartSim& sim) {
 					using namespace ImGui;
@@ -146,23 +343,26 @@ namespace sundile {
 				using namespace ImGui;
 				auto& io = ImGui::GetIO();
 				if (BeginMainMenuBar()) {
+					std::string label;
 					if (BeginMenu("File")) {
 						ImGui::EndMenu();
 					}
-					if (BeginMenu("Scene")) {
+					if (BeginMenu("Scenes")) {
 						ImGui::EndMenu();
 					}
-					if (BeginMenu("Window")) {
-						std::string label;
-
+					if (BeginMenu("Entities")) {
 						label = gui.state[entityInspector] ? "Hide Entity Inspector" : "Show Entity Inspector";
 						if (MenuItem(label.c_str()))
 							setState(registry, evw, gui, entityInspector, !gui.state[entityInspector]);
-
+						ImGui::EndMenu();
+					}
+					if (BeginMenu("Components")) {
 						label = gui.state[componentInspector] ? "Hide Component Inspector" : "Show Component Inspector";
 						if (MenuItem(label.c_str()))
 							setState(registry, evw, gui, componentInspector, !gui.state[componentInspector]);
-
+						ImGui::EndMenu();
+					}
+					if (BeginMenu("Window")) {
 						ImGui::EndMenu();
 					}
 					EndMainMenuBar();
@@ -203,6 +403,7 @@ namespace sundile {
 					}
 				}
 				if (guiEntity.entity == entt::null) {
+					if (int(e) == 0) return;
 					std::string name = "Entity #" + std::to_string(int(e));
 					listEntity _e;
 					_e.entity = e;

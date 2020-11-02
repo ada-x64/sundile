@@ -25,6 +25,15 @@ namespace fs = std::filesystem;
 #include <map>
 #include <functional>
 
+//c++20
+#ifdef WIN32
+#ifndef __cpp_lib_concepts
+#define __cpp_lib_concepts
+#endif
+#endif
+#include <concepts>
+
+
 //stb
 #include <stb_image.h>
 

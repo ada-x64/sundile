@@ -301,10 +301,11 @@ namespace sundile {
 				glfwTerminate();
 				exit(EXIT_FAILURE);
 			}
-
 			//Set up winc
 			winc->window = SmartGLFWwindow(winptr);
 			winc->evw = currentevw;
+			winc->WIDTH = mode->width;
+			winc->HEIGHT = mode->height;
 
 			// Set up the window
 			glfwMakeContextCurrent(winc->window.get());

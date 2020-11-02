@@ -129,31 +129,32 @@ namespace sundile {
 		void stepEvent(const SimStepEvent& ev) {
 			ev.registry->view<input>().each([&](auto& entity, input& in) {
 				updateGUI<input>(entity, in);
-
-				//cursor input
-				in.window = current.window;
-				int* width = new int;
-				int* height = new int;
-				double* xpos = new double;
-				double* ypos = new double;
-				glfwGetFramebufferSize(in.window, width, height);
-				glfwGetCursorPos(in.window, xpos, ypos);
-				in.cursorpos_prev = in.cursorpos;
-				in.cursorpos = glm::vec2((*xpos)/(*width), (*ypos)/(*height)); //normalized :)
-				delete width;
-				delete height;
-				delete xpos;
-				delete ypos;
-
-				//button inputs
 				if (in.disabled) {
 					for (int i = 0; i < btn::COUNT; ++i) {
 						in.pressed[i] = false;
 						in.held[i] = false;
 						in.released[i] = false;
 					}
+					in.cursorpos_prev = -1;
+					in.cursorpos = -1;
 				}
 				else {
+
+					//cursor input
+					in.window = current.window;
+					int* width = new int;
+					int* height = new int;
+					double* xpos = new double;
+					double* ypos = new double;
+					glfwGetFramebufferSize(in.window, width, height);
+					glfwGetCursorPos(in.window, xpos, ypos);
+					in.cursorpos_prev = in.cursorpos;
+					in.cursorpos = glm::vec2((*xpos) / (*width), (*ypos) / (*height)); //normalized :)
+					delete width;
+					delete height;
+					delete xpos;
+					delete ypos;
+
 					for (int i = 0; i < btn::COUNT; ++i) {
 						if (in.released[i] && !in.held[i]) {
 							in.released[i] = false;
