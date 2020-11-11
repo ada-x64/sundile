@@ -4,7 +4,7 @@
 #pragma once
 #ifndef WINDOW_H
 #define WINDOW_H
-#include "EventSystem.h"
+#include "EventSystem/EventSystem.h"
 
 namespace sundile {
 	struct SmartGLFWwindowDestroyer {
@@ -21,7 +21,9 @@ namespace sundile {
 		int				WIDTH = 800;
 		int				HEIGHT = 600;
 		bool			windowShouldClose = false;
-		const char* name = "sundile";
+		bool			guiEnabled = false;
+		const char* title = "sundile";
+		unsigned int id = -1;
 
 		bool operator == (WindowContainer& other) {
 			return (this->window.get() == other.window.get());
@@ -40,6 +42,7 @@ namespace sundile {
 
 		//-- Helpers
 		SmartWindow getSmartWindow(GLFWwindow* w);
+		SmartWindow getSmartWindow(const unsigned int id);
 		void eraseEmptyWindows();
 		void initGLFW();
 		Vec2 getWindowSize(SmartWindow winc);

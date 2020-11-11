@@ -39,6 +39,7 @@ namespace fs = std::filesystem;
 
 //algo
 #include <algorithm>
+#include <random>
 
 //assimp
 #include <assimp/Importer.hpp>
@@ -74,6 +75,10 @@ namespace fs = std::filesystem;
 //sundile features
 #include "Math.h"
 #include "Macros.h"
+#include "Utility.h"
+namespace sundile {};
+namespace sundile::Components {};
+namespace sundile::Systems {};
 
 //environment variables
 

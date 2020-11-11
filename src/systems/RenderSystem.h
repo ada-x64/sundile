@@ -160,7 +160,7 @@ BEGIN_SYSTEM(RenderSystem)
 		return r;
 	}
 
-	void gui(guiMeta& meta) {
+	void gui(const guiMeta& meta) {
 		using namespace ImGui;
 		Renderer* c = meta_cast<Renderer>(meta);
 		DragFloat2("Position", c->pos);
