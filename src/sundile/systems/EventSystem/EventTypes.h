@@ -1,12 +1,5 @@
-//--
-//-- EventWrapper.h
-//--
-#include "../globals/Common.h"
-
-#pragma once
-#ifndef SUNDILE_ENTT_H
-#define SUNDILE_ENTT_H
-
+#ifndef SUNDILE_EVENT_TYPES
+#define SUNDILE_EVENT_TYPES
 namespace sundile {
 
 	//--
@@ -15,6 +8,7 @@ namespace sundile {
 
 	struct EventWrapper {
 		entt::dispatcher dispatcher{};
+		unsigned int id;
 	};
 
 	struct EventWrapperDestroyer {
@@ -36,35 +30,37 @@ namespace sundile {
 
 	// GENERIC EVENTS
 	struct Event {};
-	struct initEvent {SmartEVW evw;	};
+	struct initEvent { SmartEVW evw; };
 	struct preStepEvent :Event {};
 	struct stepEvent :Event {};
-	struct postStepEvent:Event {};
+	struct postStepEvent :Event {};
 	struct terminateEvent :Event {};
 
 	// WINDOW EVENTS
 
-	struct WindowEvent : Event {GLFWwindow* window;};
-
+	struct WindowEvent : Event { unsigned int id; };
 	struct WindowInitEvent : WindowEvent {
-		WindowInitEvent(GLFWwindow* window) { this->window = window; };
+		GLFWwindow* window;
+		WindowInitEvent(unsigned int id, GLFWwindow* window) { this->id = id; this->window = window; };
 	};
-
 	template <typename t>
-	struct TypedWindowEvent : WindowEvent {std::vector<t> vals;};
-
+	struct TypedWindowEvent : WindowEvent { std::vector<t> vals; };
 	struct WindowInputEvent : WindowEvent {
 		int key,
 			scancode,
 			action,
 			mods;
 	};
-
 	struct WindowTerminateEvent : WindowEvent {};
+
+	struct WindowSizeQuery : WindowEvent {
+		Vec2* size;
+	};
 
 	// SIM EVENTS
 	// This includes GUI and Project events
 	struct SimEvent : Event {
+		unsigned int id;
 		SmartRegistry registry;
 		float deltaTime;
 		float currentTime;
@@ -72,7 +68,7 @@ namespace sundile {
 		SimEvent(SmartRegistry registry) :registry(registry), deltaTime(-1), currentTime(-1) {};
 		SimEvent() = default;
 	};
-	struct SimInitEvent : SimEvent {SmartEVW evw;};
+	struct SimInitEvent : SimEvent { SmartEVW evw; };
 	struct SimInputEvent : SimEvent {
 		int key,
 			scancode,
@@ -80,8 +76,16 @@ namespace sundile {
 			mods;
 	};
 	struct SimStepEvent : SimEvent {};
-	
+
 	struct RenderEvent : SimEvent {};
+
+	struct registryWrapper {
+		entt::registry* registry;
+	};
+	struct SimRegistryQuery : Event {
+		unsigned int id;
+		registryWrapper* wrapper;
+	};
 
 	// GUI EVENTS
 	// for interaction with defineGui()
@@ -96,9 +100,10 @@ namespace sundile {
 		bool value;
 		GuiEventContent(GuiStateKey k, const bool v) : key(k), value(v) {};
 	};
-	struct GuiEvent : SimEvent {
-		 GuiEventContent payload;
-		 GuiEvent(SimEvent ev, GuiEventContent payload) : SimEvent(ev), payload(payload) {};
+	struct GuiEvent : Event {
+		entt::registry* registry;
+		GuiEventContent payload;
+		GuiEvent(entt::registry* registry, GuiEventContent payload) : registry(registry), payload(payload) {};
 	};
 	struct RenderGuiEvent : SimEvent {};
 
@@ -106,23 +111,5 @@ namespace sundile {
 	struct ProjEvent : SimEvent {
 
 	};
-
-
-
-	namespace EventSystem {
-		inline bool run = true;
-		inline std::vector<SmartEVW> EVWs;
-
-		SmartEVW create();
-
-		void init(SmartEVW evw);
-		void terminate(SmartEVW evw);
-
-		void initAll();
-		void updateAll();
-		void terminateAll();
-	}
 }
-
-
 #endif

@@ -160,12 +160,19 @@ BEGIN_SYSTEM(RenderSystem)
 		return r;
 	}
 
+	void gui(const guiMeta& meta) {
+		using namespace ImGui;
+		Renderer* c = meta_cast<Renderer>(meta);
+		DragFloat2("Position", c->pos);
+	}
+
 	void init(const SimInitEvent& ev) {
 		//GL, STB
 		glEnable(GL_DEPTH_TEST);
 		stbi_set_flip_vertically_on_load(true);
 
 		ev.evw->dispatcher.sink<RenderEvent>().connect<catchRenderEvent>();
+		defineGui<Renderer>(gui);
 	}
 
 	void terminate(Renderer& rend) {

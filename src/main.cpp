@@ -14,11 +14,12 @@ int main(void)
 	SmartEVW evw = EventSystem::create();
 	SmartSim sim = SimSystem::init(evw);
 	SmartWindow winc = WindowSystem::initWindowedFullscreen(evw);
-	winc->name = "sundile";
-	glfwSetWindowTitle(winc->window.get(), winc->name);
+	winc->title = "sundile";
+	winc->guiEnabled = true;
+	glfwSetWindowTitle(winc->window.get(), winc->title);
 	glfwSetWindowSizeLimits(winc->window.get(), winc->WIDTH, winc->HEIGHT, winc->WIDTH, winc->HEIGHT);
 
-	GuiSystem::init(winc, sim, evw);
+	GuiSystem::init(evw);
 	Systems::init(evw);
 
 	//Scene registration

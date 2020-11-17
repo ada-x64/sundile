@@ -25,11 +25,21 @@ namespace fs = std::filesystem;
 #include <map>
 #include <functional>
 
+//c++20
+#ifdef WIN32
+#ifndef __cpp_lib_concepts
+#define __cpp_lib_concepts
+#endif
+#endif
+#include <concepts>
+
+
 //stb
 #include <stb_image.h>
 
 //algo
 #include <algorithm>
+#include <random>
 
 //assimp
 #include <assimp/Importer.hpp>
@@ -65,6 +75,10 @@ namespace fs = std::filesystem;
 //sundile features
 #include "Math.h"
 #include "Macros.h"
+#include "Utility.h"
+namespace sundile {};
+namespace sundile::Components {};
+namespace sundile::Systems {};
 
 //environment variables
 

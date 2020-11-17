@@ -108,7 +108,7 @@ BEGIN_SYSTEM(CameraSystem)
 		//dependencies
 		ev.registry->on_construct<camera>().connect<&entt::registry::emplace_or_replace<velocity>>();
 
-		defineGui<camera>([](guiMeta& meta) {
+		defineGui<camera>([](const guiMeta& meta) {
 			using namespace ImGui;
 			camera* c = meta_cast<camera>(meta);
 			DragFloat("maxspd", &(c->maxspd));

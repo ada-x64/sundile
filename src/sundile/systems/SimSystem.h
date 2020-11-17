@@ -4,10 +4,11 @@
 #pragma once
 #ifndef SYSTEMS_H
 #define SYSTEMS_H
-#include "EventSystem.h"
+#include "EventSystem/EventSystem.h"
 namespace sundile {
 	//Simulation struct
 	struct Sim {
+		unsigned int id;
 		SmartEVW evw;
 		SmartRegistry registry;
 

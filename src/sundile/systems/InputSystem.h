@@ -2,7 +2,7 @@
 
 #ifndef SUNDILE_INPUT
 #define	SUNDILE_INPUT
-#include "EventSystem.h"
+#include "EventSystem/EventSystem.h"
 
 namespace sundile {
 	enum btn {
@@ -105,9 +105,12 @@ namespace sundile {
 			current.map = map;
 		}
 
+		//TODO: this is breaking - something with the initializer list being wrong?
+		//WWID: Removing sim and winc references from GUI initialization - should only need evw
+		//- May have something to do with the way I redid GuiEvent, or passing const entt::registry*'s.
 		void guiEvent(const GuiEvent& ev) {
 			if (ev.payload.key == GuiStateKey::focusAny) {
-				ev.registry->view<input>().each([=](auto& entity, input& c) {
+				ev.registry->view<input>().each([&ev](auto& entity, input& c) {
 					c.disabled = ev.payload.value;
 				});
 			}
@@ -129,31 +132,32 @@ namespace sundile {
 		void stepEvent(const SimStepEvent& ev) {
 			ev.registry->view<input>().each([&](auto& entity, input& in) {
 				updateGUI<input>(entity, in);
-
-				//cursor input
-				in.window = current.window;
-				int* width = new int;
-				int* height = new int;
-				double* xpos = new double;
-				double* ypos = new double;
-				glfwGetFramebufferSize(in.window, width, height);
-				glfwGetCursorPos(in.window, xpos, ypos);
-				in.cursorpos_prev = in.cursorpos;
-				in.cursorpos = glm::vec2((*xpos)/(*width), (*ypos)/(*height)); //normalized :)
-				delete width;
-				delete height;
-				delete xpos;
-				delete ypos;
-
-				//button inputs
 				if (in.disabled) {
 					for (int i = 0; i < btn::COUNT; ++i) {
 						in.pressed[i] = false;
 						in.held[i] = false;
 						in.released[i] = false;
 					}
+					in.cursorpos_prev = -1;
+					in.cursorpos = -1;
 				}
 				else {
+
+					//cursor input
+					in.window = current.window;
+					int* width = new int;
+					int* height = new int;
+					double* xpos = new double;
+					double* ypos = new double;
+					glfwGetFramebufferSize(in.window, width, height);
+					glfwGetCursorPos(in.window, xpos, ypos);
+					in.cursorpos_prev = in.cursorpos;
+					in.cursorpos = glm::vec2((*xpos) / (*width), (*ypos) / (*height)); //normalized :)
+					delete width;
+					delete height;
+					delete xpos;
+					delete ypos;
+
 					for (int i = 0; i < btn::COUNT; ++i) {
 						if (in.released[i] && !in.held[i]) {
 							in.released[i] = false;
@@ -183,7 +187,7 @@ namespace sundile {
 				val == GLFW_KEY_ENTER ? "enter" : val == GLFW_KEY_ESCAPE ? "esc" :
 				glfwGetKeyName(val, -1);
 		}
-		void drawGui(guiMeta& meta) {
+		void drawGui(const guiMeta& meta) {
 			using namespace ImGui;
 			input* in = meta_cast<input>(meta);
 
@@ -231,6 +235,7 @@ namespace sundile {
 		}
 
 		void init(const SimInitEvent& ev) {
+
 			ev.evw->dispatcher.sink<SimInputEvent>().connect<&inputEvent>();
 			ev.evw->dispatcher.sink<SimStepEvent>().connect<&stepEvent>();
 			ev.evw->dispatcher.sink<GuiEvent>().connect<&guiEvent>();

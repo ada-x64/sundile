@@ -5,6 +5,14 @@
 namespace sundile {
 	namespace SimSystem {
 
+		void simRegistryQuery(const SimRegistryQuery& srq) {
+			for (auto sim : sims) {
+				if (sim->id == srq.id) {
+					srq.wrapper->registry = sim->registry.get();
+				}
+			}
+		}
+
 		//Parses GLFW key events and passes appropriate information to other functions.
 		void handleInput(const WindowInputEvent& wev) {
 			//-- Emergency Exit
@@ -31,6 +39,7 @@ namespace sundile {
 				ev.registry = sim->registry;
 				ev.deltaTime = 0.f;
 				ev.evw = sim->evw;
+				ev.id = sim->id;
 				ev.evw->dispatcher.trigger<SimInitEvent>(ev);
 			}
 		}
@@ -40,11 +49,13 @@ namespace sundile {
 			SmartSim sim = std::make_shared<Sim>();
 			sim->registry = std::make_shared<entt::registry>();
 			sim->evw = evw;
+			sim->id = rand();
 
 			// Connect event listeners
 			evw->dispatcher.sink<stepEvent>().connect<updateAll>();
 			evw->dispatcher.sink<WindowInputEvent>().connect<handleInput>();
 			evw->dispatcher.sink<initEvent>().connect<catchInit>();
+			evw->dispatcher.sink<SimRegistryQuery>().connect<simRegistryQuery>();
 
 
 			//Add to sims

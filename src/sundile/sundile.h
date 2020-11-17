@@ -1,7 +1,7 @@
 #pragma once
 //-- System
-#include "systems/EventSystem.h"
+#include "systems/EventSystem/EventSystem.h"
 #include "systems/WindowSystem.h"
 #include "systems/SimSystem.h"
-#include "systems/GuiSystem.h"
+#include "systems/GuiSystem/GuiSystem.h"
 #include "systems/InputSystem.h"

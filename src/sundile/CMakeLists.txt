@@ -1,7 +1,7 @@
 # SUNDILE - CMAKE
 file(GLOB_RECURSE SUNDILE_FILES "*.h" "*.cpp")
 include_directories("headers" "systems" "ext")
-add_library(sundile ${SUNDILE_FILES})
+add_library(sundile ${SUNDILE_FILES} "systems/GuiSystem/GuiUtility.h")
 
 message(DEBUG "COMPILING SUNDILE...")
 message(DEBUG "CMAKE_MODULE_PATH: ${CMAKE_PREFIX_PATH}")
