@@ -88,6 +88,12 @@ namespace sundile {
 	};
 
 	// GUI EVENTS
+	// for interaction with defineGui()
+	enum GuiStateKey {
+		entityInspector,
+		componentInspector,
+		focusAny
+	};
 	struct GuiEventContent {
 		const char* key;
 		bool value;
