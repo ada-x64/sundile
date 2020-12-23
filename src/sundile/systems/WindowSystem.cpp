@@ -34,9 +34,17 @@ namespace sundile {
 				currentevw->dispatcher.trigger<TypedWindowEvent<double>>(ev);
 			}
 			void framebufferSizeCallback(GLFWwindow* w, int width, int height) {
+				auto window = getSmartWindow(w);
+				window->framebufferHeight = height;
+				window->framebufferWidth = width;
 				glViewport(0, 0, width, height);
 				//TypedWindowEvent<int> wev{  w, {width, height} };
 				//currentevw->getEvent(wev);
+			}
+			void windowSizeCallback(GLFWwindow* w, int width, int height) {
+				auto window = getSmartWindow(w);
+				window->WIDTH = width;
+				window->HEIGHT = height;
 			}
 			void windowCloseCallback(GLFWwindow* w) {
 				WindowTerminateEvent ev;
@@ -45,13 +53,14 @@ namespace sundile {
 
 			}
 			//etc.
-			//TODO: Fill this out as needed
+			//\todo: Fill this out as needed
 
 			void setCallbacks(GLFWwindow* win) {
 				glfwSetKeyCallback(win, keyCallback);
 				glfwSetMouseButtonCallback(win, mouseBtnCallback);
 				glfwSetCursorPosCallback(win, cursorPosCallback);
-				glfwSetFramebufferSizeCallback(win, framebufferSizeCallback);
+				//glfwSetFramebufferSizeCallback(win, framebufferSizeCallback);
+				glfwSetWindowSizeCallback(win, windowSizeCallback);
 				glfwSetWindowCloseCallback(win, windowCloseCallback);
 			}
 

@@ -20,7 +20,7 @@ namespace sundile {
 		GuiSystem::guiIndices.push_back(GuiSystem::guiIndex{ name, f, meta.type().type_id() });
 	}
 
-	//TODO: REPLACE THIS FUNCTION
+	//\todo: REPLACE THIS FUNCTION
 	template <typename T>
 	void updateGUI(entt::entity entt, T& value) {
 		using namespace GuiSystem;

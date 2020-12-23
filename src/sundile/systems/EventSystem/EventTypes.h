@@ -88,12 +88,10 @@ namespace sundile {
 	};
 
 	// GUI EVENTS
-	enum GuiStateKey;
-
 	struct GuiEventContent {
-		GuiStateKey key;
+		const char* key;
 		bool value;
-		GuiEventContent(GuiStateKey k, const bool v) : key(k), value(v) {};
+		GuiEventContent(const char* k, const bool v) : key(k), value(v) {};
 	};
 	struct GuiEvent : Event {
 		entt::registry* registry;

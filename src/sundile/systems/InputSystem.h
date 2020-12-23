@@ -105,11 +105,11 @@ namespace sundile {
 			current.map = map;
 		}
 
-		//TODO: this is breaking - something with the initializer list being wrong?
+		//\todo: this is breaking - something with the initializer list being wrong?
 		//WWID: Removing sim and winc references from GUI initialization - should only need evw
 		//- May have something to do with the way I redid GuiEvent, or passing const entt::registry*'s.
 		void guiEvent(const GuiEvent& ev) {
-			if (ev.payload.key == GuiStateKey::focusAny) {
+			if (ev.payload.key == "focus any") {
 				ev.registry->view<input>().each([&ev](auto& entity, input& c) {
 					c.disabled = ev.payload.value;
 				});
@@ -231,7 +231,7 @@ namespace sundile {
 		}
 
 		void windowInit(const WindowInitEvent& ev) {
-			current.window = ev.window; //HACKY AS FUCK - TODO: REPLACE THIS
+			current.window = ev.window; //HACKY AS FUCK - \todo: REPLACE THIS
 		}
 
 		void init(const SimInitEvent& ev) {

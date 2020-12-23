@@ -111,30 +111,30 @@ namespace sundile::GuiSystem {
 			}
 		});
 	}
-	void render(const RenderGuiEvent& ev) {
+	void render() {
 		checkContext();
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
 		//Render all GUI elements here
-		guiRegistry.view<guiContainer>().each([&](auto& e, guiContainer& el) {
-			el.renderFunc();
-			});
+		auto c = getPrimaryContainer();
+		c->renderFunc(*c);
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
-	void registerSimSystem() {
-		auto GUI = guiRegistry.create();
-		auto& e = guiRegistry.emplace<guiContainer>(GUI);
-		e.renderFunc = [&]() {
-			auto evw = getEVWByID(currentEVW);
-			ImVec2 ImWindowSize = getWindowSizeByID(evw, currentWindow);
-			stateSetter(evw, e, ImWindowSize);
-			mainMenu(evw, e, ImWindowSize);
-			stateRouter(evw, e, ImWindowSize);
-		};
+	void initGui() {
+		primaryGuiEntity = guiRegistry.create();
+		guiRegistry.emplace<guiContainer>(primaryGuiEntity, "primary container",
+			[](guiContainer& e) -> void {
+				auto evw = getEVWByID(currentEVW);
+				ImVec2 ImWindowSize = getWindowSizeByID(evw, currentWindow);
+				stateSetter(evw, e, ImWindowSize);
+				mainMenu(evw, e, ImWindowSize);
+				stateRouter(evw, e, ImWindowSize);
+			});
+		initGuiFrontend();
 	}
 	void windowInit(const WindowInitEvent& ev) {
 		auto win = guiRegistry.create();
@@ -158,10 +158,10 @@ namespace sundile::GuiSystem {
 	}
 	void simInit(const SimInitEvent& ev) {
 		currentSim = ev.id;
-		ev.evw->dispatcher.sink<SimStepEvent>().connect<refreshEntities>();
-		ev.evw->dispatcher.sink<RenderGuiEvent>().connect<render>();
-		ev.evw->dispatcher.sink<terminateEvent>().connect<terminate>();
-		registerSimSystem();
+		ev.evw->dispatcher.sink<SimStepEvent>().connect<&refreshEntities>();
+		ev.evw->dispatcher.sink<RenderGuiEvent>().connect<&render>();
+		ev.evw->dispatcher.sink<terminateEvent>().connect<&terminate>();
+		initGui();
 	}
 	void init(SmartEVW evw) {
 		//Initalize

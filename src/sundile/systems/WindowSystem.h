@@ -20,6 +20,8 @@ namespace sundile {
 		SmartEVW		evw;
 		int				WIDTH = 800;
 		int				HEIGHT = 600;
+		int				framebufferWidth = 800;
+		int				framebufferHeight = 600;
 		bool			windowShouldClose = false;
 		bool			guiEnabled = false;
 		const char* title = "sundile";
