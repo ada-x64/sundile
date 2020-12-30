@@ -23,10 +23,14 @@ namespace sundile::GuiSystem {
 	void stateRouter(const SmartEVW& evw, guiContainer& gui, ImVec2 windowSize) {
 		using namespace ImGui;
 		// ECS Tools
-		guiRegistry.view<guiContainer>().each([&](guiContainer& container) {
+		guiRegistry.view<guiContainer>().each([&](entt::entity e, guiContainer& container) {
+			if (e == primaryGuiEntity) {
+				container.size = windowSize;
+			}
 			for (auto i : gui.state) {
 				if (i.second && container.name == i.first) {
-					Begin(container.name.c_str(),&(gui.state[container.name]));
+					SetNextWindowSize(container.size, ImGuiCond_Appearing);
+					Begin(container.name.c_str(),&(gui.state[container.name]),container.windowFlags);
 					container.renderFunc(container);
 					End();
 				}
@@ -45,21 +49,14 @@ namespace sundile::GuiSystem {
 			if (BeginMenu("Scenes")) {
 				ImGui::EndMenu();
 			}
-			if (BeginMenu("Entities")) {
-				label = gui.state["Entity Inspector"] ? "Hide Entity Inspector" : "Show Entity Inspector";
-				if (MenuItem(label.c_str()))
-					setState(evw, gui, "Entity Inspector", !gui.state["Entity Inspector"]);
-				ImGui::EndMenu();
-			}
-			if (BeginMenu("Components")) {
-				label = gui.state["Component Editor"] ? "Hide Component Editor" : "Show Component Editor";
-				if (MenuItem(label.c_str()))
-					setState(evw, gui, "Component Editor", !gui.state["Component Editor"]);
-				ImGui::EndMenu();
-			}
 			if (BeginMenu("Window")) {
 				if (MenuItem("Show ImGUI Demo")) showDemo = !showDemo;
 				if (MenuItem("Show ImGUI Metrics")) showMetrics = !showMetrics;
+
+				label = gui.state["Entity Inspector"] ? "Hide Inspector" : "Show Inspector";
+				if (MenuItem(label.c_str()))
+					setState(evw, gui, "Inspector", !gui.state["Inspector"]);
+
 				ImGui::EndMenu();
 			}
 			if (showDemo) {
@@ -73,11 +70,8 @@ namespace sundile::GuiSystem {
 	}
 	void initGuiFrontend() {
 		// inspectors
-		auto entityInspector = guiRegistry.create();
-		guiRegistry.emplace<guiContainer>(entityInspector, "Entity Inspector", EntityInspector);
-		auto componentEditor = guiRegistry.create();
-		guiRegistry.emplace<guiContainer>(componentEditor, "Component Editor", ComponentEditor);
-
+		auto inspector = guiRegistry.create();
+		guiRegistry.emplace<guiContainer>(inspector, "Inspector", Inspector, ImVec2(0.f, 300.f), ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |ImGuiWindowFlags_NoMove);
 	}
 }
 #endif

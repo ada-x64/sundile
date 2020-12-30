@@ -133,7 +133,8 @@ namespace sundile::GuiSystem {
 				stateSetter(evw, e, ImWindowSize);
 				mainMenu(evw, e, ImWindowSize);
 				stateRouter(evw, e, ImWindowSize);
-			});
+			}
+		);
 		initGuiFrontend();
 	}
 	void windowInit(const WindowInitEvent& ev) {
