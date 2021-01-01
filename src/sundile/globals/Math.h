@@ -1,6 +1,6 @@
 //-- Numerical typenames
 //-- Wrapper classes for glm, imgui, float*
-#include <imgui.h>
+#include "../ext/imgui/imgui.h"
 #include <glm/glm.hpp>
 //c++20
 #ifdef WIN32

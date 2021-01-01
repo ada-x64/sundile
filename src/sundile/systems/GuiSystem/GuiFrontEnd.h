@@ -3,7 +3,7 @@
 
 #include "GuiTypes.h"
 #include "GuiUtility.h"
-#include "InspectorWindow.h"
+#include "GuiInspectorWindow.h"
 
 namespace sundile::GuiSystem {
 
@@ -72,6 +72,7 @@ namespace sundile::GuiSystem {
 		// inspectors
 		auto inspector = guiRegistry.create();
 		guiRegistry.emplace<guiContainer>(inspector, "Inspector", Inspector, ImVec2(0.f, 300.f), ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |ImGuiWindowFlags_NoMove);
+		getPrimaryContainer()->state["Inspector"] = true;
 	}
 }
 #endif

@@ -22,7 +22,7 @@ if (APPLE)
 else()
 	set (GLUT_LIBS "GLUT::GLUT")
 endif()
-find_package(imgui CONFIG REQUIRED)
+#find_package(imgui CONFIG REQUIRED) # vcpkg imgui is out of date too :(
 
 
 target_link_libraries(sundile
@@ -34,5 +34,5 @@ target_link_libraries(sundile
 	${ASSIMP_LIBS}
 	${IRRXML_LIBS}
 	${ZLIB_LIBS}
-	PUBLIC imgui::imgui
+	#PUBLIC imgui::imgui
 )

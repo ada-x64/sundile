@@ -33,7 +33,7 @@ namespace sundile::GuiSystem {
 
 		// Inspector Tabs
 	template<typename T>
-	using guiTabFunc = std::function<void(guiContainer&, guiTree<T>)>;
+	using guiTabFunc = std::function<void(guiContainer&, guiTree<T>&)>;
 	template<typename T>
 	struct guiTab;
 	typedef guiTab<listEntity> entityTab;
@@ -70,9 +70,9 @@ namespace sundile::GuiSystem {
 	struct listNode {
 		guiTree<T> children;
 		std::string name = "(unset)";
-		T* content;
+		std::shared_ptr<T> content;
 		guiStateMap state;
-		listNode(T* content) : content(content), name(content->name) {};
+		listNode(T content) : content(std::make_shared<T>(content)), name(content.name) {};
 	};
 	// Contains primary GUI
 	static const guiContainerFunc nullContainerFunc = [](guiContainer&) -> void {};
@@ -115,7 +115,7 @@ namespace sundile::GuiSystem {
 			container.state["open"] = true;
 			for (auto i = 0; i < data->size(); ++i) {
 				T content = data->at(i);
-				listNode<T>* node = new listNode<T>(&content);
+				listNode<T>* node = new listNode<T>(content);
 				tree.push_back(std::move(node));
 			}
 		};

@@ -323,9 +323,10 @@ namespace sundile {
 			glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
 			glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 			glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+			glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 
 
-			auto winptr = glfwCreateWindow(mode->width, mode->height, winc->title, NULL, NULL);
+			auto winptr = glfwCreateWindow(1, 1, winc->title, NULL, NULL);
 			if (!winptr)
 			{
 				glfwTerminate();
