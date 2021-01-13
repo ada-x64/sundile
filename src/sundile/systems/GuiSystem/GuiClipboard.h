@@ -13,13 +13,14 @@ namespace sundile::GuiSystem {
 	}
 
 	template<typename T>
-	void ClipboardContextMenu(guiClipboard<T>* clipboard, guiTree<T>& tree, std::string singular = "", std::string plural = "", std::string* itemName = nullptr) {
+	void ClipboardContextMenu(guiClipboard<T>* clipboard, guiTreeContainer<T>& treeContainer, std::string singular = "", std::string plural = "", std::string* itemName = nullptr) {
 		auto& selected = clipboard->selected;
 		auto& list = clipboard->list;
 		auto& name = (selected.size() == 1) ? singular : plural;
 		auto& rename = clipboard->state["rename"];
 		auto& toBeRenamed = clipboard->toBeRenamed;
 		auto* namebuff = clipboard->namebuff;
+		auto& tree = treeContainer.tree;
 
 		// \\todo: implement keyboard shortcuts
 		// \\todo: finish implementing copy/cut/paste functionality
@@ -29,9 +30,11 @@ namespace sundile::GuiSystem {
 
 			if (ImGui::MenuItem("Create New Folder", "CTRL+G")) {
 				T* nullObject = new T();
-				listNode<T>* folder = new listNode<T>(*nullObject);
+				listNodeRef<T> folder = std::make_shared<listNode<T>>(*nullObject);
 				folder->name = "New Folder";
+				folder->state["folder"] = true;
 
+				//replace this with recursive search
 				bool found = false;
 				for (auto i = 0; i < tree.size(); ++i) {
 					for (auto j = 0; j < selected.size(); ++j) {

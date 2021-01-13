@@ -19,11 +19,6 @@ namespace sundile::GuiSystem {
 
 	*/
 
-	// [SECTION] - Forward declaration
-	void Inspector(guiContainer&);
-	void EntityInspector(guiContainer&, guiTree<listEntity>&);
-	void ComponentInspector(guiContainer&, guiTree<listComponent>&);
-
 	// [SECTION] - Structs & namespace globals
 
 	//static std::vector<sceneTab> sceneTabs;
@@ -31,88 +26,89 @@ namespace sundile::GuiSystem {
 	static std::vector<componentTab> componentTabs;
 	static std::vector<dataTab> dataTabs;
 
-	static std::vector<int> toBeErased;
+	// [SECTION] - Editor windows
+	
+	static const nodeEventCallback<listComponent> componentTab_LeftClick = [&](listNodeRef<listComponent> p_node, guiTreeContainer<listComponent>& tree) {
+		auto io = ImGui::GetIO();
+		auto clipboard = getClipboard<listComponent>();
+		auto& selected = clipboard->selected;
+		auto p_component = p_node->content.get();
 
-	static ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_SpanFullWidth;
-	static ImGuiTreeNodeFlags selectedFlags = ImGuiTreeNodeFlags_Selected;
-	static ImGuiTreeNodeFlags leafFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-
-	template <typename T>
-	using nodeClickedFunc = std::function<void(listNode<T>*)>;
-
-	// [SECTION] - Helper functions
-	template<typename T>
-	void RenderTabs(std::vector<T>& tabs) {
-		int pos = 0;
-		for (auto it = tabs.begin(); it != tabs.end(); ++it) {
-			auto& tab = *it;
-			if (tab.container.state["open"]) {
-				tab.render();
-			}
-			else {
-				toBeErased.push_back(pos);
-			}
-			++pos;
-
-			if (tabs.empty() || it == tabs.end()) break;
-		}
-		for (auto i : toBeErased) {
-			tabs.erase(tabs.begin() + i);
-		}
-		toBeErased.clear();
-	}
-
-	template<typename T>
-	void RenderListNode(listNode<T>* p_node, nodeClickedFunc<T> leftClick, nodeClickedFunc<T> rightClick) {
-		auto selectedStateFlags = (p_node->state["selected"] ? selectedFlags : 0);
-		if (p_node->children.empty()) {
-			ImGui::TreeNodeEx(p_node->name.c_str(), leafFlags | selectedStateFlags);
-			if (ImGui::IsItemClicked(0)) {
-				leftClick(p_node);
-			}
-			if (ImGui::IsItemClicked(1)) {
-				rightClick(p_node);
-			}
+		if (io.KeyCtrl) {
+			p_node->state["selected"] = true;
+			addOrReplace(selected, p_component);
 		}
 		else {
-			for (auto p_child : p_node->children) {
-				if (ImGui::TreeNodeEx(p_node->name.c_str(), nodeFlags | selectedStateFlags)) {
-					if (ImGui::IsItemClicked(0)) {
-						leftClick(p_node);
-					}
-					if (ImGui::IsItemClicked(1)) {
-						rightClick(p_node);
-					}
-					RenderListNode(p_child, leftClick, rightClick);
-					ImGui::TreePop();
+			ClearGuiTreeSelectionState(tree);
+			selected.clear();
+			selected.push_back(p_component);
+			p_node->state["selected"] = true;
+
+			bool found = false;
+			for (auto i : dataTabs) {
+				if (i.name == p_component->name) {
+					found = true; break;
 				}
 			}
+			if (!found) {
+				dataTab tab(p_component->name, p_component->index.f, p_component->meta);
+				dataTabs.emplace_back(tab);
+			}
 		}
+	};
+	componentTab createComponentTab(std::string name, guiComponentList& components) {
+		//create component tab
+		componentTab tab(name, [](guiContainer&, guiTreeContainer<listComponent> tree) {
+			RenderGuiTree(tree);
+			ClipboardContextMenu(getClipboard<listComponent>(), tree, "Component", "Components");
+			}, &components);
+		tab.treeContainer.callbacks[leftClick] = componentTab_LeftClick;
+		return componentTabs.emplace_back<componentTab>(std::move(tab));
+	};
+	
+	static const nodeEventCallback<listEntity> entityTab_LeftClick = [&](listNodeRef<listEntity> p_node, guiTreeContainer<listEntity>& tree) {
+		auto io = ImGui::GetIO();
+		auto clipboard = getClipboard<listEntity>();
+		auto& selected = clipboard->selected;
+		auto p_entity = p_node->content.get();
+
+		if (io.KeyCtrl) {
+			p_node->state["selected"] = true;
+			addOrReplace(selected, p_entity);
+		}
+		else {
+			ClearGuiTreeSelectionState(tree);
+			selected.clear();
+			selected.push_back(p_entity);
+			p_node->state["selected"] = true;
+
+			bool found = false;
+			for (auto i : componentTabs) {
+				if (i.name == p_entity->name) {
+					found = true; break;
+				}
+			}
+			if (!found) {
+				createComponentTab(p_entity->name, p_entity->componentList);
+			}
+		}
+	};
+	entityTab& createEntityTab(std::string name, guiEntityList& entities) {
+		entityTab tab(name, [](guiContainer&, guiTreeContainer<listEntity>& tree) {
+			RenderGuiTree(tree);
+			ClipboardContextMenu(getClipboard<listEntity>(), tree, "Entity", "Entities");
+			}, &entities);
+		tab.container.state["open"] = true;
+		tab.treeContainer.callbacks[leftClick] = entityTab_LeftClick;
+
+		return entityTabs.emplace_back<entityTab>(std::move(tab));
 	}
 
-	template<typename T>
-	void RenderGuiTree(guiTree<T> tree, nodeClickedFunc<T> leftClick, nodeClickedFunc<T> rightClick) {
-		for (auto p_node : tree) {
-			RenderListNode<T>(p_node, leftClick, rightClick);
-		}
+	// To be called on GuiInit, which should be called when GUI is loaded from ProjectSystem
+	void initInspector(guiContainer& container) {
+		//Initialize Tabs (should be scene instead of entities, but this is fine for now)
+		createEntityTab("[scene name]", entityList);
 	}
-
-	template<typename T>
-	void ClearListNodeSelectionState(listNode<T>* p_node) {
-		p_node->state["selected"] = false;
-		for (auto p_child : p_node->children) {
-			ClearListNodeSelectionState<T>(p_child);
-		}
-	}
-
-	template <typename T>
-	void ClearGuiTreeSelectionState(guiTree<T> tree) {
-		for (auto p_node : tree) {
-			ClearListNodeSelectionState(p_node);
-		}
-	}
-
-	// [SECTION] - Editor windows
 	void Inspector(guiContainer& container) {
 		auto ctx = checkContext();
 		auto& io = ImGui::GetIO();
@@ -122,15 +118,6 @@ namespace sundile::GuiSystem {
 
 		float numChildren = 4.f;
 		auto width = ImGui::GetWindowWidth() / numChildren;
-
-		//\todo: replace this when we have state persistence with project system
-		static bool initialized = false;
-		if (!initialized) {
-			entityTab tab("foo", EntityInspector, &entityList);
-			tab.container.state["open"] = true;
-			entityTabs.emplace_back<entityTab>(std::move(tab));
-			initialized = true;
-		}
 
 		//need some storage for selected entities, components, &c.
 		//figure out how to use omittable variadic template parameters like entt::emplace
@@ -169,74 +156,6 @@ namespace sundile::GuiSystem {
 		}
 		ImGui::EndChild();
 
-	}
-	void EntityInspector(guiContainer& container, guiTree<listEntity>& tree) {
-		auto io = ImGui::GetIO();
-		auto clipboard = getClipboard<listEntity>();
-		auto& selected = clipboard->selected;
-
-		nodeClickedFunc<listEntity> clicked = [&](listNode<listEntity>* p_node) {
-			auto p_entity = p_node->content.get();
-
-			if (io.KeyCtrl) {
-				p_node->state["selected"] = true;
-				addOrReplace(selected, p_entity);
-			}
-			else {
-				ClearGuiTreeSelectionState(tree);
-				selected.clear();
-				selected.push_back(p_entity);
-				p_node->state["selected"] = true;
-
-				bool found = false;
-				for (auto i : componentTabs) {
-					if (i.name == p_entity->name) {
-						found = true; break;
-					}
-				}
-				if (!found) {
-					componentTab tab(p_entity->name, ComponentInspector, &(p_entity->componentList));
-					componentTabs.emplace_back<componentTab>(std::move(tab));
-				}
-			}
-		};
-
-		RenderGuiTree(tree, clicked, clicked);
-		ClipboardContextMenu(clipboard, tree, "Entity", "Entities");
-	}
-	void ComponentInspector(guiContainer& container, guiTree<listComponent>& tree) {
-		auto io = ImGui::GetIO();
-		auto clipboard = getClipboard<listComponent>();
-		auto& selected = clipboard->selected;
-
-		nodeClickedFunc<listComponent> clicked = [&](listNode<listComponent>* p_node) {
-			auto p_component = p_node->content.get();
-
-			if (io.KeyCtrl) {
-				p_node->state["selected"] = true;
-				addOrReplace(selected, p_component);
-			}
-			else {
-				ClearGuiTreeSelectionState(tree);
-				selected.clear();
-				selected.push_back(p_component);
-				p_node->state["selected"] = true;
-
-				bool found = false;
-				for (auto i : dataTabs) {
-					if (i.name == p_component->name) {
-						found = true; break;
-					}
-				}
-				if (!found) {
-					dataTab tab(p_component->name, p_component->index.f, p_component->meta);
-					dataTabs.emplace_back(tab);
-				}
-			}
-		};
-
-		RenderGuiTree(tree, clicked, clicked);
-		ClipboardContextMenu(clipboard, tree, "Component", "Components");
 	}
 }
 

@@ -1,5 +1,5 @@
 //--
-//-- SimSystem.h
+//-- SceneSystem.h
 //--
 #pragma once
 #ifndef SYSTEMS_H
@@ -7,7 +7,7 @@
 #include "EventSystem/EventSystem.h"
 namespace sundile {
 	//Simulation struct
-	struct Sim {
+	struct Scene {
 		unsigned int id;
 		SmartEVW evw;
 		SmartRegistry registry;
@@ -18,13 +18,13 @@ namespace sundile {
 		float currentTime = 0.0f;
 	};
 
-	typedef std::shared_ptr<Sim> SmartSim;
+	typedef std::shared_ptr<Scene> SmartScene;
 
-	namespace SimSystem {
-		inline std::vector<SmartSim> sims = std::vector<SmartSim>();
+	namespace SceneSystem {
+		inline std::vector<SmartScene> scenes = std::vector<SmartScene>();
 
-		SmartSim init(SmartEVW evw);
-		void update(SmartSim game);
+		SmartScene init(SmartEVW evw);
+		void update(SmartScene game);
 		void updateAll();
 	};
 }

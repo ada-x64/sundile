@@ -12,7 +12,7 @@ int main(void)
 
 	//Initialize
 	SmartEVW evw = EventSystem::create();
-	SmartSim sim = SimSystem::init(evw);
+	SmartScene sim = SceneSystem::init(evw);
 	SmartWindow winc = WindowSystem::initWindowedFullscreen(evw);
 	winc->title = "sundile";
 	winc->guiEnabled = true;

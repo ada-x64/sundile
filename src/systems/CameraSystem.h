@@ -12,7 +12,7 @@ BEGIN_SYSTEM(CameraSystem)
 		return vec;
 	}
 
-	void stepEvent(const SimStepEvent& ev) {
+	void stepEvent(const SceneStepEvent& ev) {
 		using namespace glm;
 		ev.registry->view<camera>().each([&](auto entity, camera& cam) {
 			updateGUI<camera>(entity, cam);
@@ -102,8 +102,8 @@ BEGIN_SYSTEM(CameraSystem)
 		});
 	}
 
-	void init(const SimInitEvent& ev) {
-		ev.evw->dispatcher.sink<SimStepEvent>().connect<&stepEvent>();
+	void init(const SceneInitEvent& ev) {
+		ev.evw->dispatcher.sink<SceneStepEvent>().connect<&stepEvent>();
 
 		//dependencies
 		ev.registry->on_construct<camera>().connect<&entt::registry::emplace_or_replace<velocity>>();

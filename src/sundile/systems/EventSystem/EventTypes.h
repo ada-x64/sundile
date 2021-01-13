@@ -59,30 +59,30 @@ namespace sundile {
 
 	// SIM EVENTS
 	// This includes GUI and Project events
-	struct SimEvent : Event {
+	struct SceneEvent : Event {
 		unsigned int id;
 		SmartRegistry registry;
 		float deltaTime;
 		float currentTime;
-		SimEvent(SmartRegistry registry, float deltaTime, float currentTime) : registry(registry), deltaTime(deltaTime), currentTime(currentTime) {};
-		SimEvent(SmartRegistry registry) :registry(registry), deltaTime(-1), currentTime(-1) {};
-		SimEvent() = default;
+		SceneEvent(SmartRegistry registry, float deltaTime, float currentTime) : registry(registry), deltaTime(deltaTime), currentTime(currentTime) {};
+		SceneEvent(SmartRegistry registry) :registry(registry), deltaTime(-1), currentTime(-1) {};
+		SceneEvent() = default;
 	};
-	struct SimInitEvent : SimEvent { SmartEVW evw; };
-	struct SimInputEvent : SimEvent {
+	struct SceneInitEvent : SceneEvent { SmartEVW evw; };
+	struct SceneInputEvent : SceneEvent {
 		int key,
 			scancode,
 			action,
 			mods;
 	};
-	struct SimStepEvent : SimEvent {};
+	struct SceneStepEvent : SceneEvent {};
 
-	struct RenderEvent : SimEvent {};
+	struct RenderEvent : SceneEvent {};
 
 	struct registryWrapper {
 		entt::registry* registry;
 	};
-	struct SimRegistryQuery : Event {
+	struct SceneRegistryQuery : Event {
 		unsigned int id;
 		registryWrapper* wrapper;
 	};
@@ -104,10 +104,10 @@ namespace sundile {
 		GuiEventContent payload;
 		GuiEvent(entt::registry* registry, GuiEventContent payload) : registry(registry), payload(payload) {};
 	};
-	struct RenderGuiEvent : SimEvent {};
+	struct RenderGuiEvent : SceneEvent {};
 
 	// PROJECT EVENTS
-	struct ProjEvent : SimEvent {
+	struct ProjEvent : SceneEvent {
 
 	};
 }

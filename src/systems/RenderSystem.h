@@ -166,7 +166,7 @@ BEGIN_SYSTEM(RenderSystem)
 		DragFloat2("Position", c->pos);
 	}
 
-	void init(const SimInitEvent& ev) {
+	void init(const SceneInitEvent& ev) {
 		//GL, STB
 		glEnable(GL_DEPTH_TEST);
 		stbi_set_flip_vertically_on_load(true);

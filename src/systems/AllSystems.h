@@ -12,10 +12,10 @@
 namespace sundile {
 	namespace Systems {
 		void init(SmartEVW evw) {
-			evw->dispatcher.sink<SimInitEvent>().connect<CameraSystem::init>();
-			evw->dispatcher.sink<SimInitEvent>().connect<InputSystem::init>();
+			evw->dispatcher.sink<SceneInitEvent>().connect<CameraSystem::init>();
+			evw->dispatcher.sink<SceneInitEvent>().connect<InputSystem::init>();
 			evw->dispatcher.sink<WindowInitEvent>().connect<InputSystem::windowInit>();
-			evw->dispatcher.sink<SimInitEvent>().connect<RenderSystem::init>();
+			evw->dispatcher.sink<SceneInitEvent>().connect<RenderSystem::init>();
 
 			EventSystem::initAll();
 		}

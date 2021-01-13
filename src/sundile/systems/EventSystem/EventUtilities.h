@@ -10,11 +10,11 @@ namespace sundile {
 	}
 
 	inline entt::registry* getRegistryByID(SmartEVW evw, unsigned int id) {
-		SimRegistryQuery srq;
+		SceneRegistryQuery srq;
 		registryWrapper wrapper;
 		srq.wrapper = &wrapper;
 		srq.id = id;
-		evw->dispatcher.trigger<SimRegistryQuery>(srq);
+		evw->dispatcher.trigger<SceneRegistryQuery>(srq);
 		return wrapper.registry;
 	}
 	inline Vec2 getWindowSizeByID(SmartEVW evw, unsigned int id) {

@@ -50,7 +50,7 @@ BEGIN_SYSTEM(PhysicsSystem)
 	}
 /**/
 
-	void init(SmartSim _sim) {
+	void init(SmartScene _sim) {
 		//sim->evw->dispatcher.sink<stepEvent>().connect<step>();
 	}
 

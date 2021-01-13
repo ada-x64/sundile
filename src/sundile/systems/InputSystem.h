@@ -106,7 +106,7 @@ namespace sundile {
 		}
 
 		//\todo: this is breaking - something with the initializer list being wrong?
-		//WWID: Removing sim and winc references from GUI initialization - should only need evw
+		//WWID: Removing Scene and winc references from GUI initialization - should only need evw
 		//- May have something to do with the way I redid GuiEvent, or passing const entt::registry*'s.
 		void guiEvent(const GuiEvent& ev) {
 			if (ev.payload.key == "focus any") {
@@ -115,7 +115,7 @@ namespace sundile {
 				});
 			}
 		}
-		void inputEvent(const SimInputEvent& ev) {
+		void inputEvent(const SceneInputEvent& ev) {
 			if (ev.action != GLFW_PRESS && ev.action != GLFW_RELEASE) return;
 			ev.registry->view<input>().each([&](auto& entity, input& in) {
 				if (in.disabled || in.locked) return;
@@ -129,7 +129,7 @@ namespace sundile {
 				}
 			});
 		}
-		void stepEvent(const SimStepEvent& ev) {
+		void stepEvent(const SceneStepEvent& ev) {
 			ev.registry->view<input>().each([&](auto& entity, input& in) {
 				updateGUI<input>(entity, in);
 				if (in.disabled) {
@@ -234,10 +234,10 @@ namespace sundile {
 			current.window = ev.window; //HACKY AS FUCK - \todo: REPLACE THIS
 		}
 
-		void init(const SimInitEvent& ev) {
+		void init(const SceneInitEvent& ev) {
 
-			ev.evw->dispatcher.sink<SimInputEvent>().connect<&inputEvent>();
-			ev.evw->dispatcher.sink<SimStepEvent>().connect<&stepEvent>();
+			ev.evw->dispatcher.sink<SceneInputEvent>().connect<&inputEvent>();
+			ev.evw->dispatcher.sink<SceneStepEvent>().connect<&stepEvent>();
 			ev.evw->dispatcher.sink<GuiEvent>().connect<&guiEvent>();
 
 			auto eInput = ev.registry->create();

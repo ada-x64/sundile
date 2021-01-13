@@ -15,7 +15,7 @@
 namespace sundile::GuiSystem {
 	//-- Events
 	//back end - to be called according to a timer (every second?)
-	void refreshEntities(SimStepEvent& sim) {
+	void refreshEntities(SceneStepEvent& scene) {
 
 		//for every entity:
 		//	get the entity's component IDs.
@@ -26,12 +26,13 @@ namespace sundile::GuiSystem {
 		//			find or create a listComponent
 
 		// Only call once per second.
+		//\TODO: use window time, not scene time.
 		float whole, fractional;
-		fractional = std::modf(sim.currentTime, &whole);
-		if (fractional > 2*sim.deltaTime) return;
+		fractional = std::modf(scene.currentTime, &whole);
+		if (fractional > 2*scene.deltaTime) return;
 
 
-		auto registry = sim.registry;
+		auto registry = scene.registry;
 		registry->each([=](entt::entity e) {
 
 			//Find or create guiEntity
@@ -157,9 +158,9 @@ namespace sundile::GuiSystem {
 			glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
 		}
 	}
-	void simInit(const SimInitEvent& ev) {
-		currentSim = ev.id;
-		ev.evw->dispatcher.sink<SimStepEvent>().connect<&refreshEntities>();
+	void sceneInit(const SceneInitEvent& ev) {
+		currentScene = ev.id;
+		ev.evw->dispatcher.sink<SceneStepEvent>().connect<&refreshEntities>();
 		ev.evw->dispatcher.sink<RenderGuiEvent>().connect<&render>();
 		ev.evw->dispatcher.sink<terminateEvent>().connect<&terminate>();
 		initGui();
@@ -178,7 +179,7 @@ namespace sundile::GuiSystem {
 
 		//do event stuff
 		currentEVW = evw->id;
-		evw->dispatcher.sink<SimInitEvent>().connect<GuiSystem::simInit>();
+		evw->dispatcher.sink<SceneInitEvent>().connect<GuiSystem::sceneInit>();
 		evw->dispatcher.sink<WindowInitEvent>().connect<GuiSystem::windowInit>();
 	}
 }
