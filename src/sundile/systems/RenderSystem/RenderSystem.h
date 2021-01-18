@@ -1,10 +1,22 @@
 //--
 //-- RenderSystem.h
 //--
-#include "../sundile/sundile.h"
-#include "../components/Renderer.h"
 #include "ModelSystem.h"
-BEGIN_SYSTEM(RenderSystem)
+#include "CameraSystem.h"
+#ifndef SUNDILE_RENDERER_H
+#define SUNDILE_RENDERER_H
+
+namespace sundile {
+	struct Renderer {
+		Shader defaultShader;
+		bool initialized = false;
+		Vec2 pos;
+		Vec2 size;
+	};
+}
+
+namespace sundile::RenderSystem {
+	static Renderer* currentRenderer;
 
 	//-- Rendering Shorthands
 	namespace {
@@ -17,34 +29,34 @@ BEGIN_SYSTEM(RenderSystem)
 		}
 
 		void UpdateCamera(Renderer& rend, const RenderEvent& ev) {
-			Shader passthrough = rend.passthrough;
+			Shader defaultShader = rend.defaultShader;
 			SmartRegistry registry = ev.registry;
 
 			//-- Apply camera
-			registry->view<camera>().each([=](auto entity, auto& cam) {
-				ShaderSystem::use(passthrough);
-				int uView = glGetUniformLocation(passthrough, "view");
+			registry->view<Camera>().each([=](auto entity, auto& cam) {
+				ShaderSystem::use(defaultShader);
+				int uView = glGetUniformLocation(defaultShader, "view");
 				glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(cam.T));
 				checkError();
 
-				int uProj = glGetUniformLocation(passthrough, "projection");
+				int uProj = glGetUniformLocation(defaultShader, "projection");
 				glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(cam.projection));
 				checkError();
 				});
 		}
 
 		void SetCamera(Renderer& rend, const RenderEvent& ev) {
-			Shader passthrough = rend.passthrough;
+			Shader defaultShader = rend.defaultShader;
 			SmartRegistry registry = ev.registry;
 
 			//-- Apply camera
-			registry->view<camera>().each([=](auto entity, auto& cam) {
-				ShaderSystem::use(passthrough);
-				int uView = glGetUniformLocation(passthrough, "view");
+			registry->view<Camera>().each([=](auto entity, auto& cam) {
+				ShaderSystem::use(defaultShader);
+				int uView = glGetUniformLocation(defaultShader, "view");
 				glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(cam.T));
 				checkError();
 
-				int uProj = glGetUniformLocation(passthrough, "projection");
+				int uProj = glGetUniformLocation(defaultShader, "projection");
 				glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(cam.projection));
 				checkError();
 				});
@@ -52,7 +64,7 @@ BEGIN_SYSTEM(RenderSystem)
 		}
 
 		void RenderVisible(Renderer& rend, const RenderEvent& ev) {
-			Shader passthrough = rend.passthrough;
+			Shader defaultShader = rend.defaultShader;
 			SmartRegistry registry = ev.registry;
 
 			//-- Render visible models
@@ -61,24 +73,18 @@ BEGIN_SYSTEM(RenderSystem)
 				ShaderSystem::use(shader);
 
 				//-- Do passthrough (no shader component required)
-				if (shader == passthrough) {
-					registry->view<visible>().each([=](auto& entity, visible& vis) {
-						if (vis.is_visible) {
+				if (shader == defaultShader) {
+					registry->view<Model>().each([=](auto& entity, Model& model) {
+						if (model.is_visible) {
 							//\todo: add a component which contains a vector of meshes and modles.
 							//get that component and loop over its contents.
 							//this allows for more than one mesh/model.
-							if (registry->has<Model>(entity)) { 
-								//-- Set position
-								glm::mat4 mat_model = glm::mat4(1.f);
-								if (registry->has<position>(entity)) {
-									position& p = registry->get<position>(entity);
-									mat_model = glm::translate(mat_model, p.pos);
-								}
-								ShaderSystem::setMat4(shader, "model", mat_model);
+							if (registry->has<Model>(entity)) {
+								//-- Set transform
+								ShaderSystem::setMat4(shader, "model", model.transform);
 
 								//-- Draw model
-								Model& model = registry->get<Model>(entity);
-								if (registry->has<wireframe>(entity)) {
+								if (model.is_wireframe) {
 									glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 									ModelSystem::Draw(std::move(model), shader);
 									glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -89,16 +95,11 @@ BEGIN_SYSTEM(RenderSystem)
 							}
 							if (registry->has<Mesh>(entity)) {
 								//-- Set position
-								glm::mat4 mat_model = glm::mat4(1.f);
-								if (registry->has<position>(entity)) {
-									position& p = registry->get<position>(entity);
-									mat_model = glm::translate(mat_model, p.pos);
-								}
-								ShaderSystem::setMat4(shader, "model", mat_model);
+								ShaderSystem::setMat4(shader, "model", model.transform);
 
 								//-- Draw mesh
 								Mesh& mesh = registry->get<Mesh>(entity);
-								if (registry->has<wireframe>(entity)) {
+								if (mesh.is_wireframe) {
 									glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 									MeshSystem::Draw(std::move(mesh), shader);
 									glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -115,19 +116,13 @@ BEGIN_SYSTEM(RenderSystem)
 				}
 				else {
 					//-- Render those with the given shader. (This could probably be made more efficient ?)
-					registry->view<visible, Shader>().each([=](auto& entity, auto& vis, auto& _s) {
+					registry->view<Model, Shader>().each([=](auto& entity, auto& model, auto& _s) {
 						if (_s == shader) {
 							if (registry->has<Model>(entity)) {
 								//-- Set position
-								glm::mat4 mat_model = glm::mat4(1.f);
-								if (registry->has<position>(entity)) {
-									position& p = registry->get<Components::position>(entity);
-									mat_model = glm::translate(mat_model, p.pos);
-								}
-								ShaderSystem::setMat4(shader, "model", mat_model);
+								ShaderSystem::setMat4(shader, "model", model.transform);
 
 								//-- Draw
-								Model& model = registry->get<Model>(entity);
 								ModelSystem::Draw(std::move(model), shader);
 							}
 							else {
@@ -144,6 +139,7 @@ BEGIN_SYSTEM(RenderSystem)
 	void catchRenderEvent(const RenderEvent& ev) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		ev.registry->view<Renderer>().each([&](auto& e, auto& rend) {
+			currentRenderer = &rend;
 			if (!rend.initialized) {
 				SetCamera(rend, ev);
 			}
@@ -153,18 +149,21 @@ BEGIN_SYSTEM(RenderSystem)
 			});
 	}
 
-	Renderer create(fs::path vert = "assets/shaders/passthrough.vert", fs::path frag = "assets/shaders/passthrough.frag") {
+	Renderer create(fs::path vert = asset_directory + "/shaders/passthrough.vert", fs::path frag = asset_directory + "/shaders/passthrough.frag", Vec2 size = { 1920,1080 }) {
 		Renderer r;
-		r.passthrough = ShaderSystem::init(vert, frag);
+		r.defaultShader = ShaderSystem::init(vert, frag);
+		r.size = size;
 		checkError();
 		return r;
 	}
 
+	/**
 	void gui(const guiMeta& meta) {
 		using namespace ImGui;
 		Renderer* c = meta_cast<Renderer>(meta);
 		DragFloat2("Position", c->pos);
 	}
+	/**/
 
 	void init(const SceneInitEvent& ev) {
 		//GL, STB
@@ -172,10 +171,12 @@ BEGIN_SYSTEM(RenderSystem)
 		stbi_set_flip_vertically_on_load(true);
 
 		ev.evw->dispatcher.sink<RenderEvent>().connect<catchRenderEvent>();
-		defineGui<Renderer>(gui);
+		//defineGui<Renderer>(gui);
 	}
 
 	void terminate(Renderer& rend) {
 	}
 
-END_SYSTEM
+}
+
+#endif

@@ -11,6 +11,8 @@
 #include <concepts>
 //-- Wrapper for Vec2's
 
+static constexpr float pi = glm::pi<float>();
+
  struct Vec2 {
 	float x, y;
 	Vec2() :x(0), y(0) {};

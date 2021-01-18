@@ -16,7 +16,7 @@ namespace sundile {
 				ev.scancode = scancode;
 				ev.action = action;
 				ev.mods = mods;
-				currentevw->dispatcher.trigger<WindowInputEvent>( ev );
+				currentEVW->dispatcher.trigger<WindowInputEvent>( ev );
 			}
 			void mouseBtnCallback(GLFWwindow* w, int button, int actions, int mods) {
 				WindowInputEvent ev;
@@ -25,13 +25,13 @@ namespace sundile {
 				ev.scancode = GLFW_KEY_UNKNOWN;
 				ev.action = actions;
 				ev.mods = mods;
-				currentevw->dispatcher.trigger<WindowInputEvent>(ev);
+				currentEVW->dispatcher.trigger<WindowInputEvent>(ev);
 			}
 			void cursorPosCallback(GLFWwindow* w, double x, double y) {
 				TypedWindowEvent<double> ev;
 				ev.id = getSmartWindow(w)->id;
 				ev.vals = std::vector<double>{ x,y };
-				currentevw->dispatcher.trigger<TypedWindowEvent<double>>(ev);
+				currentEVW->dispatcher.trigger<TypedWindowEvent<double>>(ev);
 			}
 			void framebufferSizeCallback(GLFWwindow* w, int width, int height) {
 				auto window = getSmartWindow(w);
@@ -49,7 +49,7 @@ namespace sundile {
 			void windowCloseCallback(GLFWwindow* w) {
 				WindowTerminateEvent ev;
 				ev.id = getSmartWindow(w)->id;
-				currentevw->dispatcher.enqueue<WindowTerminateEvent>(ev);
+				currentEVW->dispatcher.enqueue<WindowTerminateEvent>(ev);
 
 			}
 			//etc.
@@ -76,7 +76,7 @@ namespace sundile {
 			}
 			void eventSystemInit(const initEvent& ev) {
 				for (auto window : windows) {
-					WindowInitEvent wev{ window->id, window->window.get() };
+					WindowInitEvent wev{ window->id, window->window };
 					ev.evw->dispatcher.trigger<WindowInitEvent>(wev);
 				}
 			}
@@ -86,24 +86,24 @@ namespace sundile {
 			}
 
 			void preupdate(SmartWindow& winc) {
-				auto currentwindow = winc->window.get();
-				auto currentevw = winc->evw;
+				currentWindow = winc;
+				auto window = winc->window;
 
-				glfwMakeContextCurrent(currentwindow);
+				glfwMakeContextCurrent(window);
 				glfwPollEvents();
 
 				if (winc->windowShouldClose) {
 					WindowEvent ev;
 					ev.id = winc->id;
-					currentevw->dispatcher.enqueue<WindowEvent>(ev);
-					glfwSetWindowShouldClose(currentwindow, GLFW_TRUE);
+					currentEVW->dispatcher.enqueue<WindowEvent>(ev);
+					glfwSetWindowShouldClose(window, GLFW_TRUE);
 				}
 			}
 
 			void postupdate(SmartWindow& winc) {
-				auto currentwindow = winc->window.get();
-				glfwMakeContextCurrent(currentwindow);
-				glfwSwapBuffers(currentwindow);
+				auto window = winc->window;
+				glfwMakeContextCurrent(window);
+				glfwSwapBuffers(window);
 			}
 
 			void updateAll(const preStepEvent& ev) {
@@ -146,7 +146,7 @@ namespace sundile {
 		// Find a SmartWindow by its pointer.
 		SmartWindow getSmartWindow(GLFWwindow* w) {
 			for (SmartWindow winc : windows) {
-				if (winc->window.get() == w) {
+				if (winc->window == w) {
 					return winc;
 				}
 			}
@@ -164,7 +164,7 @@ namespace sundile {
 
 		Vec2 getWindowSize(SmartWindow winc) {
 			int wwidth = 0, wheight = 0;
-			glfwGetWindowSize(winc->window.get(), &wwidth, &wheight);
+			glfwGetWindowSize(winc->window, &wwidth, &wheight);
 			if (wwidth && wheight) {
 				winc->HEIGHT = wwidth;
 				winc->WIDTH = wheight;
@@ -178,7 +178,7 @@ namespace sundile {
 		// Remove-erase all empty windows, end the process if no windows are open.
 		void eraseEmptyWindows() {
 			windows.erase(std::remove_if(windows.begin(), windows.end(), [=](SmartWindow win) {
-				return win->window.get() == emptywindow->window.get();
+				return win == emptyWindow;
 				}), windows.end());
 
 			termination_called = false;
@@ -189,25 +189,27 @@ namespace sundile {
 
 		// Manually update a window.
 		void update(SmartWindow winc) {
-			currentevw = winc->evw;
+			currentEVW = winc->evw;
 
 			preupdate(winc);
 
 			//currentevw->dispatcher.enqueue<Event>(DrawEvent{ EventType::generic_draw });
-			currentevw->dispatcher.update<WindowEvent>();
-			currentevw->dispatcher.update<WindowInputEvent>();
-			currentevw->dispatcher.update<TypedWindowEvent<double>>();
+			currentEVW->dispatcher.update<WindowEvent>();
+			currentEVW->dispatcher.update<WindowInputEvent>();
+			currentEVW->dispatcher.update<TypedWindowEvent<double>>();
 
 			postupdate(winc);
 		}
 
 		// Manually terminate a window.
 		void terminate(SmartWindow winc) {
-			currentevw = winc->evw;
+			//\TODO: this isn't actually destroying the window...?
+			currentEVW = winc->evw;
 			WindowEvent ev;
 			ev.id = winc->id;
-			winc->window.reset();
-			currentwindow = nullptr;
+			glfwDestroyWindow(winc->window);
+			winc->window = nullptr;
+			currentWindow = nullptr;
 			eraseEmptyWindows();
 		}
 
@@ -266,7 +268,7 @@ namespace sundile {
 			if (!GLFWinitialized) { initGLFW(); }
 
 			// Preliminary
-			currentevw = evw;
+			currentEVW = evw;
 
 			// Create a windowed mode window and its OpenGL context
 			auto monitor = glfwGetPrimaryMonitor();
@@ -284,12 +286,12 @@ namespace sundile {
 			}
 
 			//Set up winc
-			winc->window = SmartGLFWwindow(winptr);
-			winc->evw = currentevw;
+			winc->window = winptr;
+			winc->evw = currentEVW;
 			winc->id = rand();
 
 			// Set up the window
-			glfwMakeContextCurrent(winc->window.get());
+			glfwMakeContextCurrent(winc->window);
 			glfwSwapInterval(1);
 
 			// Init GLEW
@@ -297,8 +299,8 @@ namespace sundile {
 			if (!GLFWinitialized) { initGLFW(); }
 
 			// Set up event handlers
-			setCallbacks(winc->window.get());
-			setEventCallbacks(currentevw);
+			setCallbacks(winc->window);
+			setEventCallbacks(currentEVW);
 
 			//Add to vector and return.
 			windows.push_back(winc);
@@ -314,7 +316,7 @@ namespace sundile {
 			if (!GLFWinitialized) { initGLFW(); }
 
 			// Preliminary
-			currentevw = evw;
+			currentEVW = evw;
 
 			// Create a windowed mode window and its OpenGL context
 			auto monitor = glfwGetPrimaryMonitor();
@@ -333,22 +335,22 @@ namespace sundile {
 				exit(EXIT_FAILURE);
 			}
 			//Set up winc
-			winc->window = SmartGLFWwindow(winptr);
-			winc->evw = currentevw;
+			winc->window = winptr;
+			winc->evw = currentEVW;
 			winc->WIDTH = mode->width;
 			winc->HEIGHT = mode->height;
 			winc->id = rand();
 
 			// Set up the window
-			glfwMakeContextCurrent(winc->window.get());
+			glfwMakeContextCurrent(winc->window);
 			glfwSwapInterval(1);
 
 			// Init GLEW
 			if (!GLEWinitialized) { initGLEW(); }
 
 			// Set up event handlers
-			setCallbacks(winc->window.get());
-			setEventCallbacks(currentevw);
+			setCallbacks(winc->window);
+			setEventCallbacks(currentEVW);
 
 			//Add to vector and return.
 			windows.push_back(winc);
@@ -383,7 +385,7 @@ namespace sundile {
 			glViewport(0, 0, winc->WIDTH, winc->HEIGHT);
 
 			// Preliminary
-			currentevw = evw;
+			currentEVW = evw;
 
 			// Create a windowed mode window and its OpenGL context
 			auto winptr = glfwCreateWindow(winc->WIDTH, winc->HEIGHT, winc->title, NULL, NULL);
@@ -394,20 +396,20 @@ namespace sundile {
 			}
 
 			//Set up winc
-			winc->window = SmartGLFWwindow(winptr);
-			winc->evw = currentevw;
+			winc->window = winptr;
+			winc->evw = currentEVW;
 			winc->id = rand();
 
 			// Set up the window
-			glfwMakeContextCurrent(winc->window.get());
+			glfwMakeContextCurrent(winc->window);
 			glfwSwapInterval(1);
 
 			// Init GLEW
 			if (!GLEWinitialized) { initGLEW(); }
 
 			// Set up event handlers
-			setCallbacks(winc->window.get());
-			setEventCallbacks(currentevw);
+			setCallbacks(winc->window);
+			setEventCallbacks(currentEVW);
 
 			//Add to vector and return.
 			windows.push_back(winc);

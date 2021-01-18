@@ -27,21 +27,21 @@ namespace sundile::GuiSystem {
 	static std::vector<dataTab> dataTabs;
 
 	// [SECTION] - Editor windows
-	
+
 	static const nodeEventCallback<listComponent> componentTab_LeftClick = [&](listNodeRef<listComponent> p_node, guiTreeContainer<listComponent>& tree) {
 		auto io = ImGui::GetIO();
 		auto clipboard = getClipboard<listComponent>();
 		auto& selected = clipboard->selected;
-		auto p_component = p_node->content.get();
+		auto p_component = p_node->content;
 
 		if (io.KeyCtrl) {
 			p_node->state["selected"] = true;
-			addOrReplace(selected, p_component);
+			addOrReplace(selected, p_node);
 		}
 		else {
 			ClearGuiTreeSelectionState(tree);
 			selected.clear();
-			selected.push_back(p_component);
+			selected.push_back(p_node);
 			p_node->state["selected"] = true;
 
 			bool found = false;
@@ -56,34 +56,42 @@ namespace sundile::GuiSystem {
 			}
 		}
 	};
+	static const nodeEventCallback<listComponent> componentTab_RightClick = [&](listNodeRef<listComponent> p_node, guiTreeContainer<listComponent>& tree) {
+		auto& io = ImGui::GetIO();
+		if (!io.KeyCtrl) {
+			ClearGuiTreeSelectionState(tree);
+		}
+		p_node->state["selected"] = true;
+	};
 	componentTab createComponentTab(std::string name, guiComponentList& components) {
 		//create component tab
 		componentTab tab(name, [](guiContainer&, guiTreeContainer<listComponent> tree) {
 			RenderGuiTree(tree);
-			ClipboardContextMenu(getClipboard<listComponent>(), tree, "Component", "Components");
+			ClipboardContextMenu(getClipboard<listComponent>(), tree.root, "Component", "Components");
 			}, &components);
 		tab.treeContainer.callbacks[leftClick] = componentTab_LeftClick;
+		tab.treeContainer.callbacks[rightClick] = componentTab_RightClick;
 		return componentTabs.emplace_back<componentTab>(std::move(tab));
 	};
 	
 	static const nodeEventCallback<listEntity> entityTab_LeftClick = [&](listNodeRef<listEntity> p_node, guiTreeContainer<listEntity>& tree) {
-		auto io = ImGui::GetIO();
+		auto& io = ImGui::GetIO();
 		auto clipboard = getClipboard<listEntity>();
 		auto& selected = clipboard->selected;
-		auto p_entity = p_node->content.get();
+		auto p_entity = p_node->content;
 
 		if (io.KeyCtrl) {
 			p_node->state["selected"] = true;
-			addOrReplace(selected, p_entity);
+			addOrReplace(selected, p_node);
 		}
 		else {
 			ClearGuiTreeSelectionState(tree);
 			selected.clear();
-			selected.push_back(p_entity);
+			selected.push_back(p_node);
 			p_node->state["selected"] = true;
 
 			bool found = false;
-			for (auto i : componentTabs) {
+			for (auto& i : componentTabs) {
 				if (i.name == p_entity->name) {
 					found = true; break;
 				}
@@ -93,13 +101,21 @@ namespace sundile::GuiSystem {
 			}
 		}
 	};
+	static const nodeEventCallback<listEntity> entityTab_RightClick = [&](listNodeRef<listEntity> p_node, guiTreeContainer<listEntity>& tree) {
+		auto& io = ImGui::GetIO();
+		if (!io.KeyCtrl) {
+			ClearGuiTreeSelectionState(tree);
+		}
+		p_node->state["selected"] = true;
+	};
 	entityTab& createEntityTab(std::string name, guiEntityList& entities) {
 		entityTab tab(name, [](guiContainer&, guiTreeContainer<listEntity>& tree) {
 			RenderGuiTree(tree);
-			ClipboardContextMenu(getClipboard<listEntity>(), tree, "Entity", "Entities");
+			ClipboardContextMenu(getClipboard<listEntity>(), tree.root, "Entity", "Entities");
 			}, &entities);
 		tab.container.state["open"] = true;
 		tab.treeContainer.callbacks[leftClick] = entityTab_LeftClick;
+		tab.treeContainer.callbacks[rightClick] = entityTab_RightClick;
 
 		return entityTabs.emplace_back<entityTab>(std::move(tab));
 	}

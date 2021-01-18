@@ -1,10 +1,29 @@
 #pragma once
-#include "../sundile/sundile.h"
-#include "../components/Camera.h"
+#include "../../globals/Common.h"
+#ifndef S_CAMERA
+#define S_CAMERA
+namespace sundile {
+	struct Camera {
+		//-- Matrices
+		Vec3 pos = Vec3(1.f, 1.f, 1.f);
+		Vec3 front = glm::normalize(glm::vec3(-1.f, -1.f, -1.f));
+		Vec3 dir = Vec3(0.f, 5.f * glm::quarter_pi<float>(), 0.f);
+		Vec3 spd = Vec3(0.f);
+		float fric = 0.01f;
+		float maxspd = 0.5f;
+		Vec2 cursorpos;
+		Vec2 cursorpos_prev;
+		bool locked = false;
+		Vec2 size = { 1920,1080 };
 
-
-BEGIN_SYSTEM(CameraSystem)
-
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), size.x / size.y, 0.1f, 100.0f);
+		glm::mat4 T =
+			glm::rotate(
+				glm::translate(glm::mat4(1.f), glm::vec3(-1.f, -1.f, -3.f)),
+				dir.y, glm::vec3(0, 1, 0));
+	};
+}
+namespace sundile::CameraSystem {
 	glm::vec3 rotatexy(glm::vec3 vec, float radians) {
 		//note: this is the passive transform, used for rotating axes
 		vec.x = vec.x * cosf(radians) + vec.y * sinf(radians);
@@ -14,8 +33,8 @@ BEGIN_SYSTEM(CameraSystem)
 
 	void stepEvent(const SceneStepEvent& ev) {
 		using namespace glm;
-		ev.registry->view<camera>().each([&](auto entity, camera& cam) {
-			updateGUI<camera>(entity, cam);
+		ev.registry->view<Camera>().each([&](auto entity, Camera& cam) {
+			updateGUI<Camera>(entity, cam);
 
 			//
 			//Identity and inverse.
@@ -24,7 +43,7 @@ BEGIN_SYSTEM(CameraSystem)
 			Vec3& dir = cam.dir;
 			Vec3& pos = cam.pos;
 			Vec3& spd = cam.spd;
-			float pi = glm::pi<float>();
+			constexpr float pi = glm::pi<float>();
 
 			//
 			//Rotation
@@ -99,20 +118,22 @@ BEGIN_SYSTEM(CameraSystem)
 
 			//Set MVP
 			cam.T *= Mi * T;
-		});
+			});
 	}
 
 	void init(const SceneInitEvent& ev) {
 		ev.evw->dispatcher.sink<SceneStepEvent>().connect<&stepEvent>();
 
 		//dependencies
-		ev.registry->on_construct<camera>().connect<&entt::registry::emplace_or_replace<velocity>>();
+		//ev.registry->on_construct<camera>().connect<&entt::registry::emplace_or_replace<velocity>>();
 
+		/**
 		defineGui<camera>([](const guiMeta& meta) {
 			using namespace ImGui;
 			camera* c = meta_cast<camera>(meta);
 			DragFloat("maxspd", &(c->maxspd));
 		});
+		/**/
 	}
-
-END_SYSTEM
+}
+#endif

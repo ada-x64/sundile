@@ -7,16 +7,24 @@
 #include "EventSystem/EventSystem.h"
 
 namespace sundile {
-	struct SmartGLFWwindowDestroyer {
-		void operator()(GLFWwindow* ptr) {
+	struct SmartGLFWwindow {
+		GLFWwindow* ptr;
+		SmartGLFWwindow(GLFWwindow* window) : ptr(window) {};
+		~SmartGLFWwindow() {
 			glfwDestroyWindow(ptr);
 		}
+		SmartGLFWwindow operator =(GLFWwindow*& other) {
+			ptr = other;
+		}
+		SmartGLFWwindow operator =(SmartGLFWwindow& other) {
+			ptr = other.ptr;
+		}
 	};
-	typedef std::unique_ptr<GLFWwindow, SmartGLFWwindowDestroyer> SmartGLFWwindow;
+
 
 	struct WindowContainer
 	{
-		SmartGLFWwindow	window;
+		GLFWwindow*		window;
 		SmartEVW		evw;
 		int				WIDTH = 800;
 		int				HEIGHT = 600;
@@ -28,15 +36,23 @@ namespace sundile {
 		unsigned int id = -1;
 
 		bool operator == (WindowContainer& other) {
-			return (this->window.get() == other.window.get());
+			return (this->window == other.window);
+		}
+		void operator = (WindowContainer& other) {
+			this->window = other.window;
+		}
+
+		void setTitle(const char* title) {
+			this->title = title;
+			glfwSetWindowTitle(window,title);
 		}
 	};
 	typedef std::shared_ptr<WindowContainer> SmartWindow;
 
 	namespace WindowSystem {
-		inline SmartWindow emptywindow = std::make_shared<WindowContainer>();
-		inline SmartWindow currentwindow;
-		inline SmartEVW	currentevw;
+		inline SmartWindow emptyWindow = std::make_shared<WindowContainer>();
+		inline SmartWindow currentWindow;
+		inline SmartEVW	currentEVW;
 		inline bool	GLFWinitialized = false;
 		inline bool	GLEWinitialized = false;
 		inline bool termination_called = false;

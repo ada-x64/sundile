@@ -2,12 +2,8 @@
 //--
 //-- EXPORT functions
 //--
-#include "CameraSystem.h"
-#include "MeshSystem.h"
-#include "ModelSystem.h"
-#include "PhysicsSystem.h"
-#include "RenderSystem.h"
-#include "ShaderSystem.h"
+
+#include "../sundile/sundile.h"
 
 namespace sundile {
 	namespace Systems {

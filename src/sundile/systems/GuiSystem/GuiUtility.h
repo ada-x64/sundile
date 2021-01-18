@@ -35,7 +35,7 @@ namespace sundile::GuiSystem {
 	}
 
 	guiContainer* getPrimaryContainer() {
-		return &guiRegistry.get<guiContainer>(primaryGuiEntity);
+		return &(guiRegistry.get<guiContainer>(primaryGuiEntity));
 	}
 
 	//-- [SECTION] - Gui Trees
@@ -45,30 +45,44 @@ namespace sundile::GuiSystem {
 	static const ImGuiTreeNodeFlags leafFlags = ImGuiTreeNodeFlags_Leaf;
 
 	template<typename T>
-	bool RemoveFromTree(guiTreeContainer<T>& container, listNodeRef<T> target) {
-		auto& tree = container.tree;
-		for (int i = 0; i < tree.size(); ++i) {
-			if (tree[i]->name == target->name) {
-				removeErase(tree, tree[i]);
-				return true;
+	listNodeRef<T> FindParent(guiTreeContainer<T>& container, listNodeRef<T>& target, std::function<void(const int i, listNodeRef<T>& parent)> callback = []() {}) {
+
+		auto& contents = container.root->children;
+		listNodeRef<T> parent;
+		for (int i = 0; i < contents.size(); ++i) {
+
+			parent = container.root;
+
+			if (contents[i]->id == target->id) {
+				callback(i, parent);
+				return parent;
 			}
 			std::function<bool(listNodeRef<T>, bool)> recurse = [&](listNodeRef<T> p_node, bool found) {
-				if (found || p_node->name == target->name) return true;
+				if (found || p_node->id == target->id)
+					return true;
 
+				parent = p_node; //should get the child node's first ancestor
 				auto children = p_node->children;
 				if (!children.empty()) {
 					for (int j = 0; j < children.size(); ++j) {
 						if (recurse(children[j], found)) {
-							removeErase(children, children[j]);
+							callback(j, parent);
 							return true;
 						}
 					}
 				}
 				return found;
 			};
-			if (recurse(tree[i], false)) return true;
+			if (recurse(contents[i], false)) return parent;
 		}
-		return false;
+		return parent;
+	}
+
+	template<typename T>
+	listNodeRef<T> RemoveFromTree(guiTreeContainer<T>& container, listNodeRef<T>& target) {
+		return FindParent<T>(container, target, [](const int j, auto parent) {
+			removeErase(parent->children, parent->children[j]);
+			});
 	}
 
 	template<typename T>
@@ -93,12 +107,17 @@ namespace sundile::GuiSystem {
 	}
 
 	template<typename T>
-	void RenderListNode(listNodeRef<T> p_node, guiTreeContainer<T>& tree) {
-		auto io = ImGui::GetIO();
-		auto& callbacks = tree.callbacks;
+	void RenderListNode(listNodeRef<T>& p_node, guiTreeContainer<T>& tree) {
+		static const auto setState = [](listNodeRef<T>& p_node) {
+			//note: was using this to do the recomended mouseDelta method for rearranging items
+			//p_node->state["hovered"] = ImGui::IsItemHovered();
+			//p_node->state["active"] = ImGui::IsItemActive();
+		};
+
 		//TODO: Allow for more nuanced interaction
 		//ie use IO to check mouse status
-		auto doCallbacks = [&]() {
+		static const auto doCallbacks = [&tree](listNodeRef<T>& p_node, listNodeRef<T>& parent) {
+			auto& callbacks = tree.callbacks;
 			if (ImGui::IsItemClicked(0)) {
 				callbacks[leftClick](p_node, tree);
 			}
@@ -109,7 +128,6 @@ namespace sundile::GuiSystem {
 				callbacks[middleClick](p_node, tree);
 			}
 
-
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
 				ImGui::SetDragDropPayload("GUI_TREE_ELEMENT", p_node.get(), sizeof(listNode<T>));
 				ImGui::Text("Move Item...");
@@ -118,56 +136,50 @@ namespace sundile::GuiSystem {
 		};
 
 		//TODO: Make this actually do something
-		auto doDragDrop = [&](bool folder) {
-			if (!folder) {
-				if (ImGui::BeginDragDropTarget()) {
-					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("GUI_TREE_ELEMENT");
-					if (payload) {
-						//Reorder element
-						listNodeRef<T> data = std::make_shared<listNode<T>>(*(listNode<T>*)(payload->Data));
-						bool found = RemoveFromTree(tree, data);
-					}
-					ClearGuiTreeSelectionState<T>(tree);
-					ImGui::EndDragDropTarget();
-				}
-			}
-			else {
-				if (ImGui::BeginDragDropTarget()) {
+		static const auto doDragDrop = [&tree](listNodeRef<T>& p_node) {
+			if (ImGui::BeginDragDropTarget()) {
+				if (p_node->state["folder"]) {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("GUI_TREE_ELEMENT")) {
 						//Add to folder
 						//take payload node and place it as child of folder node
 						//then remove it from the tree...?
 						//search the tree for the element. remove it when found. then place it in the proper location.
 						listNodeRef<T> data = std::make_shared<listNode<T>>(*(listNode<T>*)(payload->Data));
-						RemoveFromTree(tree, data);
-						p_node->children.push_back(std::move(data));
+						if (p_node != data) {
+							RemoveFromTree(tree, data);
+							p_node->children.push_back(std::move(data));
+						}
 					}
 					ClearGuiTreeSelectionState<T>(tree);
-					ImGui::EndDragDropTarget();
 				}
+				else {
+
+				}
+				ImGui::EndDragDropTarget();
 			}
 		};
 
 		//recursively render tree
-		//\TODO: Stack error on opening folders
-		std::function<void(listNodeRef<T>)> recurse = [&](listNodeRef<T> p_node) {
+		static const std::function<void(listNodeRef<T>&, listNodeRef<T>&)> recurse = [&](listNodeRef<T>& p_node, listNodeRef<T> parent) {
 			auto flags = (p_node->state["folder"] ? nodeFlags : leafFlags) | (p_node->state["selected"] ? selectedFlags : 0);
 			if (ImGui::TreeNodeEx(p_node->name.c_str(), flags)) {
 				for (int i = 0; i < p_node->children.size(); ++i) {
-					recurse(p_node->children[i]);
+					recurse(p_node->children[i], p_node);
 				}
 				ImGui::TreePop();
 			}
-			doCallbacks();
-			doDragDrop(p_node->state["folder"]);
+			setState(p_node);
+			doCallbacks(p_node, parent);
+			doDragDrop(p_node);
 		};
-		recurse(p_node);
+		recurse(p_node, tree.root);
 	}
 
 	template<typename T>
 	void RenderGuiTree(guiTreeContainer<T>& container) {
-		for (int i = 0; i < container.tree.size(); ++i) {
-			RenderListNode<T>(container.tree[i], container);
+		auto contents = container.root->children;
+		for (int i = 0; i < contents.size(); ++i) {
+			RenderListNode<T>(contents[i], container);
 		}
 	}
 
@@ -181,8 +193,9 @@ namespace sundile::GuiSystem {
 
 	template <typename T>
 	void ClearGuiTreeSelectionState(guiTreeContainer<T>& tree) {
-		for (int i = 0; i < tree.tree.size(); ++i) {
-			ClearListNodeSelectionState(tree.tree[i]);
+		auto contents = tree.root->children;
+		for (int i = 0; i < contents.size(); ++i) {
+			ClearListNodeSelectionState(contents[i]);
 		}
 	}
 }

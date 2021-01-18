@@ -8,17 +8,35 @@
 namespace sundile::GuiSystem {
 
 	// [SECTION] - Forward declaration
-	void ComponentEditor(guiContainer& container);
 	void stateRouter(const SmartEVW& evw, guiContainer& gui, ImVec2 windowSize);
 	void mainMenu(const SmartEVW& evw, guiContainer& gui, ImVec2 windowSize);
 	void initGuiFrontend();
-
-	void ComponentEditor(guiContainer& container) {
-		using namespace ImGui;
-		Text("WIP");
-	}
 	
 	// [SECTION] - Back-End and Main Menu
+
+	void editorFrame(guiContainer& container) {
+
+		if (WindowSystem::currentWindow != nullptr) {
+			GLfloat viewport[4];
+			glGetFloatv(GL_VIEWPORT, viewport);
+			auto x = viewport[0];
+			auto y = viewport[1];
+			auto w = viewport[2];
+			auto h = viewport[3];
+
+			auto& window = WindowSystem::currentWindow;
+			auto& renderer = RenderSystem::currentRenderer;
+
+			//ImGui::SetWindowSize("Editor", {w,h});
+			ImVec2 size = ImGui::GetWindowSize();
+			ImVec2 pos = ImGui::GetWindowPos();
+			//modify size to aspect ratio
+			size = { size.x, size.x * renderer->size.y / renderer->size.x };
+
+			glViewport(pos.x, window->HEIGHT - pos.y - size.y, size.x, size.y);
+			ImGui::SetWindowSize(size);
+		}
+	}
 
 	void stateRouter(const SmartEVW& evw, guiContainer& gui, ImVec2 windowSize) {
 		using namespace ImGui;
@@ -29,7 +47,7 @@ namespace sundile::GuiSystem {
 			}
 			for (auto i : gui.state) {
 				if (i.second && container.name == i.first) {
-					SetNextWindowSize(container.size, ImGuiCond_Appearing);
+					//SetNextWindowSize(container.size, ImGuiCond_Appearing);
 					Begin(container.name.c_str(),&(gui.state[container.name]),container.windowFlags);
 					container.renderFunc(container);
 					End();
@@ -74,6 +92,13 @@ namespace sundile::GuiSystem {
 		auto inspectorContainer = guiRegistry.emplace<guiContainer>(inspector, "Inspector", Inspector, ImVec2(0.f, 300.f), ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |ImGuiWindowFlags_NoMove);
 		getPrimaryContainer()->state["Inspector"] = true;
 		initInspector(inspectorContainer);
+
+		//main editor
+		GLfloat viewport[4];
+		glGetFloatv(GL_VIEWPORT, viewport);
+		auto editor = guiRegistry.create();
+		auto editorContainer = guiRegistry.emplace<guiContainer>(editor, "Editor", editorFrame, ImVec2(viewport[2],viewport[3]), ImGuiWindowFlags_NoBackground);
+		getPrimaryContainer()->state["Editor"] = true;
 	}
 }
 #endif

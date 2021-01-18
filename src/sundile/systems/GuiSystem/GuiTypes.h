@@ -63,22 +63,27 @@ namespace sundile::GuiSystem {
 	using guiTreeCallbackMap = std::map<guiTreeInputEvent, nodeEventCallback<T>>;
 
 	template<typename T>
-	using guiTree = std::vector<listNodeRef<T>>;
+	using nodeList = std::vector<listNodeRef<T>>;
 
 	template<typename T>
 	struct guiTreeContainer {
-		guiTree<T> tree;
+		listNodeRef<T> root;
 		guiTreeCallbackMap<T> callbacks;
 		nodeEventCallback<T> nullCallback = [](listNodeRef<T>, guiTreeContainer<T>&) {};
 		guiTreeContainer(std::vector<T> list) {
+			T content;
+			root = std::make_shared<listNode<T>>(content);
 			for (auto i : list) {
-				tree.emplace_back(std::make_shared<listNode<T>>(i));
+				root->children.emplace_back(std::make_shared<listNode<T>>(i));
 			}
 			for (int i = 0; i < guiTreeInputEvent::COUNT; ++i) {
 				callbacks[guiTreeInputEvent(i)] = nullCallback;
 			}
+
 		}
 		guiTreeContainer() {
+			T content;
+			root = std::make_shared<listNode<T>>(content);
 			for (int i = 0; i < guiTreeInputEvent::COUNT; ++i) {
 				callbacks[guiTreeInputEvent(i)] = nullCallback;
 			}
@@ -123,7 +128,8 @@ namespace sundile::GuiSystem {
 	// Parent struct for listComponent and listEntity. Acts as a node in a tree.
 	template <typename T>
 	struct listNode {
-		guiTree<T> children;
+		unsigned int id = std::time(nullptr); //uuid
+		nodeList<T> children;
 		std::string name = "(unset)";
 		std::shared_ptr<T> content;
 		guiStateMap state;
@@ -143,10 +149,10 @@ namespace sundile::GuiSystem {
 	// General purpose clipboard
 	template <typename T>
 	struct guiClipboard {
-		std::vector<T*> selected;
-		std::vector<T> list;
+		nodeList<T> selected;
+		nodeList<T> list;
 		guiStateMap state;
-		T* toBeRenamed = nullptr;
+		listNodeRef<T> toBeRenamed;
 		char namebuff[64];
 	};
 	// Wrapper for tabs. Assumes it will contain a child window
@@ -160,13 +166,13 @@ namespace sundile::GuiSystem {
 		std::string name = "";
 		void render() {
 			//update data
-			auto& tree = treeContainer.tree;
+			auto& tree = treeContainer.root->children;
 			//add missing values - this was added because initGuiFrontend was called before entityList was populated
 			if (tree.empty() && data->size() != 0) {
 				for (auto i = 0; i < data->size(); ++i) {
 					T content = data->at(i);
 					listNodeRef<T> node = std::make_shared<listNode<T>>(content);
-					treeContainer.tree.push_back(std::move(node));
+					tree.push_back(std::move(node));
 				}
 			}
 			else if (false) {// (tree.size() != data->size()) { //hopefully this should never run
@@ -194,7 +200,7 @@ namespace sundile::GuiSystem {
 			for (auto i = 0; i < data->size(); ++i) {
 				T content = data->at(i);
 				listNodeRef<T> node = std::make_shared<listNode<T>>(content);
-				treeContainer.tree.push_back(std::move(node));
+				treeContainer.root->children.push_back(std::move(node));
 			}
 		};
 	};

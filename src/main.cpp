@@ -11,13 +11,17 @@ int main(void)
 	//For now, just ensure that you're executing the program from the same place it's stored :)
 
 	//Initialize
+	sundile::asset_directory = fs::current_path().string() + "/assets/";
 	SmartEVW evw = EventSystem::create();
 	SmartScene sim = SceneSystem::init(evw);
 	SmartWindow winc = WindowSystem::initWindowedFullscreen(evw);
 	winc->title = "sundile";
+#ifdef SUNDILE_EXPORT
+	winc->guiEnabled = false;
+#else
 	winc->guiEnabled = true;
-	glfwSetWindowTitle(winc->window.get(), winc->title);
-	glfwSetWindowSizeLimits(winc->window.get(), winc->WIDTH, winc->HEIGHT, winc->WIDTH, winc->HEIGHT);
+#endif
+	glfwSetWindowSizeLimits(winc->window, winc->WIDTH, winc->HEIGHT, winc->WIDTH, winc->HEIGHT);
 
 	GuiSystem::init(evw);
 	Systems::init(evw);
@@ -30,34 +34,28 @@ int main(void)
 		auto registry = sim->registry;
 
 		//Assets
-		Model suzanne = ModelSystem::loadModel("./assets/models/monkey.obj");
+		Model suzanne = ModelSystem::loadModel(asset_directory + "models/monkey.obj");
 
 		auto eRenderer = registry->create();
 		emplace<Renderer>(registry, eRenderer,RenderSystem::create());
 
 		auto eCam = registry->create();
-		emplace<camera>(registry, eCam);
+		emplace<Camera>(registry, eCam);
 
 		//--
 		//-- Suzannes in a Circle
 		int count = 8;
 		for (int i = 0; i < count; i++) {
 			auto eMonkey = registry->create();
-			auto model = emplace<Model>(registry,  eMonkey, suzanne);
-			emplace<visible>(registry,  eMonkey);
-			position p;
-			p.pos = glm::vec3(10 * cos(i * 2 * glm::pi<float>() / count), 0.f, 10 * sin(i * 2 * glm::pi<float>() / count));
-			emplace<position>(registry,  eMonkey, p);
+			Model model = emplace<Model>(registry,  eMonkey, suzanne);
+			registry->get<Model>(eMonkey).transform = glm::translate(model.transform, glm::vec3(10 * cos(i * 2 * pi / count), 0.f, 10 * sin(i * 2 * pi / count)));
 		}
 
 		//--
 		//-- Light of our lives
 		auto eLightMonkey = registry->create();
 		auto model = emplace<Model>(registry, eLightMonkey, suzanne);
-		emplace<visible>(registry, eLightMonkey);
-		position p; p.pos = { 0,0,0 };
-		emplace<position>(registry,  eLightMonkey, p);
-		Shader lightsource = ShaderSystem::init("./assets/shaders/passthrough.vert", "./assets/shaders/light_global.frag");
+		Shader lightsource = ShaderSystem::init(asset_directory + "shaders/passthrough.vert", asset_directory + "shaders/light_global.frag");
 		ShaderSystem::use(lightsource);
 		ShaderSystem::setVec4(lightsource, "color", { 1.f,1.f,1.f,1.f });
 		emplace<Shader>(registry, eLightMonkey, lightsource);

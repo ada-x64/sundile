@@ -4,14 +4,13 @@
 //--
 #pragma once
 
-#include "../sundile/sundile.h"
-#include "../components/Shader.h"
+#include "../../globals/Common.h"
 
 #ifndef SHADER_H
 #define SHADER_H
 
-BEGIN_SYSTEM(ShaderSystem)
-//-- Registry
+namespace sundile::ShaderSystem {
+	//-- Registry
 	std::vector<Shader> ShaderRegistry;
 
 	//-- Error Checking
@@ -133,7 +132,7 @@ BEGIN_SYSTEM(ShaderSystem)
 		// delete the shaders as they're linked into our program now and no longer necessery
 		glDeleteShader(vertex);
 		glDeleteShader(fragment);
-		
+
 		checkError();
 
 		if (success) {
@@ -230,5 +229,5 @@ BEGIN_SYSTEM(ShaderSystem)
 		glUniformMatrix4fv(glGetUniformLocation(s, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 		checkError();
 	}
-END_SYSTEM
+}
 #endif
