@@ -15,7 +15,7 @@ namespace sundile {
 	};
 }
 
-namespace sundile::RenderSystem {
+BEGIN_SYSTEM(RenderSystem)
 	static Renderer* currentRenderer;
 
 	//-- Rendering Shorthands
@@ -151,7 +151,7 @@ namespace sundile::RenderSystem {
 
 	Renderer create(fs::path vert = asset_directory + "/shaders/passthrough.vert", fs::path frag = asset_directory + "/shaders/passthrough.frag", Vec2 size = { 1920,1080 }) {
 		Renderer r;
-		r.defaultShader = ShaderSystem::init(vert, frag);
+		r.defaultShader = ShaderSystem::create(vert, frag);
 		r.size = size;
 		checkError();
 		return r;
@@ -177,6 +177,6 @@ namespace sundile::RenderSystem {
 	void terminate(Renderer& rend) {
 	}
 
-}
+END_SYSTEM
 
 #endif

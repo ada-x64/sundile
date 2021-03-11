@@ -1,8 +1,15 @@
 #ifndef GUI_META_H
 #define GUI_META_H
+/*
+\\TODO:
+	replace updateGUI
+*/
+
 #include "GuiTypes.h"
+
 #ifndef SUNDILE_EXPORT
 namespace sundile {
+	using namespace Systems::GuiSystem;
 	//--
 	//-- META FUNCTIONS
 	//--
@@ -17,13 +24,12 @@ namespace sundile {
 		T foo;
 		auto meta = entt::meta_any(foo);
 		printf("GUI DEFINED FOR TYPE %s\nTYPE_ID:%i\n", typeid(T).name(), meta.type().type_id());
-		GuiSystem::guiIndices.push_back(GuiSystem::guiIndex{ name, f, meta.type().type_id() });
+		guiIndices.push_back(guiIndex{ name, f, meta.type().type_id() });
 	}
 
 	//\todo: REPLACE THIS FUNCTION
 	template <typename T>
 	void updateGUI(entt::entity entt, T& value) {
-		using namespace GuiSystem;
 		for (auto& e : entityList) {
 			if (e.entity == entt) {
 				auto meta_any = entt::meta_any(value);
@@ -43,7 +49,7 @@ namespace sundile {
 		auto returned = registry->emplace<T>(entt);
 		auto meta = entt::meta_any(returned);
 		guiMeta gm{ &returned, meta.type().type_id(), entt };
-		GuiSystem::metaList.push_back(gm);
+		metaList.push_back(gm);
 		return returned;
 	}
 
@@ -52,7 +58,7 @@ namespace sundile {
 		auto returned = registry->emplace<T>(entt, args...);
 		auto meta = entt::meta_any(returned);
 		guiMeta gm{ &returned, meta.type().type_id(), entt };
-		GuiSystem::metaList.push_back(gm);
+		metaList.push_back(gm);
 		return returned;
 	}
 

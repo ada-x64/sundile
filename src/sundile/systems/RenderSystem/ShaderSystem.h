@@ -9,7 +9,7 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-namespace sundile::ShaderSystem {
+BEGIN_SYSTEM(ShaderSystem)
 	//-- Registry
 	std::vector<Shader> ShaderRegistry;
 
@@ -47,7 +47,7 @@ namespace sundile::ShaderSystem {
 	}
 
 	//-- Create and Initialize
-	Shader init(Shader& s, fs::path vertexPath, fs::path fragmentPath) {
+	Shader create(Shader& s, fs::path vertexPath, fs::path fragmentPath) {
 
 		// 1. retrieve the vertex/fragment source code from filePath
 		std::string vertexCode;
@@ -147,9 +147,9 @@ namespace sundile::ShaderSystem {
 		}
 
 	}
-	Shader init(fs::path vertexPath, fs::path fragmentPath) {
+	Shader create(fs::path vertexPath, fs::path fragmentPath) {
 		Shader s;
-		return init(s, vertexPath, fragmentPath);
+		return create(s, vertexPath, fragmentPath);
 	}
 
 	//-- Use
@@ -229,5 +229,6 @@ namespace sundile::ShaderSystem {
 		glUniformMatrix4fv(glGetUniformLocation(s, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 		checkError();
 	}
-}
+
+END_SYSTEM
 #endif

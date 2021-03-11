@@ -1,19 +1,24 @@
 #ifndef GUI_CLIPBOARD
 #define GUI_CLIPBOARD
 
-namespace sundile::GuiSystem {
-	template<typename T>
-	guiClipboard<T>* getClipboard() {
-		auto clipboard = clipboardList[typeid(T).name()];
-		if (clipboard == nullptr) {
-			clipboard = (void*)(new guiClipboard<T>);
-			clipboardList[typeid(T).name()] = clipboard;
-		}
-		return (guiClipboard<T>*)(clipboard);
+/*
+\\TODO:
+	0. Debug multi-select and implement entity renaming (will need to be saved when implementing ProjectSystem)
+	1. Implement Copy/Cut/Paste clipboard functions
+*/
+BEGIN_SYSTEM(GuiSystem)
+template<typename T>
+guiClipboard<T>* getClipboard() {
+	auto clipboard = clipboardList[typeid(T).name()];
+	if (clipboard == nullptr) {
+		clipboard = (void*)(new guiClipboard<T>);
+		clipboardList[typeid(T).name()] = clipboard;
 	}
+	return (guiClipboard<T>*)(clipboard);
+}
 
-	template<typename T>
-	void ClipboardContextMenu(guiClipboard<T>* clipboard, listNodeRef<T> root, std::string singular = "", std::string plural = "", std::string* itemName = nullptr) {
+template<typename T>
+void ClipboardContextMenu(guiClipboard<T>* clipboard, listNodeRef<T> root, std::string singular = "", std::string plural = "", std::string* itemName = nullptr) {
 		auto& selected = clipboard->selected;
 		auto& list = clipboard->list;
 		auto& name = (selected.size() == 1) ? singular : plural;
@@ -115,6 +120,6 @@ namespace sundile::GuiSystem {
 			ImGui::EndPopup();
 		}
 	}
-}
 
+END_SYSTEM
 #endif

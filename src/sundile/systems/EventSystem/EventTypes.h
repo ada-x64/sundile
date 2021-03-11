@@ -89,20 +89,10 @@ namespace sundile {
 
 	// GUI EVENTS
 	// for interaction with defineGui()
-	enum GuiStateKey {
-		entityInspector,
-		componentInspector,
-		focusAny
-	};
-	struct GuiEventContent {
-		const char* key;
-		bool value;
-		GuiEventContent(const char* k, const bool v) : key(k), value(v) {};
-	};
 	struct GuiEvent : Event {
 		entt::registry* registry;
-		GuiEventContent payload;
-		GuiEvent(entt::registry* registry, GuiEventContent payload) : registry(registry), payload(payload) {};
+		StateMap payload;
+		GuiEvent(entt::registry* registry, StateMap payload) : registry(registry), payload(payload) {};
 	};
 	struct RenderGuiEvent : SceneEvent {};
 

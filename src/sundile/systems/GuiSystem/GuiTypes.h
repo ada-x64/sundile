@@ -1,38 +1,26 @@
 #ifndef GUI_TYPES_H
 #define GUI_TYPES_H
-namespace sundile {
-	// Contains typeinfo for registered components.
-	struct guiMeta {
-		void* ref;
-		entt::id_type id = -1;
-		entt::entity entt;
-	};
-	// Contains the Dear IMGUI instructions for registered components
-	typedef std::function<void(const guiMeta&)> guiRenderFunc;
 
-	// Null members
-	static const guiMeta nullMeta;
-	static const guiRenderFunc nullRenderFunc = [](const guiMeta&) { ImGui::Text("(empty)"); };
-}
-namespace sundile::GuiSystem {
+BEGIN_SYSTEM(GuiSystem)
+	//[SECTION] - GuiSystem Scope
 	//[SECTION] - forward decl. & typedefs
-		// General Containers
+		//-- General Containers
 	struct guiContainer;
-	typedef std::map<std::string, bool> guiStateMap;
+	//typedef std::map<std::string, bool> StateMap; //moved to general types
 	typedef std::function<void(guiContainer&)> guiContainerFunc;
 
-		// Inspector Trees
+		//-- Inspector Trees
 	template<typename T>
 	struct listNode;
-	struct listEntity;
-	struct listComponent;
 	template<typename T>
 	using listNodeRef = std::shared_ptr<listNode<T>>;
 
+	struct listEntity;
+	struct listComponent;
 	typedef std::vector<listEntity> guiEntityList;
 	typedef std::vector<listComponent> guiComponentList;
 
-		// Trees
+		//-- Trees
 	template <typename T>
 	struct guiTreeContainer;
 
@@ -132,26 +120,41 @@ namespace sundile::GuiSystem {
 		nodeList<T> children;
 		std::string name = "(unset)";
 		std::shared_ptr<T> content;
-		guiStateMap state;
+		StateMap state;
 		listNode(T content) : content(std::make_shared<T>(content)), name(content.name) {};
 	};
-	// Contains primary GUI
+	//
+	typedef std::map<ImGuiStyleVar, float> styleVarMap;
+
+	// Contains GUI Windows
 	static const guiContainerFunc nullContainerFunc = [](guiContainer&) -> void {};
 	struct guiContainer {
 		std::string name;
-		guiStateMap state;
+		StateMap state;
 		guiContainerFunc renderFunc;
 		ImGuiWindowFlags windowFlags;
+		styleVarMap styleVars;
 		ImVec2 size;
-		guiContainer(const char* name = "UNDEFINED", guiContainerFunc renderFunc = nullContainerFunc, ImVec2 size = ImVec2(0.f, 0.f), ImGuiWindowFlags windowFlags = ImGuiWindowFlags_None)
-			: name(name), renderFunc(renderFunc), size(size), windowFlags(windowFlags) {};
+
+		guiContainer(const char* name = "UNDEFINED",
+			guiContainerFunc renderFunc = nullContainerFunc,
+			ImVec2 size = ImVec2(0.f, 0.f),
+			ImGuiWindowFlags windowFlags = ImGuiWindowFlags_None,
+			styleVarMap styleVars = {}
+		)
+			: name(name),
+			renderFunc(renderFunc),
+			size(size),
+			windowFlags(windowFlags),
+			styleVars(styleVars)
+		{};
 	};
 	// General purpose clipboard
 	template <typename T>
 	struct guiClipboard {
 		nodeList<T> selected;
 		nodeList<T> list;
-		guiStateMap state;
+		StateMap state;
 		listNodeRef<T> toBeRenamed;
 		char namebuff[64];
 	};
@@ -238,5 +241,6 @@ namespace sundile::GuiSystem {
 	static windowID currentWindow = -1;
 	static sceneID currentScene = -1;
 	static evwID currentEVW = -1;
-}
+
+END_SYSTEM
 #endif

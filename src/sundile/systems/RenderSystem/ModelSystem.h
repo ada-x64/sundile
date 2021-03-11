@@ -13,7 +13,7 @@ namespace sundile {
 	};
 }
 
-namespace sundile::ModelSystem {
+BEGIN_SYSTEM(ModelSystem)
 
 	namespace {
 		unsigned int TextureFromFile(const char* path, const std::string& directory)
@@ -172,5 +172,6 @@ namespace sundile::ModelSystem {
 			MeshSystem::Draw(std::move(mesh), shader);
 		}
 	}
-}
+
+END_SYSTEM
 #endif

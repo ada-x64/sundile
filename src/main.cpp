@@ -1,12 +1,14 @@
 //--
 //-- main.cpp
 //--
-#include "components/AllComponents.h"
-#include "systems/AllSystems.h"
+//#include "components/AllComponents.h"
+//#include "systems/AllSystems.h"
 
+#include "./sundile/sundile.h"
 int main(void)
 {
 	using namespace sundile;
+	using namespace Systems;
 	//When ProjectSystem is implemented, will need to set a project root directory.
 	//For now, just ensure that you're executing the program from the same place it's stored :)
 
@@ -55,7 +57,7 @@ int main(void)
 		//-- Light of our lives
 		auto eLightMonkey = registry->create();
 		auto model = emplace<Model>(registry, eLightMonkey, suzanne);
-		Shader lightsource = ShaderSystem::init(asset_directory + "shaders/passthrough.vert", asset_directory + "shaders/light_global.frag");
+		Shader lightsource = ShaderSystem::create(asset_directory + "shaders/passthrough.vert", asset_directory + "shaders/light_global.frag");
 		ShaderSystem::use(lightsource);
 		ShaderSystem::setVec4(lightsource, "color", { 1.f,1.f,1.f,1.f });
 		emplace<Shader>(registry, eLightMonkey, lightsource);

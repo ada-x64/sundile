@@ -1,6 +1,6 @@
 # sundile
 
-sundile is a 100% open-source, Modern C++, ECS-based game engine prototype written by [Phoenix Mandala](https://github.com/ada-rose-dev).
+sundile is a 100% open-source, Modern C++, ECS-based game engine prototype written by [ada](https://github.com/ada-rose-dev).
 
 It depends on the following libraries:
 

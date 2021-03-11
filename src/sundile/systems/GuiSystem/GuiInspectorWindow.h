@@ -4,20 +4,15 @@
 #include "GuiTypes.h"
 #include "GuiUtility.h"
 
-namespace sundile::GuiSystem {
-	/*
-
-	\\todo
-
-	0. Debug multi-select and implement entity renaming (will need to be saved when implementing ProjectSystem)
-	1. Implement Copy/Cut/Paste clipboard functions
-	2. Implement drag'n'drop reordering and component shuffling/exchange
-
+/*
+\\TODO:
+	Implement drag'n'drop reordering and component shuffling/exchange
 	Would Be Nice:
 	shift selection
 	drag selection
+*/
 
-	*/
+BEGIN_SYSTEM(GuiSystem)
 
 	// [SECTION] - Structs & namespace globals
 
@@ -25,6 +20,7 @@ namespace sundile::GuiSystem {
 	static std::vector<entityTab> entityTabs;
 	static std::vector<componentTab> componentTabs;
 	static std::vector<dataTab> dataTabs;
+	static float guiInspectorHeight = 300.f;
 
 	// [SECTION] - Editor windows
 
@@ -139,7 +135,7 @@ namespace sundile::GuiSystem {
 		//figure out how to use omittable variadic template parameters like entt::emplace
 		ImGuiTabBarFlags tabBarFlags = ImGuiTabBarFlags_AutoSelectNewTabs | ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_TabListPopupButton;
 
-		ImGui::SetWindowSize(ImVec2(0.f, 300.f));
+		ImGui::SetWindowSize(ImVec2(0.f, guiInspectorHeight));
 		ImGui::SetWindowPos(ImVec2(0.f, maxSize.y - ImGui::GetWindowHeight()));
 
 		ImGui::BeginChild("Scene Selector", ImVec2(width, 0), true);
@@ -173,6 +169,7 @@ namespace sundile::GuiSystem {
 		ImGui::EndChild();
 
 	}
-}
+
+END_SYSTEM
 
 #endif

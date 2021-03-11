@@ -33,6 +33,7 @@ static constexpr float pi = glm::pi<float>();
 	Vec2 operator + (const Vec2 other) { return Vec2(x + other.x, y + other.y); }
 	Vec2 operator -= (const Vec2 other) { x -= other.x; y -= other.y; return *this; }
 	Vec2 operator - (const Vec2 other) { return Vec2(x - other.x, y - other.y); }
+	Vec2 operator * (const float other) { return Vec2(x * other, y * other); }
 };
 
  struct Vec3 {
@@ -53,6 +54,7 @@ static constexpr float pi = glm::pi<float>();
 	Vec3 operator + (const Vec3 other) { return Vec3(x + other.x, y + other.y, z + other.z); }
 	Vec3 operator -= (const Vec3 other) { x -= other.x; y -= other.y; z -= other.z; return *this; }
 	Vec3 operator - (const Vec3 other) { return Vec3(x - other.x, y - other.y, z - other.z); }
+	Vec3 operator * (const float other) { return Vec3(x * other, y * other, z*other); }
 };
 
  struct Vec4 {
@@ -74,4 +76,5 @@ static constexpr float pi = glm::pi<float>();
 	Vec4 operator + (const Vec4 other) { return Vec4(x + other.x, y + other.y, z + other.z, w + other.w); }
 	Vec4 operator -= (const Vec4 other) { x -= other.x; y -= other.y; z -= other.z; w -= other.w; return *this; }
 	Vec4 operator - (const Vec4 other) { return Vec4(x - other.x, y - other.y, z - other.z, w - other.w); }
+	Vec4 operator * (const float other) { return Vec4(x * other, y * other, z * other, w*other); }
 };

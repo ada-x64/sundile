@@ -7,12 +7,36 @@
 #define GUI_H
 
 #include "../EventSystem/EventSystem.h"
-#include "GuiTypes.h"
+
+namespace sundile {
+	// Contains typeinfo for registered components.
+	struct guiMeta {
+		void* ref;
+		entt::id_type id = -1;
+		entt::entity entt;
+	};
+
+	// Contains the Dear IMGUI instructions for registered components
+	typedef std::function<void(const guiMeta&)> guiRenderFunc;
+
+	// Null members
+	static const guiMeta nullMeta;
+	static const guiRenderFunc nullRenderFunc = [](const guiMeta&) { ImGui::Text("(empty)"); };
+}
+
 #include "GuiMeta.h"
+#include "GuiTypes.h"
 #include "GuiFrontEnd.h"
 
+/*
+\\TODO:
+	Use window time
+*/
+
+
 #ifndef SUNDILE_EXPORT
-namespace sundile::GuiSystem {
+BEGIN_SYSTEM(GuiSystem)
+
 	//-- Events
 	//back end - to be called according to a timer (every second?)
 	void refreshEntities(SceneStepEvent& scene) {
@@ -125,19 +149,6 @@ namespace sundile::GuiSystem {
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
-	void initGui() {
-		primaryGuiEntity = guiRegistry.create();
-		guiRegistry.emplace<guiContainer>(primaryGuiEntity, "primary container",
-			[](guiContainer& e) -> void {
-				auto evw = getEVWByID(currentEVW);
-				ImVec2 ImWindowSize = getWindowSizeByID(evw, currentWindow);
-				stateSetter(evw, e, ImWindowSize);
-				mainMenu(evw, e, ImWindowSize);
-				stateRouter(evw, e, ImWindowSize);
-			}
-		);
-		initGuiFrontend();
-	}
 	void windowInit(const WindowInitEvent& ev) {
 		auto win = guiRegistry.create();
 		guiRegistry.emplace<windowID>(win, ev.id);
@@ -163,7 +174,6 @@ namespace sundile::GuiSystem {
 		ev.evw->dispatcher.sink<SceneStepEvent>().connect<&refreshEntities>();
 		ev.evw->dispatcher.sink<RenderGuiEvent>().connect<&render>();
 		ev.evw->dispatcher.sink<terminateEvent>().connect<&terminate>();
-		initGui();
 	}
 	void init(SmartEVW evw) {
 		//Initalize
@@ -181,7 +191,19 @@ namespace sundile::GuiSystem {
 		currentEVW = evw->id;
 		evw->dispatcher.sink<SceneInitEvent>().connect<GuiSystem::sceneInit>();
 		evw->dispatcher.sink<WindowInitEvent>().connect<GuiSystem::windowInit>();
+
+		primaryGuiEntity = guiRegistry.create();
+		guiRegistry.emplace<guiContainer>(primaryGuiEntity, "primary container",
+			[](guiContainer& e) -> void {
+				auto evw = getEVWByID(currentEVW);
+				ImVec2 ImWindowSize = getWindowSizeByID(evw, currentWindow);
+				stateSetter(evw, e, ImWindowSize);
+				mainMenu(evw, e, ImWindowSize);
+				stateRouter(evw, e, ImWindowSize);
+			}
+		);
+		initGuiFrontend(evw);
 	}
-}
+END_SYSTEM
 #endif 
 #endif

@@ -29,5 +29,5 @@ target_link_libraries(sproj
 
 #
 # misc
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/assets DESTINATION ${CMAKE_BINARY_DIR})
+# file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/assets DESTINATION ${CMAKE_BINARY_DIR}) ## Should be replaced with Project System, no need to duplicate entire thing every time
 set(ENV{SUNDILE_CWD} ${CMAKE_BINARY_DIR})

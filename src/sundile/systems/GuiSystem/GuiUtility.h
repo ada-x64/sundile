@@ -3,8 +3,8 @@
 
 #include "GuiTypes.h"
 
-//-- [DESCRIPTION] Helper functions for GuiTypes
-namespace sundile::GuiSystem {
+BEGIN_SYSTEM(GuiSystem)
+	//-- [DESCRIPTION] Helper functions for GuiTypes{
 	//-- HELPERS
 	auto checkContext() {
 		auto ctx = ImGui::GetCurrentContext();
@@ -13,7 +13,7 @@ namespace sundile::GuiSystem {
 	}
 	void setState(const SmartEVW& evw, guiContainer& gui, const char* key, bool value) {
 		gui.state[key] = value;
-		GuiEvent ev(getRegistryByID(evw,currentScene), { key, value });
+		GuiEvent ev(getRegistryByID(evw,currentScene), gui.state);
 		evw->dispatcher.trigger<GuiEvent>(ev);
 	}
 	void terminate(const terminateEvent& ev) {
@@ -198,7 +198,8 @@ namespace sundile::GuiSystem {
 			ClearListNodeSelectionState(contents[i]);
 		}
 	}
-}
+
+END_SYSTEM
 
 #include "GuiClipboard.h"
 

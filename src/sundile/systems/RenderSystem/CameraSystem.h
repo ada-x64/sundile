@@ -2,8 +2,7 @@
 #include "../../globals/Common.h"
 #ifndef S_CAMERA
 #define S_CAMERA
-namespace sundile {
-	struct Camera {
+BEGIN_COMPONENT(Camera)
 		//-- Matrices
 		Vec3 pos = Vec3(1.f, 1.f, 1.f);
 		Vec3 front = glm::normalize(glm::vec3(-1.f, -1.f, -1.f));
@@ -21,9 +20,10 @@ namespace sundile {
 			glm::rotate(
 				glm::translate(glm::mat4(1.f), glm::vec3(-1.f, -1.f, -3.f)),
 				dir.y, glm::vec3(0, 1, 0));
-	};
-}
-namespace sundile::CameraSystem {
+END_COMPONENT
+
+BEGIN_SYSTEM(CameraSystem)
+	using namespace Components;
 	glm::vec3 rotatexy(glm::vec3 vec, float radians) {
 		//note: this is the passive transform, used for rotating axes
 		vec.x = vec.x * cosf(radians) + vec.y * sinf(radians);
@@ -135,5 +135,6 @@ namespace sundile::CameraSystem {
 		});
 		/**/
 	}
-}
+
+END_COMPONENT
 #endif
