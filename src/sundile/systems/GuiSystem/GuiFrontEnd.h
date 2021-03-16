@@ -52,6 +52,15 @@ BEGIN_SYSTEM(GuiSystem)
 		if (BeginMainMenuBar()) {
 			std::string label;
 			if (BeginMenu("File")) {
+				if (MenuItem("Save Project")) {
+					//open location dialogue if project is new
+
+					//on close, save the project
+					ProjectSystem::saveProject();
+				} 
+				if (MenuItem("Load Project")) {
+					
+				} //open load dialogue
 				ImGui::EndMenu();
 			}
 			if (BeginMenu("Scene")) {

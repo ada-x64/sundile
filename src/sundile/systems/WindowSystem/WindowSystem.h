@@ -80,6 +80,13 @@ BEGIN_SYSTEM(WindowSystem)
 	//-- Main
 	void update(SmartWindow winc);
 	void terminate(SmartWindow winc);
+
+	template <typename Archive>
+	void serialize(Archive archive, SmartWindow window) {
+		archive(SmartWindow->WIDTH, SmartWindow->HEIGHT);
+	}
+
+	SERIALIZE(SmartWindow, component->WIDTH, component->HEIGHT);
 END_SYSTEM
 
 #include "WindowSystemDefinitions.h"

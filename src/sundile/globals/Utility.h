@@ -3,8 +3,6 @@
 #define SUNDILE_UTILITY
 namespace sundile {
 
-	static std::string asset_directory;
-
 	//Signum
 	template <typename T> int signum(T val) {
 		return (T(0) < val) - (val < T(0));

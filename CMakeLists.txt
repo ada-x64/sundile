@@ -9,9 +9,9 @@ message(DEBUG "COMPILING MAIN...")
 
 #
 # sundile settings
-project (sproj
+project (sundile
 	VERSION 0.1
-	DESCRIPTION "Sundile project"
+	DESCRIPTION "ECS-based game engine"
 	LANGUAGES C CXX
 )
 set(CMAKE_CXX_STANDARD 20)
@@ -20,11 +20,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED on)
 #
 #
 # define project
-add_executable (sproj src/main.cpp)
+add_executable (sundile src/main.cpp)
 
 add_subdirectory("./src/sundile/")
-target_link_libraries(sproj
-	PUBLIC sundile
+target_link_libraries(sundile
+	PUBLIC sundile_lib
 	)
 
 #

@@ -13,20 +13,22 @@ int main(void)
 	//For now, just ensure that you're executing the program from the same place it's stored :)
 
 	//Initialize
-	sundile::asset_directory = fs::current_path().string() + "/assets/";
 	SmartEVW evw = EventSystem::create();
 	SmartScene sim = SceneSystem::init(evw);
 	SmartWindow winc = WindowSystem::initWindowedFullscreen(evw);
 	winc->title = "sundile";
+
 #ifdef SUNDILE_EXPORT
 	winc->guiEnabled = false;
 #else
 	winc->guiEnabled = true;
 #endif
+
 	glfwSetWindowSizeLimits(winc->window, winc->WIDTH, winc->HEIGHT, winc->WIDTH, winc->HEIGHT);
 
+	Project project(evw);
 	GuiSystem::init(evw);
-	Systems::init(evw);
+	Systems::init(evw, project);
 
 	//Scene registration
 	{

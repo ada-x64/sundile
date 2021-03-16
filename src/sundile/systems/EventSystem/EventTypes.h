@@ -97,8 +97,9 @@ namespace sundile {
 	struct RenderGuiEvent : SceneEvent {};
 
 	// PROJECT EVENTS
-	struct ProjEvent : SceneEvent {
+	struct ProjEvent : Event {};
+	struct ProjSaveEvent : ProjEvent {};
+	struct ProjLoadEvent : ProjEvent {};
 
-	};
 }
 #endif

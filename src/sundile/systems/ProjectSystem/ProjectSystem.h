@@ -2,15 +2,55 @@
 #define SUNDILE_PROJECT_SYSTEM
 
 #include "../EventSystem/EventSystem.h"
+#include <cereal/archives/binary.hpp>
 
-BEGIN_COMPONENT(Project)
-fs::path projectRoot;
+namespace sundile {
 
-END_COMPONENT
+	struct Project {
+		//DATA
+		std::string name;
+		SmartEVW evw;
+		fs::path projectRoot;
+
+		Project(Project& other)
+			: evw(other.evw), name(other.name), projectRoot(other.projectRoot) {}
+		Project(SmartEVW evw = {}, std::string name = "NEW PROJECT", fs::path projectRoot = DEFAULT_PROJECT_DIRECTORY)
+			: projectRoot(projectRoot), name(name), evw(evw) {}
+	};
+}
 
 BEGIN_SYSTEM(ProjectSystem)
-static const Project emptyProject;
-	
+
+	const Project emptyProject;
+	std::unique_ptr<Project> currentProject; //singlet
+
+	template<typename Archive, typename SnapshotHandler>
+	void handleArchive() {
+		std::fstream fstream;
+		fstream.open(currentProject->projectRoot.string() + currentProject->name + PROJECT_EXTENSION, std::ios::in | std::ios::out | std::ios::trunc | std::ios::binary);
+
+		//Loop through all scenes and get their registries.
+		{
+			Archive archive{ fstream };
+			//archive(SUNDILE_VERSION_NUMBER);
+			for (auto it = SceneSystem::scenes.begin(); it != SceneSystem::scenes.end(); ++it) {
+				auto scene = *it;
+				SnapshotHandler{ *(scene->registry.get()) }.entities(archive);
+			}
+		}
+	}
+
+	void saveProject() {
+		currentProject->evw->dispatcher.trigger<ProjSaveEvent>();
+		handleArchive<cereal::BinaryOutputArchive, entt::snapshot>();
+	}
+
+	void loadProject() {
+		//Clear out the current project
+		currentProject->evw->dispatcher.trigger<ProjLoadEvent>();
+		handleArchive<cereal::BinaryInputArchive, entt::snapshot_loader>();
+
+	}
 END_SYSTEM
 
 #endif
