@@ -5,18 +5,20 @@
 
 .. REMEMBER: make html
 
-.-~* sundile docs *~-.
-===================================
+sundile docs
+============
 
+about
+^^^^^
+
+sundile is an open-source game engine built in modern C++.
+
+nav
+^^^
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 4
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   ecs
+   GUI
+   Rendering
+   Serialization
