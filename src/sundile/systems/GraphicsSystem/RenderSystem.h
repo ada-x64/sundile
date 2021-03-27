@@ -15,7 +15,7 @@ namespace sundile {
 	};
 }
 
-BEGIN_SYSTEM(RenderSystem)
+SYSTEM(RenderSystem)
 	static Renderer* currentRenderer;
 
 	//-- Rendering Shorthands

@@ -4,7 +4,7 @@
 #pragma once
 #ifndef WINDOW_H
 #define WINDOW_H
-#include "EventSystem/EventSystem.h"
+#include "../EventSystem/EventSystem.h"
 
 namespace sundile {
 	struct SmartGLFWwindow {
@@ -23,7 +23,7 @@ namespace sundile {
 }
 
 
-BEGIN_COMPONENT(WindowContainer)
+COMPONENT(WindowContainer)
 	GLFWwindow*		window;
 	SmartEVW		evw;
 	int				WIDTH = 800;
@@ -46,13 +46,15 @@ BEGIN_COMPONENT(WindowContainer)
 		this->title = title;
 		glfwSetWindowTitle(window,title);
 	}
+
+	SERIALIZE(WindowContainer, WIDTH, HEIGHT);
 END_COMPONENT
 
 namespace sundile {
 	typedef std::shared_ptr<WindowContainer> SmartWindow;
 }
 
-BEGIN_SYSTEM(WindowSystem)
+SYSTEM(WindowSystem)
 	inline SmartWindow emptyWindow = std::make_shared<WindowContainer>();
 	inline SmartWindow currentWindow;
 	inline SmartEVW	currentEVW;
@@ -86,7 +88,6 @@ BEGIN_SYSTEM(WindowSystem)
 		archive(SmartWindow->WIDTH, SmartWindow->HEIGHT);
 	}
 
-	SERIALIZE(SmartWindow, component->WIDTH, component->HEIGHT);
 END_SYSTEM
 
 #include "WindowSystemDefinitions.h"

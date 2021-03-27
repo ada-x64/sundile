@@ -3,7 +3,7 @@
 
 #include "GuiTypes.h"
 
-BEGIN_SYSTEM(GuiSystem)
+SYSTEM(GuiSystem)
 	//-- [DESCRIPTION] Helper functions for GuiTypes{
 	//-- HELPERS
 	auto checkContext() {

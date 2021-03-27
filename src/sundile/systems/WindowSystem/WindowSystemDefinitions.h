@@ -1,5 +1,5 @@
 #include "WindowSystem.h"
-BEGIN_SYSTEM(WindowSystem)
+SYSTEM(WindowSystem)
 
 	namespace /*Callback functions*/ {
 

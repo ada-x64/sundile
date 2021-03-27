@@ -9,7 +9,7 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-BEGIN_SYSTEM(ShaderSystem)
+SYSTEM(ShaderSystem)
 	//-- Registry
 	std::vector<Shader> ShaderRegistry;
 

@@ -6,7 +6,7 @@
 #define SYSTEMS_H
 #include "../EventSystem/EventSystem.h"
 
-BEGIN_COMPONENT(Scene)
+COMPONENT(Scene)
 	unsigned int id;
 	SmartEVW evw;
 	SmartRegistry registry;
@@ -21,7 +21,7 @@ namespace sundile {
 	typedef std::shared_ptr<Scene> SmartScene;
 }
 
-BEGIN_SYSTEM(SceneSystem)
+SYSTEM(SceneSystem)
 	inline std::vector<SmartScene> scenes = std::vector<SmartScene>();
 
 

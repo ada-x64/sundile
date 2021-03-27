@@ -5,7 +5,7 @@
 #include "../../globals/Common.h"
 #include "EventTypes.h"
 
-BEGIN_SYSTEM(EventSystem)
+SYSTEM(EventSystem)
 	inline bool run = true;
 	inline std::vector<SmartEVW> EVWs;
 

@@ -35,7 +35,7 @@ namespace sundile {
 	typedef std::multimap<btn, int> inputMap;
 }
 
-BEGIN_COMPONENT(input)
+COMPONENT(input)
 	bool pressed[btn::COUNT];
 	bool held[btn::COUNT];
 	bool released[btn::COUNT];
@@ -69,7 +69,7 @@ BEGIN_COMPONENT(input)
 	};
 END_COMPONENT //input
 
-BEGIN_SYSTEM(InputSystem)
+SYSTEM(InputSystem)
 	using namespace Components;
 
 	namespace { //private

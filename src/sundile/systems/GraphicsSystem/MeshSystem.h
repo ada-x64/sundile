@@ -25,7 +25,7 @@ namespace sundile {
 		unsigned int VAO, VBO, EBO;
 	};
 }
-BEGIN_SYSTEM(MeshSystem)
+SYSTEM(MeshSystem)
 	namespace {
 		void checkError() {
 			GLenum error = glGetError();

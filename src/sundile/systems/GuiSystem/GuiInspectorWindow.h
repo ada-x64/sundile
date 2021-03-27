@@ -12,7 +12,7 @@
 	drag selection
 */
 
-BEGIN_SYSTEM(GuiSystem)
+SYSTEM(GuiSystem)
 
 	// [SECTION] - Structs & namespace globals
 

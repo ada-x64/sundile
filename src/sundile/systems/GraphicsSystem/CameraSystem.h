@@ -2,7 +2,7 @@
 #include "../../globals/Common.h"
 #ifndef S_CAMERA
 #define S_CAMERA
-BEGIN_COMPONENT(Camera)
+COMPONENT(Camera)
 		//-- Matrices
 		Vec3 pos = Vec3(1.f, 1.f, 1.f);
 		Vec3 front = glm::normalize(glm::vec3(-1.f, -1.f, -1.f));
@@ -20,9 +20,11 @@ BEGIN_COMPONENT(Camera)
 			glm::rotate(
 				glm::translate(glm::mat4(1.f), glm::vec3(-1.f, -1.f, -3.f)),
 				dir.y, glm::vec3(0, 1, 0));
+
+		SERIALIZE(Camera, pos, size, T);
 END_COMPONENT
 
-BEGIN_SYSTEM(CameraSystem)
+SYSTEM(CameraSystem)
 	using namespace Components;
 	glm::vec3 rotatexy(glm::vec3 vec, float radians) {
 		//note: this is the passive transform, used for rotating axes

@@ -6,7 +6,7 @@
 	0. Debug multi-select and implement entity renaming (will need to be saved when implementing ProjectSystem)
 	1. Implement Copy/Cut/Paste clipboard functions
 */
-BEGIN_SYSTEM(GuiSystem)
+SYSTEM(GuiSystem)
 template<typename T>
 guiClipboard<T>* getClipboard() {
 	auto clipboard = clipboardList[typeid(T).name()];

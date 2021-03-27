@@ -35,7 +35,7 @@ namespace sundile {
 
 
 #ifndef SUNDILE_EXPORT
-BEGIN_SYSTEM(GuiSystem)
+SYSTEM(GuiSystem)
 
 	//-- Events
 	//back end - to be called according to a timer (every second?)

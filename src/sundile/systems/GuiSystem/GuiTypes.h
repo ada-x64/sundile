@@ -1,7 +1,7 @@
 #ifndef GUI_TYPES_H
 #define GUI_TYPES_H
 
-BEGIN_SYSTEM(GuiSystem)
+SYSTEM(GuiSystem)
 	//[SECTION] - GuiSystem Scope
 	//[SECTION] - forward decl. & typedefs
 		//-- General Containers

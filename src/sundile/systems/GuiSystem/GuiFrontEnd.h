@@ -5,7 +5,7 @@
 #include "GuiUtility.h"
 #include "GuiInspectorWindow.h"
 
-BEGIN_SYSTEM(GuiSystem)
+SYSTEM(GuiSystem)
 	// [SECTION] - Front-end (excluding ECS inspector tools)
 
 	//-- Editor Toolbar
@@ -59,7 +59,9 @@ BEGIN_SYSTEM(GuiSystem)
 					ProjectSystem::saveProject();
 				} 
 				if (MenuItem("Load Project")) {
-					
+					//\TODO: Integrate ImGuiFileDialogue
+
+					//ProjectSystem::loadProject();
 				} //open load dialogue
 				ImGui::EndMenu();
 			}
