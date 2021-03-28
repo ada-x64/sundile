@@ -2,7 +2,7 @@
 
 #ifndef SUNDILE_INPUT
 #define	SUNDILE_INPUT
-#include "./EventSystem/EventSystem.h"
+#include "../EventSystem/EventSystem.h"
 
 namespace sundile {
 	enum btn {

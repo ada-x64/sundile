@@ -44,12 +44,14 @@ for more information on how to use the ECS.</p>
 <p>sundile’s event system also relies on EnTT.</p>
 </div></blockquote>
 </div>
-<div class="section" id="entities-components-systems">
-<h2>Entities, Components, Systems<a class="headerlink" href="#entities-components-systems" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="entities-components-systems-and-scenes">
+<h2>Entities, Components, Systems, and Scenes<a class="headerlink" href="#entities-components-systems-and-scenes" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div><p>Entities contain components. Systems view components
-and perform functions on them. Components themselves
-are just packets of data.</p>
+<div><p>Scenes contain entities.
+Entities contain components.
+Systems view components and perform functions on them.
+Components themselves are just packets of data.</p>
+<p>Scenes are to Entities as Systems are to Components.</p>
 <p>Entities are represented with an index into a registry.
 Systems are namespaces containing functions.
 Components are simple structs.</p>
@@ -139,7 +141,7 @@ of entity, component, and system calls.
 <blockquote>
 <div><p>Projects are saved in the sundile project root directory.
 This is set to <code class="docutils literal notranslate"><span class="pre">~/Documents/sundile/</span></code> by default.</p>
-<p>Your project directory should be structured as follows::</p>
+<p>Your project directory should be structured as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">~/</span><span class="n">Documents</span><span class="o">/</span><span class="n">sundile</span><span class="o">/</span>
     <span class="n">project_name</span><span class="o">/</span>
         <span class="n">assets</span><span class="o">/</span>
@@ -154,6 +156,7 @@ This is set to <code class="docutils literal notranslate"><span class="pre">~/Do
 The SUNPROJ file is a compact binary representation
 of all the information for your scenes and the
 entities within them.</p>
+<p>Components and systems are written as C++ header files.</p>
 </div></blockquote>
 </div>
 </div>
@@ -178,7 +181,7 @@ entities within them.</p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Things and How to Interact With Them</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#entities-components-systems">Entities, Components, Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#entities-components-systems-and-scenes">Entities, Components, Systems, and Scenes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#api">API</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#creating-systems-and-components">Creating Systems and Components</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#creating-scenes-and-entities">Creating Scenes and Entities</a></li>
@@ -190,6 +193,7 @@ entities within them.</p>
 <li class="toctree-l1"><a class="reference internal" href="GUI.html">GUI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Rendering.html">Rendering System</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Serialization.html">Serialization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Events.html">Events</a></li>
 </ul>
 
 <div class="relations">

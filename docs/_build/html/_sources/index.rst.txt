@@ -22,3 +22,4 @@ nav
    GUI
    Rendering
    Serialization
+   Events

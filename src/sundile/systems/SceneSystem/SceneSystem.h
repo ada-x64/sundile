@@ -7,9 +7,11 @@
 #include "../EventSystem/EventSystem.h"
 
 COMPONENT(Scene)
-	unsigned int id;
+	unsigned int id = -1;
 	SmartEVW evw;
 	SmartRegistry registry;
+	std::function<void(SmartRegistry&)> open = [](SmartRegistry&) {};
+	std::function<void(SmartRegistry&)> close = [](SmartRegistry&) {};
 
 	//-- When incrementing, "n * deltaTime" means "n per second".
 	float deltaTime = 0.f;
@@ -19,17 +21,37 @@ END_COMPONENT
 
 namespace sundile {
 	typedef std::shared_ptr<Scene> SmartScene;
+
+	//--
+	//-- Coord map
+	entt::entity addCoords(sundile::SmartRegistry registry) {
+		/**/
+		using namespace Systems;
+		auto eCoords = registry->create();
+		Vertex v0{ glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
+		Vertex vx{ glm::vec3(1.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
+		Vertex vy{ glm::vec3(0.f, 1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
+		Vertex vz{ glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(0.f, 0.f) };
+		Vertex vnx{ glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
+		Vertex vny{ glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
+		Vertex vnz{ glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(0.f, 0.f) };
+		Mesh coords = Mesh({ v0, vx, vy, vz, vnx, vny, vnz }, { 0,1,0, 0,2,0, 0,3,0, 0,4,0, 0,5,0, 0,6,0 }, {});
+		registry->emplace<Mesh>(eCoords, coords);
+		return eCoords;
+		/**/
+	}
 }
 
 SYSTEM(SceneSystem)
-	inline std::vector<SmartScene> scenes = std::vector<SmartScene>();
+	static std::vector<SmartScene> scenes = std::vector<SmartScene>();
+	static SmartScene currentScene;
 
 
 	//--
 	//-- Main Loop
 	//--
-	void update(SmartScene scene) {
-
+	void update() {
+		SmartScene& scene = currentScene;
 		//-- Time
 		scene->currentTime = glfwGetTime();
 		scene->deltaTime = scene->currentTime - scene->lastTime;
@@ -55,12 +77,6 @@ SYSTEM(SceneSystem)
 		gev.deltaTime = scene->deltaTime;
 		gev.currentTime = scene->currentTime;
 		evw->dispatcher.trigger<RenderGuiEvent>(gev);
-	}
-
-	void updateAll() {
-		for (auto scene : scenes) {
-			update(scene);
-		}
 	}
 
 	void sceneRegistryQuery(const SceneRegistryQuery& srq) {
@@ -91,37 +107,75 @@ SYSTEM(SceneSystem)
 		}
 	}
 
-	void catchInit(const initEvent& ev) {
-		for (auto scene : scenes) {
-			SceneInitEvent ev;
-			ev.registry = scene->registry;
-			ev.deltaTime = 0.f;
-			ev.evw = scene->evw;
-			ev.id = scene->id;
-			ev.evw->dispatcher.trigger<SceneInitEvent>(ev);
-		}
-	}
-
-	SmartScene init(SmartEVW evw) {
+	SmartScene create(SmartEVW evw) {
 		// Initialize
 		SmartScene scene = std::make_shared<Scene>();
 		scene->registry = std::make_shared<entt::registry>();
 		scene->evw = evw;
 		scene->id = rand();
 
-		// Connect event listeners
-		evw->dispatcher.sink<stepEvent>().connect<updateAll>();
-		evw->dispatcher.sink<WindowInputEvent>().connect<handleInput>();
-		evw->dispatcher.sink<initEvent>().connect<catchInit>();
-		evw->dispatcher.sink<SceneRegistryQuery>().connect<sceneRegistryQuery>();
+		SceneInitEvent ev;
+		ev.id = scene->id;
+		ev.evw = evw;
+		ev.registry = scene->registry;
+		evw->dispatcher.trigger<SceneInitEvent>(ev);
 
+		// Required entities
+		auto eRenderer = scene->registry->create();
+		scene->registry->emplace<Renderer>( eRenderer, RenderSystem::create());
+
+		auto eCam = scene->registry->create();
+		scene->registry->emplace<Camera>(eCam);
+
+		addCoords(scene->registry);
 
 		//Add to scenes
 		scenes.push_back(scene);
 
+		//Ensure scene registry isn't empty
+		if (currentScene.use_count() == 0) {
+			currentScene.reset(scene.get());
+		}
+
+
 		return scene;
 	}
 
+	void init(SmartEVW evw) {
+		// Connect event listeners
+		evw->dispatcher.sink<stepEvent>().connect<update>();
+		evw->dispatcher.sink<WindowInputEvent>().connect<handleInput>();
+		//evw->dispatcher.sink<initEvent>().connect<catchInit>();
+		evw->dispatcher.sink<SceneRegistryQuery>().connect<sceneRegistryQuery>();
+
+		//Default scene
+		create(evw);
+	}
+
+
+	void closeScene(CloseSceneEvent ev) {
+		for (auto& scene : scenes) {
+			if (scene->id == ev.id) {
+				scene->close(scene->registry);
+				break;
+			}
+		}
+		currentScene = nullptr;
+	}
+	void openScene(OpenSceneEvent ev) {
+		if (currentScene->id != -1)
+			currentScene->close(currentScene->registry);
+
+		for (auto& scene : scenes) {
+			if (scene->id == ev.id) {
+				scene->open(scene->registry);
+				currentScene = scene;
+				break;
+			}
+		}
+	}
+
+	//\TODO: Start implementing editor tools
 	void parseGuiState(std::map<std::string, bool>& map) {
 
 	}

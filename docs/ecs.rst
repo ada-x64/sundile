@@ -11,12 +11,15 @@ Overview
 
     sundile's event system also relies on EnTT.
 
-Entities, Components, Systems
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Entities, Components, Systems, and Scenes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    Entities contain components. Systems view components
-    and perform functions on them. Components themselves
-    are just packets of data.
+    Scenes contain entities.
+    Entities contain components.
+    Systems view components and perform functions on them.
+    Components themselves are just packets of data.
+
+    Scenes are to Entities as Systems are to Components.
 
     Entities are represented with an index into a registry.
     Systems are namespaces containing functions.
@@ -95,7 +98,7 @@ Projects and File Structure
     Projects are saved in the sundile project root directory.
     This is set to ``~/Documents/sundile/`` by default.
 
-    Your project directory should be structured as follows:::
+    Your project directory should be structured as follows: ::
 
         ~/Documents/sundile/
             project_name/

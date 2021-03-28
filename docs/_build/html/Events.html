@@ -1,0 +1,273 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Events &#8212; sundile  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Serialization" href="Serialization.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="events">
+<h1>Events<a class="headerlink" href="#events" title="Permalink to this headline">¶</a></h1>
+<blockquote>
+<div><p>Events form the heart of system interaction.
+They are handled by a special system called the
+EventSystem. The EventSystem sends events between
+different systems. Every system can send and recieve
+event messages of any type.</p>
+<p>sundile’s event system is an abstraction and extension
+of EnTT’s event system.
+<a class="reference external" href="https://entt.docsforge.com/v3.6.0/events-signals-and-everything-in-between/">Read more about it here.</a></p>
+</div></blockquote>
+<div class="section" id="built-in-events">
+<h2>Built In Events<a class="headerlink" href="#built-in-events" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>There are built-in events in the main game loop so
+users can time their events correctly.
+They are listed in this table in the order they are
+triggered:</p>
+<p><strong>TODO: Complete this</strong></p>
+<table class="colwidths-given docutils align-default" id="id1">
+<caption><span class="caption-text"><strong>Event Order - Initialization</strong></span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 77%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Event</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>WindowInitEvent</p></td>
+<td><p>Triggers on window initialization.</p></td>
+</tr>
+<tr class="row-odd"><td><p>GuiInitEvent</p></td>
+<td><p>Triggers on GUI initialization.</p></td>
+</tr>
+<tr class="row-even"><td><p>initEvent</p></td>
+<td><p>Calls all user init() functions.</p></td>
+</tr>
+<tr class="row-odd"><td><p>SceneInitEvent</p></td>
+<td><p>Triggers on scene initialization. This typically sinks all of the events for user components.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="colwidths-given docutils align-default" id="id2">
+<caption><span class="caption-text"><strong>Event Order - Main Loop</strong></span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 77%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Event</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>preStepEvent</p></td>
+<td><p>Preliminary actions and setup before main step event.</p></td>
+</tr>
+<tr class="row-odd"><td><p>WindowEvent</p></td>
+<td><p>Any window events are handled with this tag.</p></td>
+</tr>
+<tr class="row-even"><td><p>WindowInputEvent</p></td>
+<td><p>Input is passed from the window to the game.</p></td>
+</tr>
+<tr class="row-odd"><td><p>TypedWindowEvent</p></td>
+<td><p>Hopefully to be depricated.</p></td>
+</tr>
+<tr class="row-even"><td><p>stepEvent</p></td>
+<td><p>Main step event. This is where almost everything happens.</p></td>
+</tr>
+<tr class="row-odd"><td><p>SceneStepEvent</p></td>
+<td><p>This is where the scene updates.</p></td>
+</tr>
+<tr class="row-even"><td><p>SceneInputEvent</p></td>
+<td><p>Where the scene interprets input.</p></td>
+</tr>
+<tr class="row-odd"><td><p>RenderEvent</p></td>
+<td><p>This is where the game rendering is done.</p></td>
+</tr>
+<tr class="row-even"><td><p>RenderGuiEvent</p></td>
+<td><p>This is where the editor’s GUI rendering is done.</p></td>
+</tr>
+<tr class="row-odd"><td><p>postStepEvent</p></td>
+<td><p>Mostly cleanup from the main step event.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="colwidths-given docutils align-default" id="id3">
+<caption><span class="caption-text"><strong>Event Order - Termination</strong></span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 77%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Event</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>WindowTerminateEvent</p></td>
+<td><p>Closes the window, typically right before termination.</p></td>
+</tr>
+<tr class="row-odd"><td><p>terminateEvent</p></td>
+<td><p>This is called when the program is set to exit.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+<div class="section" id="creating-events">
+<h2>Creating Events<a class="headerlink" href="#creating-events" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>Events take the form of simple structs with any content
+you want them to have. However, they must inherit from
+the <cite>Event</cite> struct.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">struct</span> <span class="n">myEvent</span> <span class="p">:</span> <span class="n">Event</span> <span class="p">{</span>
+    <span class="o">//...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="setting-up-events">
+<h2>Setting up Events<a class="headerlink" href="#setting-up-events" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>Event dispersal relies on the <code class="docutils literal notranslate"><span class="pre">init()</span></code> function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">COMPONENT</span><span class="p">(</span><span class="n">myType</span><span class="p">)</span>
+    <span class="nb">int</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">;</span>
+<span class="n">END_COMPONENT</span>
+
+<span class="n">struct</span> <span class="n">MyEvent</span> <span class="p">:</span> <span class="n">Event</span> <span class="p">{</span>
+    <span class="n">myType</span> <span class="n">instance</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">SYSTEM</span><span class="p">(</span><span class="n">mySystem</span><span class="p">)</span>
+
+    <span class="n">void</span> <span class="n">catchMyEvent</span><span class="p">(</span><span class="n">const</span> <span class="n">MyEvent</span><span class="o">&amp;</span> <span class="n">event</span><span class="p">)</span> <span class="p">{</span>
+        <span class="o">//...</span>
+    <span class="p">}</span>
+
+    <span class="n">void</span> <span class="n">init</span><span class="p">(</span><span class="n">const</span> <span class="n">SceneInitEvent</span><span class="o">&amp;</span> <span class="n">event</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">evw</span><span class="o">-&gt;</span><span class="n">dispatcher</span><span class="o">.</span><span class="n">sink</span><span class="o">&lt;</span><span class="n">MyEvent</span><span class="o">&gt;.</span><span class="n">connect</span><span class="o">&lt;</span><span class="n">catchMyEvent</span><span class="o">&gt;</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="n">END_SYSTEM</span>
+
+<span class="n">SYSTEM</span><span class="p">(</span><span class="n">myOtherSystem</span><span class="p">)</span>
+
+<span class="n">void</span> <span class="n">callMyEvent</span><span class="p">(</span><span class="n">evw</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">myEvent</span> <span class="n">event</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">});</span>
+    <span class="n">evw</span><span class="o">.</span><span class="n">dispatcher</span><span class="o">.</span><span class="n">trigger</span><span class="o">&lt;</span><span class="n">MyEvent</span><span class="o">&gt;</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="n">END_SYSTEM</span>
+</pre></div>
+</div>
+<p>This is the simple event wrapper that comes with EnTT.
+Please refer to the EnTT documentation on proper usage.</p>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">sundile</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ecs.html">Things and How to Interact With Them</a></li>
+<li class="toctree-l1"><a class="reference internal" href="GUI.html">GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Rendering.html">Rendering System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Serialization.html">Serialization</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Events</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#built-in-events">Built In Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-events">Creating Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setting-up-events">Setting up Events</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="Serialization.html" title="previous chapter">Serialization</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, ada.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/Events.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

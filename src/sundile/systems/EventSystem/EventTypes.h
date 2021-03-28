@@ -57,7 +57,7 @@ namespace sundile {
 		Vec2* size;
 	};
 
-	// SIM EVENTS
+	// SCENE EVENTS
 	// This includes GUI and Project events
 	struct SceneEvent : Event {
 		unsigned int id;
@@ -85,6 +85,11 @@ namespace sundile {
 	struct SceneRegistryQuery : Event {
 		unsigned int id;
 		registryWrapper* wrapper;
+	};
+
+	struct OpenSceneEvent : SceneEvent {
+	};
+	struct CloseSceneEvent : SceneEvent {
 	};
 
 	// GUI EVENTS

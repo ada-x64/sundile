@@ -1,6 +1,6 @@
 #include "./EventSystem/EventSystem.h"
 #include "./WindowSystem/WindowSystem.h"
-#include "./GraphicsSystem/RenderSystem.h"
+#include "./RenderSystem/RenderSystem.h"
 #include "./SceneSystem/SceneSystem.h"
 #include "./ProjectSystem/ProjectSystem.h"
 #include "./GuiSystem/GuiSystem.h"
@@ -25,7 +25,7 @@ namespace sundile { namespace Systems {
 
 		//Load project
 		// read in serialized file with data that points to project directory, etc
-		system(("mkdir " + DEFAULT_PROJECT_DIRECTORY).c_str());
+		system(("mkdir \"" + DEFAULT_PROJECT_DIRECTORY + "\"").c_str());
 		//ProjectSystem::loadProject();
 
 		//Sink initialization events
