@@ -14,9 +14,10 @@
 
 SYSTEM(GuiSystem)
 
-	// [SECTION] - Structs & namespace globals
+// [SECTION] - Structs & namespace globals
 
-	//static std::vector<sceneTab> sceneTabs;
+//static std::vector<sceneTab> sceneTabs;
+	static guiTreeContainer<SmartScene> sceneTree;
 	static std::vector<entityTab> entityTabs;
 	static std::vector<componentTab> componentTabs;
 	static std::vector<dataTab> dataTabs;
@@ -116,8 +117,24 @@ SYSTEM(GuiSystem)
 		return entityTabs.emplace_back<entityTab>(std::move(tab));
 	}
 
+	void updateScenes() { //cf GuiFrontEnd.h : 132
+		sceneTree.root->children.clear(); //no memory leak with smart pointer
+		for (SmartScene scene : SceneSystem::scenes) {
+			listNode<SmartScene>* node = new listNode<SmartScene>(scene);
+			node->name = scene->name;
+			sceneTree.root->children.emplace_back(std::move(node));
+		}
+	}
+
 	// To be called on GuiInit, which should be called when GUI is loaded from ProjectSystem
 	void initInspector(guiContainer& container) {
+		sceneTree.root->children.clear();
+		for (SmartScene scene : SceneSystem::scenes) {
+			listNode<SmartScene>* node = new listNode<SmartScene>(scene);
+			node->name = scene->name;
+			sceneTree.root->children.emplace_back(std::move(node));
+		}
+
 		//Initialize Tabs (should be scene instead of entities, but this is fine for now)
 		createEntityTab("[scene name]", entityList);
 	}
@@ -138,7 +155,9 @@ SYSTEM(GuiSystem)
 		ImGui::SetWindowSize(ImVec2(0.f, guiInspectorHeight));
 		ImGui::SetWindowPos(ImVec2(0.f, maxSize.y - ImGui::GetWindowHeight()));
 
-		ImGui::BeginChild("Scene Selector", ImVec2(width, 0), true);
+		if (ImGui::BeginChild("Scene Selector", ImVec2(width, 0), true)) {
+			RenderGuiTree(sceneTree);
+		}
 		ImGui::EndChild();
 
 		ImGui::SameLine();

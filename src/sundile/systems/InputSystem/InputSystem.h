@@ -108,6 +108,7 @@ SYSTEM(InputSystem)
 	//WWID: Removing Scene and winc references from GUI initialization - should only need evw
 	//- May have something to do with the way I redid GuiEvent, or passing const entt::registry*'s.
 	void guiEvent(const GuiEvent& ev) {
+		ev;
 		ev.registry->view<input>().each([&ev](auto& entity, input& c) {
 			c.disabled = ev.payload.at("disable input");
 		});

@@ -121,7 +121,7 @@ SYSTEM(GuiSystem)
 		std::string name = "(unset)";
 		std::shared_ptr<T> content;
 		StateMap state;
-		listNode(T content) : content(std::make_shared<T>(content)), name(content.name) {};
+		listNode(T content) : content(std::make_shared<T>(content)) {};
 	};
 	//
 	typedef std::map<ImGuiStyleVar, float> styleVarMap;

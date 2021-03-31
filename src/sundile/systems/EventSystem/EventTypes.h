@@ -87,17 +87,19 @@ namespace sundile {
 		registryWrapper* wrapper;
 	};
 
-	struct OpenSceneEvent : SceneEvent {
-	};
-	struct CloseSceneEvent : SceneEvent {
-	};
+	struct SceneSerializeEvent : SceneEvent {};
+	struct SceneDeserializeEvent : SceneEvent {};
+	struct SceneActivateEvent : SceneEvent {}; //fired when scene is made active
+	struct SceneDeactivateEvent : SceneEvent {}; //fired when scene is no longer active 
+	struct SceneCreateEvent : SceneEvent {};
+	struct SceneDestroyEvent : SceneEvent {};
 
 	// GUI EVENTS
 	// for interaction with defineGui()
 	struct GuiEvent : Event {
-		entt::registry* registry;
+		SmartRegistry registry;
 		StateMap payload;
-		GuiEvent(entt::registry* registry, StateMap payload) : registry(registry), payload(payload) {};
+		GuiEvent(SmartRegistry registry, StateMap payload) : registry(registry), payload(payload) {};
 	};
 	struct RenderGuiEvent : SceneEvent {};
 
@@ -105,6 +107,7 @@ namespace sundile {
 	struct ProjEvent : Event {};
 	struct ProjSaveEvent : ProjEvent {};
 	struct ProjLoadEvent : ProjEvent {};
+	struct ProjInitEvent : ProjEvent {};
 
 }
 #endif

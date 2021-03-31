@@ -1,2 +1,35 @@
 GUI
-===========
+===
+
+Default GUI Layout
+^^^^^^^^^^^^^^^^^^
+
+\TODO: Place a picture here and explain each element.
+
+Setting up Data Editors
+^^^^^^^^^^^^^^^^^^^^^^^
+
+In order to get the GUISystem to see your component's data, you have to register the component. The GUISystem will display "Unregistered Component" for every component that it detects but does not have a display function for.
+
+To register your component, call the defineGui function in the initEvent for your component ::
+
+    SYSTEM(MySystem)
+
+    void drawGui(const guiMeta& meta) {
+        MyType* instance = meta_cast<MyType>(meta);
+        doThings(*instance);
+    }
+
+    init(const ProjInitEvent& event) {
+        defineGui<MyType>(drawGui);
+    }
+    END_SYSTEM
+
+The defineGui function takes a ``void(const guiMeta&)`` function and uses this to draw the GUI for your component.
+
+This function should be called when the project loads in your component. TODO: Figure out how this will work. Keep it at SceneInit for now, bc that's the current highest level of abstraction.
+
+GuiTree
+^^^^^^^
+
+GuiTree is a system for nested trees. 

@@ -13,13 +13,11 @@ namespace sundile {
 		Systems::SceneSystem::init(evw);
 		Systems::GuiSystem::init(evw);
 		winc->title = "sundile";
-
 #ifdef SUNDILE_EXPORT
 		winc->guiEnabled = false;
 #else
 		winc->guiEnabled = true;
 #endif
-
 		glfwSetWindowSizeLimits(winc->window, winc->WIDTH, winc->HEIGHT, winc->WIDTH, winc->HEIGHT);
 
 		return evw;

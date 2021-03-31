@@ -35,6 +35,12 @@ Built In Events
           - Calls all user init() functions.
         * - SceneInitEvent          
           - Triggers on scene initialization. This typically sinks all of the events for user components.
+        * - ProjSaveEvent
+          - Triggers when the project is saved.
+        * - ProjLoadEvent
+          - Triggers when the current project is saved.
+        * - ProjInitEvent
+          - After a project is loaded, it is initialized.
 
     .. list-table:: **Event Order - Main Loop**
         :widths: 30, 100
@@ -62,7 +68,6 @@ Built In Events
           - This is where the editor's GUI rendering is done.
         * - postStepEvent           
           - Mostly cleanup from the main step event.
-
 
     .. list-table:: **Event Order - Termination**
         :widths: 30, 100

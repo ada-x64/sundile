@@ -169,12 +169,6 @@ SYSTEM(GuiSystem)
 			glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
 		}
 	}
-	void sceneInit(const SceneInitEvent& ev) {
-		currentScene = ev.id;
-		ev.evw->dispatcher.sink<SceneStepEvent>().connect<&refreshEntities>();
-		ev.evw->dispatcher.sink<RenderGuiEvent>().connect<&render>();
-		ev.evw->dispatcher.sink<terminateEvent>().connect<&terminate>();
-	}
 	void init(SmartEVW evw) {
 		//Initalize
 		IMGUI_CHECKVERSION();
@@ -189,8 +183,10 @@ SYSTEM(GuiSystem)
 
 		//do event stuff
 		currentEVW = evw->id;
-		evw->dispatcher.sink<SceneInitEvent>().connect<GuiSystem::sceneInit>();
 		evw->dispatcher.sink<WindowInitEvent>().connect<GuiSystem::windowInit>();
+		evw->dispatcher.sink<RenderGuiEvent>().connect<&render>();
+		evw->dispatcher.sink<terminateEvent>().connect<&terminate>();
+		evw->dispatcher.sink<SceneStepEvent>().connect<&refreshEntities>(); //\TODO: Replace this with something that updates entities only when a change is detected
 
 		primaryGuiEntity = guiRegistry.create();
 		guiRegistry.emplace<guiContainer>(primaryGuiEntity, "primary container",

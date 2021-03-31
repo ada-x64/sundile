@@ -7,9 +7,10 @@
 void scene1(sundile::SmartEVW evw) {
 	using namespace sundile;
 
-	SmartScene scene1 = Systems::SceneSystem::create(evw);
-	auto& registry = scene1->registry;
-	scene1->open = [](SmartRegistry& registry) {
+	SmartScene scene = Systems::SceneSystem::create(evw);
+	scene->name = "Suzannes";
+	auto& registry = scene->registry;
+	scene->open = [](SmartRegistry& registry) {
 		//Prelim
 		using namespace Components;
 		using namespace Systems;
@@ -36,13 +37,20 @@ void scene1(sundile::SmartEVW evw) {
 		emplace<Shader>(registry, eLightMonkey, lightsource);
 
 	};
+
+	SceneInitEvent ev;
+	ev.id = scene->id;
+	ev.evw = evw;
+	ev.registry = scene->registry;
+	evw->dispatcher.trigger<SceneInitEvent>(ev);
 }
 
 void scene2(sundile::SmartEVW evw) {
 	using namespace sundile;
-	SmartScene scene2 = Systems::SceneSystem::create(evw);
-	auto& registry = scene2->registry;
-	scene2->open = [](SmartRegistry& registry) {
+	SmartScene scene = Systems::SceneSystem::create(evw);
+	auto& registry = scene->registry;
+	scene->name = "Empty";
+	scene->open = [](SmartRegistry& registry) {
 		//Boilerplate
 		using namespace Components;
 		using namespace Systems;
@@ -53,6 +61,12 @@ void scene2(sundile::SmartEVW evw) {
 		emplace<Model>(registry, eSuzanne, suzanne);
 
 	};
+
+	SceneInitEvent ev;
+	ev.id = scene->id;
+	ev.evw = evw;
+	ev.registry = scene->registry;
+	evw->dispatcher.trigger<SceneInitEvent>(ev);
 }
 
 int main(void)

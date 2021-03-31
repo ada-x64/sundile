@@ -8,18 +8,20 @@
 SYSTEM(EventSystem)
 	inline bool run = true;
 	inline std::vector<SmartEVW> EVWs;
+	static SmartEVW currentEVW;
 
 	SmartEVW create();
 
 	SmartEVW create() {
 		SmartEVW evw = std::make_shared<EventWrapper>();
-		evw->id = rand();
+		evw->id = EVWs.size();
 		EVWs.push_back(evw);
 		return evw;
 	}
 
 	void init(SmartEVW evw) {
 		evw->dispatcher.trigger<initEvent>();
+		currentEVW = evw;
 	}
 
 	void initAll() {
@@ -35,6 +37,7 @@ SYSTEM(EventSystem)
 		}
 
 		for (SmartEVW evw : EVWs) {
+			currentEVW = evw;
 			evw->dispatcher.trigger<preStepEvent>();
 			evw->dispatcher.trigger<stepEvent>();
 			evw->dispatcher.trigger<postStepEvent>();

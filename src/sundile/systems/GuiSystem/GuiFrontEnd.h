@@ -115,7 +115,7 @@ SYSTEM(GuiSystem)
 			}
 			});
 
-		GuiEvent ev(getRegistryByID(evw, currentScene), gui.state);
+		GuiEvent ev(SceneSystem::currentScene->registry, gui.state);
 		evw->dispatcher.trigger<GuiEvent>(ev);
 	}
 	//-- Init Frontend
@@ -129,6 +129,7 @@ SYSTEM(GuiSystem)
 		auto inspectorContainer = guiRegistry.emplace<guiContainer>(inspector, "Inspector", Inspector, ImVec2(0.f, 300.f), ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |ImGuiWindowFlags_NoMove);
 		getPrimaryContainer()->state["Inspector"] = true;
 		initInspector(inspectorContainer);
+		evw->dispatcher.sink<SceneInitEvent>().connect<updateScenes>(); //cf GuiInspectorWindow.h : 120
 
 		// main editor
 		GLfloat viewport[4];

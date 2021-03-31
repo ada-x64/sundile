@@ -13,7 +13,7 @@ SYSTEM(GuiSystem)
 	}
 	void setState(const SmartEVW& evw, guiContainer& gui, const char* key, bool value) {
 		gui.state[key] = value;
-		GuiEvent ev(getRegistryByID(evw,currentScene), gui.state);
+		GuiEvent ev((SceneSystem::currentScene->registry), gui.state);
 		evw->dispatcher.trigger<GuiEvent>(ev);
 	}
 	void terminate(const terminateEvent& ev) {

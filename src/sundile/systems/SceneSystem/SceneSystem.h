@@ -8,7 +8,7 @@
 
 COMPONENT(Scene)
 	unsigned int id = -1;
-	SmartEVW evw;
+	std::string name = "NEW SCENE";
 	SmartRegistry registry;
 	std::function<void(SmartRegistry&)> open = [](SmartRegistry&) {};
 	std::function<void(SmartRegistry&)> close = [](SmartRegistry&) {};
@@ -57,10 +57,11 @@ SYSTEM(SceneSystem)
 		scene->deltaTime = scene->currentTime - scene->lastTime;
 		scene->lastTime = scene->currentTime;
 
-		SmartEVW evw = scene->evw;
+		SmartEVW evw = EventSystem::currentEVW;
 
 		//-- Update Events
 		SceneStepEvent sev;
+		sev.id = scene->id;
 		sev.registry = scene->registry;
 		sev.deltaTime = scene->deltaTime;
 		sev.currentTime = scene->currentTime;
@@ -103,22 +104,17 @@ SYSTEM(SceneSystem)
 			ev.scancode = wev.scancode;
 			ev.action = wev.action;
 			ev.mods = wev.mods;
-			scene->evw->dispatcher.trigger<SceneInputEvent>(ev);
+			EventSystem::currentEVW->dispatcher.trigger<SceneInputEvent>(ev);
 		}
 	}
 
 	SmartScene create(SmartEVW evw) {
 		// Initialize
-		SmartScene scene = std::make_shared<Scene>();
-		scene->registry = std::make_shared<entt::registry>();
-		scene->evw = evw;
-		scene->id = rand();
-
-		SceneInitEvent ev;
-		ev.id = scene->id;
-		ev.evw = evw;
-		ev.registry = scene->registry;
-		evw->dispatcher.trigger<SceneInitEvent>(ev);
+		Scene* p_scene = new Scene();
+		p_scene->registry = std::make_shared<entt::registry>();
+		p_scene->id = rand();
+		SmartScene scene;
+		scene.reset(p_scene);
 
 		// Required entities
 		auto eRenderer = scene->registry->create();
@@ -130,7 +126,7 @@ SYSTEM(SceneSystem)
 		addCoords(scene->registry);
 
 		//Add to scenes
-		scenes.push_back(scene);
+		scenes.emplace_back(scene);
 
 		//Ensure scene registry isn't empty
 		if (currentScene.use_count() == 0) {
@@ -153,16 +149,20 @@ SYSTEM(SceneSystem)
 	}
 
 
-	void closeScene(CloseSceneEvent ev) {
+	void closeScene(SceneDestroyEvent ev) {
 		for (auto& scene : scenes) {
 			if (scene->id == ev.id) {
 				scene->close(scene->registry);
 				break;
 			}
 		}
+		SceneDeactivateEvent sde;
+		sde.id = currentScene->id;
+		sde.registry = currentScene->registry;
+		EventSystem::currentEVW->dispatcher.trigger<SceneDeactivateEvent>(sde);
 		currentScene = nullptr;
 	}
-	void openScene(OpenSceneEvent ev) {
+	void openScene(SceneCreateEvent ev) {
 		if (currentScene->id != -1)
 			currentScene->close(currentScene->registry);
 
