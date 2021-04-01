@@ -1,0 +1,246 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Things and How to Interact With Them &#8212; sundile  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="GUI" href="GUI.html" />
+    <link rel="prev" title="sundile docs" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="things-and-how-to-interact-with-them">
+<h1>Things and How to Interact With Them<a class="headerlink" href="#things-and-how-to-interact-with-them" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>sundile’s memory handling is performed by the excellent
+EnTT. All of the library’s functionality is exposed
+to the end user. You may refer to <a class="reference external" href="https://entt.docsforge.com/">EnTT’s documentation</a>
+for more information on how to use the ECS.</p>
+<p>sundile’s event system also relies on EnTT.</p>
+</div></blockquote>
+</div>
+<div class="section" id="entities-components-systems-and-scenes">
+<h2>Entities, Components, Systems, and Scenes<a class="headerlink" href="#entities-components-systems-and-scenes" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>Scenes contain entities.
+Entities contain components.
+Systems view components and perform functions on them.
+Components themselves are just packets of data.</p>
+<p>Scenes are to Entities as Systems are to Components.</p>
+<p>Entities are represented with an index into a registry.
+Systems are namespaces containing functions.
+Components are simple structs.</p>
+<p>Although there is no restriction, Components should
+only contain fields, while Systems should strive
+to only contain functions. Sometimes this isn’t
+possible, so the flexibility still exists.</p>
+<p>There are a few macros available to make creating
+and using the ECS system easier.</p>
+</div></blockquote>
+</div>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="creating-systems-and-components">
+<h3>Creating Systems and Components<a class="headerlink" href="#creating-systems-and-components" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 42%" />
+<col style="width: 58%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>macro</p></th>
+<th class="head"><p>functionality</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">COMPONENT(_name)</span></code></p></td>
+<td><p>Begins component definition.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">END_COMPONENT</span></code></p></td>
+<td><p>Ends component definition.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SYSTEM(_name)</span></code></p></td>
+<td><p>Begins system definition.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">END_SYSTEM</span></code></p></td>
+<td><p>Ends system definition.</p></td>
+</tr>
+</tbody>
+</table>
+<p>These macros should all appear at the global scope,
+as they include all the necessary scoping to ensure
+that components and systems remain accessible to
+sundile.</p>
+<p><strong>example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">COMPONENT</span><span class="p">(</span><span class="n">MyComponent</span><span class="p">)</span>
+    <span class="nb">int</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">;</span>
+<span class="n">END_COMPONENT</span>
+
+<span class="n">SYSTEM</span><span class="p">(</span><span class="n">MySystem</span><span class="p">)</span>
+    <span class="nb">int</span> <span class="nb">sum</span> <span class="p">(</span><span class="n">vec3</span> <span class="n">vec</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">vec</span><span class="o">.</span><span class="n">a</span> <span class="o">+</span> <span class="n">vec</span><span class="o">.</span><span class="n">b</span> <span class="o">+</span> <span class="n">vec</span><span class="o">.</span><span class="n">c</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="n">END_SYSTEM</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="creating-scenes-and-entities">
+<h3>Creating Scenes and Entities<a class="headerlink" href="#creating-scenes-and-entities" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p><strong>Creating entities and using systems:</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entt</span><span class="p">::</span><span class="n">registry</span> <span class="n">registry</span><span class="p">;</span>
+<span class="n">entt</span><span class="p">::</span><span class="n">entity</span> <span class="n">MyEntity</span> <span class="o">=</span> <span class="n">registry</span><span class="o">-&gt;</span><span class="n">create</span><span class="p">();</span>
+<span class="n">MyComponent</span> <span class="n">comp</span> <span class="o">=</span> <span class="n">emplace</span><span class="o">&lt;</span><span class="n">MyComponent</span><span class="o">&gt;</span><span class="p">(</span><span class="n">registry</span><span class="p">,</span> <span class="n">MyEntity</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">);</span>
+<span class="n">MySystem</span><span class="p">::</span><span class="n">add</span><span class="p">(</span><span class="n">comp</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Note that the <code class="docutils literal notranslate"><span class="pre">emplace</span></code> function takes a variable
+number of arguments. This way you can initialize
+your component at creation with no memory overhead.
+You may also, of course, create the component and
+then emplace it with a direct reference.</p>
+<p>Systems are also incredibly simple to use. Simply
+call the system name and it’s correlated function,
+and pass it the relevant component.</p>
+<p><strong>Creating Scenes:</strong></p>
+<p>A scene is more or less the same thing as a collection
+of entity, component, and system calls.
+[TODO: Better define scene creation.]</p>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="projects-and-file-structure">
+<h2>Projects and File Structure<a class="headerlink" href="#projects-and-file-structure" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>Projects are saved in the sundile project root directory.
+This is set to <code class="docutils literal notranslate"><span class="pre">~/Documents/sundile/</span></code> by default.</p>
+<p>Your project directory should be structured as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">~/</span><span class="n">Documents</span><span class="o">/</span><span class="n">sundile</span><span class="o">/</span>
+    <span class="n">project_name</span><span class="o">/</span>
+        <span class="n">assets</span><span class="o">/</span>
+        <span class="n">components</span><span class="o">/</span>
+            <span class="n">MyComponent</span><span class="o">.</span><span class="n">h</span>
+        <span class="n">systems</span><span class="o">/</span>
+            <span class="n">MySystem</span><span class="o">.</span><span class="n">h</span>
+        <span class="n">project_name</span><span class="o">.</span><span class="n">SUNPROJ</span>
+</pre></div>
+</div>
+<p>The folder names ought to be pretty straightforward.
+The SUNPROJ file is a compact binary representation
+of all the information for your scenes and the
+entities within them.</p>
+<p>Components and systems are written as C++ header files.</p>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">sundile</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Things and How to Interact With Them</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#entities-components-systems-and-scenes">Entities, Components, Systems, and Scenes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#api">API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-systems-and-components">Creating Systems and Components</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-scenes-and-entities">Creating Scenes and Entities</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#projects-and-file-structure">Projects and File Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="GUI.html">GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Rendering.html">Rendering System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Serialization.html">Serialization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Events.html">Events</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">sundile docs</a></li>
+      <li>Next: <a href="GUI.html" title="next chapter">GUI</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, ada.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/ecs.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -25,11 +25,21 @@ namespace fs = std::filesystem;
 #include <map>
 #include <functional>
 
+//c++20
+#ifdef WIN32
+#ifndef __cpp_lib_concepts
+#define __cpp_lib_concepts
+#endif
+#endif
+#include <concepts>
+
+
 //stb
 #include <stb_image.h>
 
 //algo
 #include <algorithm>
+#include <random>
 
 //assimp
 #include <assimp/Importer.hpp>
@@ -41,6 +51,7 @@ namespace fs = std::filesystem;
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include "glm/gtx/rotate_vector.hpp"
 
 //gl
 #ifdef APPLE
@@ -58,13 +69,22 @@ namespace fs = std::filesystem;
 #include <GLFW/glfw3.h>
 
 //imgui
-#include <imgui.h>
+//#include "../ext/imgui/imgui.h"
 #include "../ext/imgui/imgui_impl_opengl3.h"
 #include "../ext/imgui/imgui_impl_glfw.h"
+//#include "../ext/imgui/ImGuiFileDialog.h"
+
+//cereal
 
 //sundile features
 #include "Math.h"
 #include "Macros.h"
+#include "Utility.h"
+#include "Types.h"
+#include "Data.h"
+namespace sundile {};
+namespace sundile::Components {};
+namespace sundile::Systems {};
 
 //environment variables
 

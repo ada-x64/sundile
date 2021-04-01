@@ -1,0 +1,182 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GUI &#8212; sundile  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Rendering System" href="Rendering.html" />
+    <link rel="prev" title="Things and How to Interact With Them" href="ecs.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="gui">
+<h1>GUI<a class="headerlink" href="#gui" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="default-gui-layout">
+<h2>Default GUI Layout<a class="headerlink" href="#default-gui-layout" title="Permalink to this headline">¶</a></h2>
+<p>TODO: Place a picture here and explain each element.</p>
+</div>
+<div class="section" id="setting-up-data-editors">
+<h2>Setting up Data Editors<a class="headerlink" href="#setting-up-data-editors" title="Permalink to this headline">¶</a></h2>
+<p>In order to get the GUISystem to see your component’s data, you have to register the component. The GUISystem will display “Unregistered Component” for every component that it detects but does not have a display function for.</p>
+<p>To register your component, call the defineGui function in the initEvent for your component</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SYSTEM</span><span class="p">(</span><span class="n">MySystem</span><span class="p">)</span>
+
+<span class="n">void</span> <span class="n">drawGui</span><span class="p">(</span><span class="n">const</span> <span class="n">guiMeta</span><span class="o">&amp;</span> <span class="n">meta</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">MyType</span><span class="o">*</span> <span class="n">instance</span> <span class="o">=</span> <span class="n">meta_cast</span><span class="o">&lt;</span><span class="n">MyType</span><span class="o">&gt;</span><span class="p">(</span><span class="n">meta</span><span class="p">);</span>
+    <span class="n">doThings</span><span class="p">(</span><span class="o">*</span><span class="n">instance</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">init</span><span class="p">(</span><span class="n">const</span> <span class="n">ProjInitEvent</span><span class="o">&amp;</span> <span class="n">event</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">defineGui</span><span class="o">&lt;</span><span class="n">MyType</span><span class="o">&gt;</span><span class="p">(</span><span class="n">drawGui</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="n">END_SYSTEM</span>
+</pre></div>
+</div>
+<p>The defineGui function takes a <code class="docutils literal notranslate"><span class="pre">void(const</span> <span class="pre">guiMeta&amp;)</span></code> function and uses this to draw the GUI for your component.</p>
+<p>This function should be called when the project loads in your component. TODO: Figure out how this will work. Keep it at SceneInit for now, bc that’s the current highest level of abstraction.</p>
+</div>
+<div class="section" id="guitree">
+<h2>GuiTree<a class="headerlink" href="#guitree" title="Permalink to this headline">¶</a></h2>
+<p>GuiTree is a system for nested trees. It relies on a list of Nodes, which contain reference to the type specified, as well as children. This makes them trees. They are designed to be used like a typical file directory.</p>
+<p>Right click options are accessed through the Clipboard class.</p>
+</div>
+<div class="section" id="gui-events">
+<h2>GUI Events<a class="headerlink" href="#gui-events" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><dl>
+<dt>GUI Events follow a simple cascade pattern. Each GUI Event is an implementation of one of these events:</dt><dd><table class="colwidths-given docutils align-default" id="id1">
+<caption><span class="caption-text"><strong>GUI Events</strong></span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 77%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>ChangeEvent&lt;T&gt;</p></td>
+<td><p>Fires when any change occurs; use this when it doesn’t matter what type of event has occurred.</p></td>
+</tr>
+<tr class="row-even"><td><p>CreateEvent&lt;T&gt;</p></td>
+<td><p>Fires when the type is created.</p></td>
+</tr>
+<tr class="row-odd"><td><p>DestroyEvent&lt;T&gt;</p></td>
+<td><p>Fires when the type is destroyed.</p></td>
+</tr>
+<tr class="row-even"><td><p>ActivateEvent&lt;T&gt;</p></td>
+<td><p>Fires when the type is made active in the scene.</p></td>
+</tr>
+<tr class="row-odd"><td><p>DeactivateEvent&lt;T&gt;</p></td>
+<td><p>Fires when the type is made inactive in the scene.</p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<p>GUI Events cascade, as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ChangeEvent</span><span class="o">&lt;</span><span class="n">Field</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="n">ChangeEvent</span><span class="o">&lt;</span><span class="n">Component</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="n">ChangeEvent</span><span class="o">&lt;</span><span class="n">Entity</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="n">ChangeEvent</span><span class="o">&lt;</span><span class="n">Scene</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="n">ChangeEvent</span><span class="o">&lt;</span><span class="n">Project</span><span class="o">&gt;</span><span class="p">;</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">sundile</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ecs.html">Things and How to Interact With Them</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#default-gui-layout">Default GUI Layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setting-up-data-editors">Setting up Data Editors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#guitree">GuiTree</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gui-events">GUI Events</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Rendering.html">Rendering System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Serialization.html">Projects and Serialization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Events.html">Events</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="ecs.html" title="previous chapter">Things and How to Interact With Them</a></li>
+      <li>Next: <a href="Rendering.html" title="next chapter">Rendering System</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, ada.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/GUI.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

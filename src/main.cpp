@@ -1,91 +1,84 @@
 //--
 //-- main.cpp
 //--
-#include "components/AllComponents.h"
-#include "systems/AllSystems.h"
+#include "./sundile/sundile.h"
 
-int main(void)
-{
+//\TODO: Move these to their own files to be loaded.
+void scene1(sundile::SmartEVW evw) {
 	using namespace sundile;
-	//When ProjectSystem is implemented, will need to set a project root directory.
-	//For now, just ensure that you're executing the program from the same place it's stored :)
 
-	//Initialize
-	SmartEVW evw = EventSystem::create();
-	SmartSim sim = SimSystem::init(evw);
-	SmartWindow winc = WindowSystem::initWindowedFullscreen(evw);
-	winc->name = "sundile";
-	glfwSetWindowTitle(winc->window.get(), winc->name);
-	glfwSetWindowSizeLimits(winc->window.get(), winc->WIDTH, winc->HEIGHT, winc->WIDTH, winc->HEIGHT);
-
-	GuiSystem::init(winc, sim, evw);
-	Systems::init(evw);
-
-	//Scene registration
-	{
+	SmartScene scene = Systems::SceneSystem::create(evw);
+	scene->name = "Suzannes";
+	auto& registry = scene->registry;
+	scene->open = [](SmartRegistry& registry) {
 		//Prelim
 		using namespace Components;
 		using namespace Systems;
-		auto registry = sim->registry;
 
 		//Assets
-		Model suzanne = ModelSystem::loadModel("./assets/models/monkey.obj");
-
-		auto eRenderer = registry->create();
-		emplace<Renderer>(registry, eRenderer,RenderSystem::create());
-
-		auto eCam = registry->create();
-		emplace<camera>(registry, eCam);
+		Model suzanne = ModelSystem::loadModel(asset_directory + "models/monkey.obj");
 
 		//--
 		//-- Suzannes in a Circle
 		int count = 8;
 		for (int i = 0; i < count; i++) {
 			auto eMonkey = registry->create();
-			auto model = emplace<Model>(registry,  eMonkey, suzanne);
-			emplace<visible>(registry,  eMonkey);
-			position p;
-			p.pos = glm::vec3(10 * cos(i * 2 * glm::pi<float>() / count), 0.f, 10 * sin(i * 2 * glm::pi<float>() / count));
-			emplace<position>(registry,  eMonkey, p);
+			Model model = emplace<Model>(registry, eMonkey, suzanne);
+			registry->get<Model>(eMonkey).transform = glm::translate(model.transform, glm::vec3(10 * cos(i * 2 * pi / count), 0.f, 10 * sin(i * 2 * pi / count)));
 		}
 
 		//--
 		//-- Light of our lives
 		auto eLightMonkey = registry->create();
 		auto model = emplace<Model>(registry, eLightMonkey, suzanne);
-		emplace<visible>(registry, eLightMonkey);
-		position p; p.pos = { 0,0,0 };
-		emplace<position>(registry,  eLightMonkey, p);
-		Shader lightsource = ShaderSystem::init("./assets/shaders/passthrough.vert", "./assets/shaders/light_global.frag");
+		Shader lightsource = ShaderSystem::create(asset_directory + "shaders/passthrough.vert", asset_directory + "shaders/light_global.frag");
 		ShaderSystem::use(lightsource);
 		ShaderSystem::setVec4(lightsource, "color", { 1.f,1.f,1.f,1.f });
 		emplace<Shader>(registry, eLightMonkey, lightsource);
 
-		//--
-		//-- Coord map
-		/**
-		auto eCoords = registry->create();
-		Vertex v0{ glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
-		Vertex vx{ glm::vec3(1.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
-		Vertex vy{ glm::vec3(0.f, 1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
-		Vertex vz{ glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(0.f, 0.f) };
-		Vertex vnx{ glm::vec3(-1.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
-		Vertex vny{ glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
-		Vertex vnz{ glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(0.f, 0.f) };
-		Mesh coords = Mesh({ v0, vx, vy, vz, vnx, vny, vnz }, { 0,1,0, 0,2,0, 0,3,0, 0,4,0, 0,5,0, 0,6,0 }, {});
-		emplace<Mesh>(registry, eCoords, coords);
-		emplace<wireframe>(registry, eCoords);
-		emplace<visible>(registry, eCoords);
-		emplace<position>(registry, eCoords, glm::vec3(0.f, 0.f, 0.f));
-		/**/
-	}
+	};
 
-	//main loop
-	while (EventSystem::run) {
-		EventSystem::updateAll();
-	}
+	SceneInitEvent ev;
+	ev.id = scene->id;
+	ev.evw = evw;
+	ev.registry = scene->registry;
+	evw->dispatcher.trigger<SceneInitEvent>(ev);
+}
 
-	EventSystem::terminateAll();
+void scene2(sundile::SmartEVW evw) {
+	using namespace sundile;
+	SmartScene scene = Systems::SceneSystem::create(evw);
+	auto& registry = scene->registry;
+	scene->name = "Empty";
+	scene->open = [](SmartRegistry& registry) {
+		//Boilerplate
+		using namespace Components;
+		using namespace Systems;
+
+		//Assets
+		Model suzanne = ModelSystem::loadModel(asset_directory + "models/monkey.obj");
+		auto eSuzanne = registry->create();
+		emplace<Model>(registry, eSuzanne, suzanne);
+
+	};
+
+	SceneInitEvent ev;
+	ev.id = scene->id;
+	ev.evw = evw;
+	ev.registry = scene->registry;
+	evw->dispatcher.trigger<SceneInitEvent>(ev);
+}
+
+int main(void)
+{
+	using namespace sundile;
+
+	SmartEVW evw = sundile::init(); //possible override here so we can open a project file
+
+	scene1(evw);
+	scene2(evw);
+
+	sundile::mainLoop();
 
 	return 0;
 }

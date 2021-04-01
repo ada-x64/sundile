@@ -1,8 +1,18 @@
 //-- Numerical typenames
 //-- Wrapper classes for glm, imgui, float*
-#include <imgui.h>
+#include "../ext/imgui/imgui.h"
 #include <glm/glm.hpp>
+//c++20
+#ifdef WIN32
+#ifndef __cpp_lib_concepts
+#define __cpp_lib_concepts
+#endif
+#endif
+#include <concepts>
 //-- Wrapper for Vec2's
+
+static constexpr float pi = glm::pi<float>();
+
  struct Vec2 {
 	float x, y;
 	Vec2() :x(0), y(0) {};
@@ -23,6 +33,7 @@
 	Vec2 operator + (const Vec2 other) { return Vec2(x + other.x, y + other.y); }
 	Vec2 operator -= (const Vec2 other) { x -= other.x; y -= other.y; return *this; }
 	Vec2 operator - (const Vec2 other) { return Vec2(x - other.x, y - other.y); }
+	Vec2 operator * (const float other) { return Vec2(x * other, y * other); }
 };
 
  struct Vec3 {
@@ -43,6 +54,7 @@
 	Vec3 operator + (const Vec3 other) { return Vec3(x + other.x, y + other.y, z + other.z); }
 	Vec3 operator -= (const Vec3 other) { x -= other.x; y -= other.y; z -= other.z; return *this; }
 	Vec3 operator - (const Vec3 other) { return Vec3(x - other.x, y - other.y, z - other.z); }
+	Vec3 operator * (const float other) { return Vec3(x * other, y * other, z*other); }
 };
 
  struct Vec4 {
@@ -64,4 +76,5 @@
 	Vec4 operator + (const Vec4 other) { return Vec4(x + other.x, y + other.y, z + other.z, w + other.w); }
 	Vec4 operator -= (const Vec4 other) { x -= other.x; y -= other.y; z -= other.z; w -= other.w; return *this; }
 	Vec4 operator - (const Vec4 other) { return Vec4(x - other.x, y - other.y, z - other.z, w - other.w); }
+	Vec4 operator * (const float other) { return Vec4(x * other, y * other, z * other, w*other); }
 };

@@ -3,13 +3,16 @@
 #define SUNDILE_MACROS
 
 //-- Component macros
-struct component {};
-#define BEGIN_COMPONENT(name) \
-	namespace sundile { namespace Components { struct name:component { static constexpr char const* __name = #name;
+struct Component {};
+
+#define SERIALIZE(_componentName, ...) template <class Archive> void serialize(Archive& archive) { archive(__VA_ARGS__);}
+
+#define COMPONENT(_componentName) \
+	namespace sundile { namespace Components { struct _componentName:Component { static constexpr char const* __name = #_componentName;
 #define END_COMPONENT };}};
 
 //-- System macros
-#define BEGIN_SYSTEM(name) namespace sundile { using namespace Components; namespace Systems { namespace name {
+#define SYSTEM(name) namespace sundile { using namespace Components; namespace Systems { namespace name {
 #define END_SYSTEM }}}
 
 //-- OS macros
@@ -21,5 +24,9 @@ struct component {};
 
 //-- GL macros
 #define SUNDILE_GLSL_VERSION "#version 330 core"
+
+//-- Versioning macros
+#define SUNDILE_VERSION_NUMBER 0.01
+#define PROJECT_EXTENSION ".sunproj"
 
 #endif

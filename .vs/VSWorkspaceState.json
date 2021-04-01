@@ -1,0 +1,12 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\src",
+    "\\src\\sundile",
+    "\\src\\sundile\\systems",
+    "\\src\\sundile\\systems\\EventSystem",
+    "\\src\\sundile\\systems\\GuiSystem"
+  ],
+  "SelectedNode": "\\src\\sundile\\systems\\EventSystem\\EventTypes.h",
+  "PreviewInSolutionExplorer": false
+}

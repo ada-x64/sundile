@@ -1,0 +1,63 @@
+ECS & Event System
+==================
+
+overview
+^^^^^^^^
+
+    sundile's memory handling is performed by the excellent
+    EnTT. All of the library's functionality is exposed
+    to the end user. You may refer to `EnTT's documentation <https://entt.docsforge.com/>`_
+    for more information on how to use the ECS.
+
+    sundile's event system also relies on EnTT.
+
+Entities, Components, Systems
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    Entities contain components. Systems view components
+    and perform functions on them. Components themselves
+    are just packets of data.
+
+    Entities are represented with an index into a registry.
+    Systems are namespaces containing functions.
+    Components are simple structs.
+
+    Although there is no restriction, Components should
+    only contain fields, while Systems should strive
+    to only contain functions. Sometimes this isn't
+    possible, so the flexibility still exists.
+
+    There are a few macros available to make creating
+    and using the ECS system easier.
+
+API
+^^^
+
+Macros
+""""""
+    ==================== ===========================
+    macro                functionality
+    ==================== ===========================
+    ``COMPONENT(_name)`` Begins component definition.
+    ``END_COMPONENT``    Ends component definition.
+    ``SYSTEM(_name)``    Begins system definition.
+    ``END_SYSTEM``       Ends system definition.
+    ==================== ===========================
+
+    These macros should all appear at the global scope,
+    as they include all the necessary scoping to ensure
+    that components and systems remain accessible to
+    sundile.
+
+    **example:** ::
+
+        COMPONENT(vec3)
+            int a, b, c;
+        END_COMPONENT
+
+        SYSTEM(vec3System)
+            int sum (vec3 vec) {
+                return vec.a + vec.b + vec.c;
+            }
+        END_SYSTEM
+
