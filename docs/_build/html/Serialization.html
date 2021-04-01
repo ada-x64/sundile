@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Serialization &#8212; sundile  documentation</title>
+    <title>Projects and Serialization &#8212; sundile  documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -14,6 +14,7 @@
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Events" href="Events.html" />
     <link rel="prev" title="Rendering System" href="Rendering.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -31,8 +32,30 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="serialization">
-<h1>Serialization<a class="headerlink" href="#serialization" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="projects-and-serialization">
+<h1>Projects and Serialization<a class="headerlink" href="#projects-and-serialization" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="project-hierarchy">
+<h2>Project Hierarchy<a class="headerlink" href="#project-hierarchy" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><dl>
+<dt>Containment hierarchy:</dt><dd><ul class="simple">
+<li><p>Project</p></li>
+<li><p>Scene</p></li>
+<li><p>Registry</p></li>
+<li><p>Entity</p></li>
+<li><p>Component</p></li>
+<li><p>Fields</p></li>
+</ul>
+<p>Projects contain Scenes and take care of serializing them.
+Scenes contain Registries and render them to the screen.
+Registries are the meat of the program. These contain entities and determine what happens to them.
+Entities are simple IDs to which a number of objects are attached.
+Components are simple structs.
+Fields are the members of components, but are conceptually treated as a subclass for GUI purposes.</p>
+</dd>
+</dl>
+</div></blockquote>
+</div>
 </div>
 
 
@@ -56,7 +79,11 @@
 <li class="toctree-l1"><a class="reference internal" href="ecs.html">Things and How to Interact With Them</a></li>
 <li class="toctree-l1"><a class="reference internal" href="GUI.html">GUI</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Rendering.html">Rendering System</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Serialization</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Projects and Serialization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#project-hierarchy">Project Hierarchy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Events.html">Events</a></li>
 </ul>
 
 <div class="relations">
@@ -64,6 +91,7 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="Rendering.html" title="previous chapter">Rendering System</a></li>
+      <li>Next: <a href="Events.html" title="next chapter">Events</a></li>
   </ul></li>
 </ul>
 </div>

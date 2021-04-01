@@ -55,14 +55,49 @@
 <span class="n">END_SYSTEM</span>
 </pre></div>
 </div>
-<p>The defineGui function takes a <code class="docutils literal notranslate"><span class="pre">void(const</span> <span class="pre">guiMeta&amp;)</span></code> function and uses this to draw the GUI for your component.
-This definition does not have to occur at SceneInit, and can occur during any event, but it is highly recommended</p>
+<p>The defineGui function takes a <code class="docutils literal notranslate"><span class="pre">void(const</span> <span class="pre">guiMeta&amp;)</span></code> function and uses this to draw the GUI for your component.</p>
+<p>This function should be called when the project loads in your component. TODO: Figure out how this will work. Keep it at SceneInit for now, bc that’s the current highest level of abstraction.</p>
 </div>
-<div class="section" id="guimeta">
-<h2>GuiMeta<a class="headerlink" href="#guimeta" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="guitree">
+<h2>GuiTree<a class="headerlink" href="#guitree" title="Permalink to this headline">¶</a></h2>
+<p>GuiTree is a system for nested trees. It relies on a list of Nodes, which contain reference to the type specified, as well as children. This makes them trees. They are designed to be used like a typical file directory.</p>
+<p>Right click options are accessed through the Clipboard class.</p>
 </div>
-<div class="section" id="guitrees">
-<h2>GuiTrees<a class="headerlink" href="#guitrees" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="gui-events">
+<h2>GUI Events<a class="headerlink" href="#gui-events" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><dl>
+<dt>GUI Events follow a simple cascade pattern. Each GUI Event is an implementation of one of these events:</dt><dd><table class="colwidths-given docutils align-default" id="id1">
+<caption><span class="caption-text"><strong>GUI Events</strong></span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 77%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>ChangeEvent&lt;T&gt;</p></td>
+<td><p>Fires when any change occurs; use this when it doesn’t matter what type of event has occurred.</p></td>
+</tr>
+<tr class="row-even"><td><p>CreateEvent&lt;T&gt;</p></td>
+<td><p>Fires when the type is created.</p></td>
+</tr>
+<tr class="row-odd"><td><p>DestroyEvent&lt;T&gt;</p></td>
+<td><p>Fires when the type is destroyed.</p></td>
+</tr>
+<tr class="row-even"><td><p>ActivateEvent&lt;T&gt;</p></td>
+<td><p>Fires when the type is made active in the scene.</p></td>
+</tr>
+<tr class="row-odd"><td><p>DeactivateEvent&lt;T&gt;</p></td>
+<td><p>Fires when the type is made inactive in the scene.</p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+<p>GUI Events cascade, as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ChangeEvent</span><span class="o">&lt;</span><span class="n">Field</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="n">ChangeEvent</span><span class="o">&lt;</span><span class="n">Component</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="n">ChangeEvent</span><span class="o">&lt;</span><span class="n">Entity</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="n">ChangeEvent</span><span class="o">&lt;</span><span class="n">Scene</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="n">ChangeEvent</span><span class="o">&lt;</span><span class="n">Project</span><span class="o">&gt;</span><span class="p">;</span>
+</pre></div>
+</div>
+</div></blockquote>
 </div>
 </div>
 
@@ -88,12 +123,12 @@ This definition does not have to occur at SceneInit, and can occur during any ev
 <li class="toctree-l1 current"><a class="current reference internal" href="#">GUI</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#default-gui-layout">Default GUI Layout</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#setting-up-data-editors">Setting up Data Editors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#guimeta">GuiMeta</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#guitrees">GuiTrees</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#guitree">GuiTree</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gui-events">GUI Events</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Rendering.html">Rendering System</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Serialization.html">Serialization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Serialization.html">Projects and Serialization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Events.html">Events</a></li>
 </ul>
 

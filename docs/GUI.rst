@@ -32,4 +32,29 @@ This function should be called when the project loads in your component. TODO: F
 GuiTree
 ^^^^^^^
 
-GuiTree is a system for nested trees. 
+GuiTree is a system for nested trees. It relies on a list of Nodes, which contain reference to the type specified, as well as children. This makes them trees. They are designed to be used like a typical file directory.
+
+Right click options are accessed through the Clipboard class.
+
+GUI Events
+^^^^^^^^^^
+
+  GUI Events follow a simple cascade pattern. Each GUI Event is an implementation of one of these events:
+    .. list-table:: **GUI Events**
+        :widths: 30, 100
+        :header-rows: 0
+
+        * - ChangeEvent<T>
+          - Fires when any change occurs; use this when it doesn't matter what type of event has occurred.
+        * - CreateEvent<T>
+          - Fires when the type is created.
+        * - DestroyEvent<T>
+          - Fires when the type is destroyed.
+        * - ActivateEvent<T>
+          - Fires when the type is made active in the scene.
+        * - DeactivateEvent<T>
+          - Fires when the type is made inactive in the scene.
+
+  GUI Events cascade, as follows::
+
+    ChangeEvent<Field> -> ChangeEvent<Component> -> ChangeEvent<Entity> -> ChangeEvent<Scene> -> ChangeEvent<Project>;
