@@ -175,6 +175,13 @@ SYSTEM(SceneSystem)
 		}
 	}
 
+	void activateScene(SceneActivateEvent ev) {
+
+	}
+	void deactivateScene(SceneDeactivateEvent ev) {
+
+	}
+
 	//\TODO: Start implementing editor tools
 	void parseGuiState(std::map<std::string, bool>& map) {
 

@@ -28,6 +28,7 @@ namespace sundile {
 	}
 
 	//\todo: REPLACE THIS FUNCTION
+	//Performs live updates
 	template <typename T>
 	void updateGUI(entt::entity entt, T& value) {
 		for (auto& e : entityList) {

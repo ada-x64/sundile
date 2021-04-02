@@ -36,6 +36,22 @@ namespace sundile {
 	struct postStepEvent :Event {};
 	struct terminateEvent :Event {};
 
+	template <typename T>
+	struct activateEvent : Event {T member};
+	template <typename T>
+	struct deactivateEvent : Event { T member };
+	template <typename T>
+	struct createEvent : Event { T member };
+	template <typename T>
+	struct destroyEvent : Event { T member };
+	template <typename T>
+	struct changeEvent : Event { T member };
+	template <typename T>
+	struct serializeEvent : Event { T member };
+	template <typename T>
+	struct deserializeEvent : Event { T member };
+
+
 	// WINDOW EVENTS
 
 	struct WindowEvent : Event { unsigned int id; };

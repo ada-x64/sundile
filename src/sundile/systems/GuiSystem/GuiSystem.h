@@ -39,6 +39,9 @@ SYSTEM(GuiSystem)
 
 	//-- Events
 	//back end - to be called according to a timer (every second?)
+
+	//- \TODO: Separate listEntity creation/destruction into events. 
+
 	void refreshEntities(SceneStepEvent& scene) {
 
 		//for every entity:
