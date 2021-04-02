@@ -24,7 +24,6 @@ SYSTEM(GuiSystem)
 	static float guiInspectorHeight = 300.f;
 
 	// [SECTION] - Editor windows
-
 	static const nodeEventCallback<listComponent> componentTab_LeftClick = [&](listNodeRef<listComponent> p_node, guiTreeContainer<listComponent>& tree) {
 		auto io = ImGui::GetIO();
 		auto clipboard = getClipboard<listComponent>();
@@ -32,8 +31,10 @@ SYSTEM(GuiSystem)
 		auto p_component = p_node->content;
 
 		if (io.KeyCtrl) {
-			p_node->state["selected"] = true;
-			addOrReplace(selected, p_node);
+			p_node->state["selected"] = !p_node->state["selected"];
+			if (p_node->state["selected"]) {
+				addOrReplace(selected, p_node);
+			}
 		}
 		else {
 			ClearGuiTreeSelectionState(tree);
@@ -78,8 +79,10 @@ SYSTEM(GuiSystem)
 		auto p_entity = p_node->content;
 
 		if (io.KeyCtrl) {
-			p_node->state["selected"] = true;
-			addOrReplace(selected, p_node);
+			p_node->state["selected"] = !p_node->state["selected"];
+			if (p_node->state["selected"]) {
+				addOrReplace(selected, p_node);
+			}
 		}
 		else {
 			ClearGuiTreeSelectionState(tree);
@@ -117,6 +120,48 @@ SYSTEM(GuiSystem)
 		return entityTabs.emplace_back<entityTab>(std::move(tab));
 	}
 
+	static const nodeEventCallback<SmartScene> sceneTree_LeftClick = [&](listNodeRef<SmartScene> p_node, guiTreeContainer<SmartScene>& tree) {
+		auto& io = ImGui::GetIO();
+		auto clipboard = getClipboard<SmartScene>();
+		auto& selected = clipboard->selected;
+		auto scene = *(p_node->content);
+
+		if (io.KeyCtrl) {
+			p_node->state["selected"] = !p_node->state["selected"];
+			if (p_node->state["selected"]) {
+				addOrReplace(selected, p_node);
+			}
+		}
+		else {
+			ClearGuiTreeSelectionState(tree);
+			selected.clear();
+			selected.push_back(p_node);
+			p_node->state["selected"] = true;
+
+			bool found = false;
+			for (auto& i : entityTabs) {
+				if (i.name == scene->name) {
+					found = true; break;
+				}
+			}
+			if (!found) {
+				createEntityTab(scene->name, entityList);
+			}
+		}
+	};
+	static const nodeEventCallback<SmartScene> sceneTree_DoubleClick = [&](listNodeRef<SmartScene> p_node, guiTreeContainer<SmartScene>& tree) {
+		auto scene = *(p_node->content);
+		SceneActivateEvent ev;
+		ev.currentTime = scene->currentTime;
+		ev.deltaTime = scene->deltaTime;
+		ev.id = scene->id;
+		ev.registry = scene->registry;
+		EventSystem::currentEVW->dispatcher.trigger<SceneActivateEvent>(ev);
+	};
+	static const nodeEventCallback<SmartScene> sceneTree_RightClick = [&](listNodeRef<SmartScene> p_node, guiTreeContainer<SmartScene>& tree) {
+
+	};
+
 	void updateScenes() { //cf GuiFrontEnd.h : 132
 		sceneTree.root->children.clear(); //no memory leak with smart pointer
 		for (SmartScene scene : SceneSystem::scenes) {
@@ -128,12 +173,8 @@ SYSTEM(GuiSystem)
 
 	// To be called on GuiInit, which should be called when GUI is loaded from ProjectSystem
 	void initInspector(guiContainer& container) {
-		sceneTree.root->children.clear();
-		for (SmartScene scene : SceneSystem::scenes) {
-			listNode<SmartScene>* node = new listNode<SmartScene>(scene);
-			node->name = scene->name;
-			sceneTree.root->children.emplace_back(std::move(node));
-		}
+		sceneTree.callbacks[leftClick] = sceneTree_LeftClick;
+		sceneTree.callbacks[rightClick] = sceneTree_RightClick;
 
 		//Initialize Tabs (should be scene instead of entities, but this is fine for now)
 		createEntityTab("[scene name]", entityList);
