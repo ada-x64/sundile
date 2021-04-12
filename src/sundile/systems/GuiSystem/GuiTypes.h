@@ -1,7 +1,18 @@
 #ifndef GUI_TYPES_H
 #define GUI_TYPES_H
+namespace sundile {
+	// Contains typeinfo for registered components.
+	struct guiMeta {
+		void* ref;
+		entt::id_type id = -1;
+		entt::entity entt;
+	};
 
-SYSTEM(GuiSystem)
+	// Contains the Dear IMGUI instructions for registered components
+	typedef std::function<void(const guiMeta&)> guiRenderFunc;
+	static const guiMeta nullMeta;
+	static const guiRenderFunc nullRenderFunc = [](const guiMeta&) { ImGui::Text("(empty)"); };
+
 	//[SECTION] - GuiSystem Scope
 	//[SECTION] - forward decl. & typedefs
 		//-- General Containers
@@ -9,7 +20,7 @@ SYSTEM(GuiSystem)
 	//typedef std::map<std::string, bool> StateMap; //moved to general types
 	typedef std::function<void(guiContainer&)> guiContainerFunc;
 
-		//-- Inspector Trees
+	//-- Inspector Trees
 	template<typename T>
 	struct listNode;
 	template<typename T>
@@ -20,14 +31,14 @@ SYSTEM(GuiSystem)
 	typedef std::vector<listEntity> guiEntityList;
 	typedef std::vector<listComponent> guiComponentList;
 
-		//-- Trees
+	//-- Trees
 	template <typename T>
 	struct guiTreeContainer;
 
 	template <typename T>
 	using nodeEventCallback = std::function<void(listNodeRef<T>, guiTreeContainer<T>&)>;
 
-	enum guiTreeInputEvent {
+	enum class guiTreeInputEvent {
 		leftClick,
 		rightClick,
 		middleClick,
@@ -64,7 +75,7 @@ SYSTEM(GuiSystem)
 			for (auto i : list) {
 				root->children.emplace_back(std::make_shared<listNode<T>>(i));
 			}
-			for (int i = 0; i < guiTreeInputEvent::COUNT; ++i) {
+			for (int i = 0; i < static_cast<int>(guiTreeInputEvent::COUNT); ++i) {
 				callbacks[guiTreeInputEvent(i)] = nullCallback;
 			}
 
@@ -72,13 +83,13 @@ SYSTEM(GuiSystem)
 		guiTreeContainer() {
 			T content;
 			root = std::make_shared<listNode<T>>(content);
-			for (int i = 0; i < guiTreeInputEvent::COUNT; ++i) {
+			for (int i = 0; i < static_cast<int>(guiTreeInputEvent::COUNT); ++i) {
 				callbacks[guiTreeInputEvent(i)] = nullCallback;
 			}
 		};
 	};
 
-		// Inspector Tabs
+	// Inspector Tabs
 	template<typename T>
 	using guiTabFunc = std::function<void(guiContainer&, guiTreeContainer<T>&)>;
 
@@ -99,7 +110,7 @@ SYSTEM(GuiSystem)
 	struct listComponent {
 		guiIndex index;
 		guiMeta meta;
-		std::string name;
+		std::string name = "(unset)";
 		bool operator ==(listComponent other) { return this->index.id == other.index.id; }
 		listComponent(const listComponent& other) : index(other.index), meta(other.meta), name(other.index.name) {};
 		listComponent() = default;
@@ -135,6 +146,8 @@ SYSTEM(GuiSystem)
 		ImGuiWindowFlags windowFlags;
 		styleVarMap styleVars;
 		ImVec2 size;
+		unsigned int id;
+		static unsigned int count;
 
 		guiContainer(const char* name = "UNDEFINED",
 			guiContainerFunc renderFunc = nullContainerFunc,
@@ -147,8 +160,13 @@ SYSTEM(GuiSystem)
 			size(size),
 			windowFlags(windowFlags),
 			styleVars(styleVars)
-		{};
+		{
+			id = count;
+			count++;
+		};
 	};
+	unsigned int guiContainer::count = 0;
+
 	// General purpose clipboard
 	template <typename T>
 	struct guiClipboard {
@@ -158,16 +176,18 @@ SYSTEM(GuiSystem)
 		listNodeRef<T> toBeRenamed;
 		char namebuff[64];
 	};
+
 	// Wrapper for tabs. Assumes it will contain a child window
 	template<typename T>
 	struct guiTab {
 		guiTreeContainer<T> treeContainer;
-		std::vector<T>* data;
+		std::vector<T>* data = nullptr;
 		size_t dataSize;
-		guiTabFunc<T> renderfunc = [](guiContainer&,guiTreeContainer<T>&){};
+		guiTabFunc<T> renderfunc = [](guiContainer&, guiTreeContainer<T>&) {};
 		guiContainer container;
 		std::string name = "";
 		void render() {
+			if (data == nullptr) return;
 			//update data
 			auto& tree = treeContainer.root->children;
 			//add missing values - this was added because initGuiFrontend was called before entityList was populated
@@ -203,9 +223,11 @@ SYSTEM(GuiSystem)
 			for (auto i = 0; i < data->size(); ++i) {
 				T content = data->at(i);
 				listNodeRef<T> node = std::make_shared<listNode<T>>(content);
+				node->name = content.name;
 				treeContainer.root->children.push_back(std::move(node));
 			}
 		};
+		guiTab() {};
 	};
 	struct dataTab {
 		guiMeta data;
@@ -242,5 +264,5 @@ SYSTEM(GuiSystem)
 	static sceneID currentScene = -1;
 	static evwID currentEVW = -1;
 
-END_SYSTEM
+}
 #endif

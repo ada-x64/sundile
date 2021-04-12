@@ -10,50 +10,40 @@ namespace sundile {
 		entt::dispatcher dispatcher{};
 		unsigned int id;
 	};
-
 	struct EventWrapperDestroyer {
 		void operator()(EventWrapper* evw) {
 			delete evw;
 		}
 	};
 
-	//EVW for use by Sundile internal systems.
 	typedef std::shared_ptr<EventWrapper> SmartEVW;
-	//EVW for use by component systems.
-	typedef std::weak_ptr<EventWrapper> SafeEVW;
-
-	//Registry for use by Sundile internal systems.
 	typedef std::shared_ptr<entt::registry> SmartRegistry;
-	//Registry for component systems.
-	typedef std::weak_ptr<entt::registry> SafeRegistry;
-
 
 	// GENERIC EVENTS
 	struct Event {};
-	struct initEvent { SmartEVW evw; };
-	struct preStepEvent :Event {};
-	struct stepEvent :Event {};
-	struct postStepEvent :Event {};
-	struct terminateEvent :Event {};
+	struct InitEvent { SmartEVW evw; };
+	struct PreStepEvent :Event {};
+	struct StepEvent :Event {};
+	struct PostStepEvent :Event {};
+	struct TerminateEvent :Event {};
 
 	template <typename T>
-	struct activateEvent : Event {T member};
+	struct ActivateEvent : Event { T member; };
 	template <typename T>
-	struct deactivateEvent : Event { T member };
+	struct DeactivateEvent : Event { T member; };
 	template <typename T>
-	struct createEvent : Event { T member };
+	struct CreateEvent : Event { T member; };
 	template <typename T>
-	struct destroyEvent : Event { T member };
+	struct DestroyEvent : Event { T member; };
 	template <typename T>
-	struct changeEvent : Event { T member };
+	struct ChangeEvent : Event { T member; };
 	template <typename T>
-	struct serializeEvent : Event { T member };
+	struct SerializeEvent : Event { T member; };
 	template <typename T>
-	struct deserializeEvent : Event { T member };
+	struct DeserializeEvent : Event { T member; };
 
 
 	// WINDOW EVENTS
-
 	struct WindowEvent : Event { unsigned int id; };
 	struct WindowInitEvent : WindowEvent {
 		GLFWwindow* window;
@@ -103,12 +93,8 @@ namespace sundile {
 		registryWrapper* wrapper;
 	};
 
-	struct SceneSerializeEvent : SceneEvent {};
-	struct SceneDeserializeEvent : SceneEvent {};
-	struct SceneActivateEvent : SceneEvent {}; //fired when scene is made active
-	struct SceneDeactivateEvent : SceneEvent {}; //fired when scene is no longer active 
-	struct SceneCreateEvent : SceneEvent {};
-	struct SceneDestroyEvent : SceneEvent {};
+	struct ScenePlayEvent : SceneEvent {};
+	struct ScenePauseEvent : SceneEvent {};
 
 	// GUI EVENTS
 	// for interaction with defineGui()

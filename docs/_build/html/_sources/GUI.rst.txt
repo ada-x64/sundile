@@ -58,3 +58,57 @@ GUI Events
   GUI Events cascade, as follows::
 
     ChangeEvent<Field> -> ChangeEvent<Component> -> ChangeEvent<Entity> -> ChangeEvent<Scene> -> ChangeEvent<Project>;
+
+
+
+GUI Call Tree
+^^^^^^^^^^^^^
+
+::
+
+  init -> checkContext
+       -> initGuiFrontend -> initInspector 
+  
+  <RenderGuiEvent> -> render -> primaryContainer.renderFunc -> stateSetter -> setState -> <GuiEvent>
+                                                           |-> mainMenu -> saveProject -> ...
+                                                           |           |-> loadProject -> ...
+                                                           |           |-> setState -> <GuiEvent>
+                                                           |-> stateRouter -> Inspector -> RenderGuiTree -> RenderListNode -> node callbacks
+                                                                          |            |-> RenderTabs -> tab.render
+                                                                          |-> editorFrame -> 
+                                                                          |-> editorToolbar -> 
+
+The Inspector Window
+^^^^^^^^^^^^^^^^^^^^
+
+  The Inspector window is located at the bottom third of the screen. It has four sections: Scenes, Entities, Components, and Data.
+  The Scenes section lists all the scenes in the current project.
+  The Entities section lists all of the entities (active and inactive) in the currently active scene.
+  The Components section lists all of the components of the selected Entity.
+  And finally, the Data section shows a UI for the selected component.
+
+GUI Meta
+^^^^^^^^
+
+  The GUI Meta interacts with user components in order to register them for runtime reflection. This allows users to create component user interfaces in the Data section of the Inspector window.
+
+  Users interact with the ``GuiMeta`` type when they call ``defineGui<T>()`` in their ``init()`` function. ::
+
+    SYSTEM(MySystem)
+      void init(const InitEvent& ev) {
+        defineGui<MyType>([](const guiMeta& meta){
+          using namespace ImGui;
+          MyType* myObj = meta_cast<MyType>(meta);
+
+          //use ImGui to build your UI here.
+
+        });
+      }
+    END_SYSTEM
+
+  Unfortunately, I did not see a way to escape this boilerplate; but at least it is minimal.
+  
+  The ``defineGui<T>()`` function registers the component type and stores its information in a ``GuiMeta`` vector.
+
+  Additionally, although EnTT comes with ``entt::registry::emplace<T>()``, users should opt for ``sundile::emplace<T>()`` for entities they wish to see on the GUI.
+

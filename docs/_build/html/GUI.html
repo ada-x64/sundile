@@ -99,6 +99,55 @@
 </div>
 </div></blockquote>
 </div>
+<div class="section" id="gui-call-tree">
+<h2>GUI Call Tree<a class="headerlink" href="#gui-call-tree" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">init</span> <span class="o">-&gt;</span> <span class="n">checkContext</span>
+     <span class="o">-&gt;</span> <span class="n">initGuiFrontend</span> <span class="o">-&gt;</span> <span class="n">initInspector</span>
+
+<span class="o">&lt;</span><span class="n">RenderGuiEvent</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="n">render</span> <span class="o">-&gt;</span> <span class="n">primaryContainer</span><span class="o">.</span><span class="n">renderFunc</span> <span class="o">-&gt;</span> <span class="n">stateSetter</span> <span class="o">-&gt;</span> <span class="n">setState</span> <span class="o">-&gt;</span> <span class="o">&lt;</span><span class="n">GuiEvent</span><span class="o">&gt;</span>
+                                                         <span class="o">|-&gt;</span> <span class="n">mainMenu</span> <span class="o">-&gt;</span> <span class="n">saveProject</span> <span class="o">-&gt;</span> <span class="o">...</span>
+                                                         <span class="o">|</span>           <span class="o">|-&gt;</span> <span class="n">loadProject</span> <span class="o">-&gt;</span> <span class="o">...</span>
+                                                         <span class="o">|</span>           <span class="o">|-&gt;</span> <span class="n">setState</span> <span class="o">-&gt;</span> <span class="o">&lt;</span><span class="n">GuiEvent</span><span class="o">&gt;</span>
+                                                         <span class="o">|-&gt;</span> <span class="n">stateRouter</span> <span class="o">-&gt;</span> <span class="n">Inspector</span> <span class="o">-&gt;</span> <span class="n">RenderGuiTree</span> <span class="o">-&gt;</span> <span class="n">RenderListNode</span> <span class="o">-&gt;</span> <span class="n">node</span> <span class="n">callbacks</span>
+                                                                        <span class="o">|</span>            <span class="o">|-&gt;</span> <span class="n">RenderTabs</span> <span class="o">-&gt;</span> <span class="n">tab</span><span class="o">.</span><span class="n">render</span>
+                                                                        <span class="o">|-&gt;</span> <span class="n">editorFrame</span> <span class="o">-&gt;</span>
+                                                                        <span class="o">|-&gt;</span> <span class="n">editorToolbar</span> <span class="o">-&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="the-inspector-window">
+<h2>The Inspector Window<a class="headerlink" href="#the-inspector-window" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>The Inspector window is located at the bottom third of the screen. It has four sections: Scenes, Entities, Components, and Data.
+The Scenes section lists all the scenes in the current project.
+The Entities section lists all of the entities (active and inactive) in the currently active scene.
+The Components section lists all of the components of the selected Entity.
+And finally, the Data section shows a UI for the selected component.</p>
+</div></blockquote>
+</div>
+<div class="section" id="gui-meta">
+<h2>GUI Meta<a class="headerlink" href="#gui-meta" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>The GUI Meta interacts with user components in order to register them for runtime reflection. This allows users to create component user interfaces in the Data section of the Inspector window.</p>
+<p>Users interact with the <code class="docutils literal notranslate"><span class="pre">GuiMeta</span></code> type when they call <code class="docutils literal notranslate"><span class="pre">defineGui&lt;T&gt;()</span></code> in their <code class="docutils literal notranslate"><span class="pre">init()</span></code> function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SYSTEM</span><span class="p">(</span><span class="n">MySystem</span><span class="p">)</span>
+  <span class="n">void</span> <span class="n">init</span><span class="p">(</span><span class="n">const</span> <span class="n">InitEvent</span><span class="o">&amp;</span> <span class="n">ev</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">defineGui</span><span class="o">&lt;</span><span class="n">MyType</span><span class="o">&gt;</span><span class="p">([](</span><span class="n">const</span> <span class="n">guiMeta</span><span class="o">&amp;</span> <span class="n">meta</span><span class="p">){</span>
+      <span class="n">using</span> <span class="n">namespace</span> <span class="n">ImGui</span><span class="p">;</span>
+      <span class="n">MyType</span><span class="o">*</span> <span class="n">myObj</span> <span class="o">=</span> <span class="n">meta_cast</span><span class="o">&lt;</span><span class="n">MyType</span><span class="o">&gt;</span><span class="p">(</span><span class="n">meta</span><span class="p">);</span>
+
+      <span class="o">//</span><span class="n">use</span> <span class="n">ImGui</span> <span class="n">to</span> <span class="n">build</span> <span class="n">your</span> <span class="n">UI</span> <span class="n">here</span><span class="o">.</span>
+
+    <span class="p">});</span>
+  <span class="p">}</span>
+<span class="n">END_SYSTEM</span>
+</pre></div>
+</div>
+<p>Unfortunately, I did not see a way to escape this boilerplate; but at least it is minimal.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">defineGui&lt;T&gt;()</span></code> function registers the component type and stores its information in a <code class="docutils literal notranslate"><span class="pre">GuiMeta</span></code> vector.</p>
+<p>Additionally, although EnTT comes with <code class="docutils literal notranslate"><span class="pre">entt::registry::emplace&lt;T&gt;()</span></code>, users should opt for <code class="docutils literal notranslate"><span class="pre">sundile::emplace&lt;T&gt;()</span></code> for entities they wish to see on the GUI.</p>
+</div></blockquote>
+</div>
 </div>
 
 
@@ -125,6 +174,9 @@
 <li class="toctree-l2"><a class="reference internal" href="#setting-up-data-editors">Setting up Data Editors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#guitree">GuiTree</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#gui-events">GUI Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gui-call-tree">GUI Call Tree</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-inspector-window">The Inspector Window</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gui-meta">GUI Meta</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Rendering.html">Rendering System</a></li>

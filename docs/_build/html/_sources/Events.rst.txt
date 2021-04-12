@@ -11,6 +11,8 @@ Events
     of EnTT's event system.
     `Read more about it here. <https://entt.docsforge.com/v3.6.0/events-signals-and-everything-in-between/>`_
 
+    Events in sundile are handled by a class called the Event Wrapper. Users should interact with the ```SmartEVW``` type to avoid accidentally scrambling a pointer.
+
 Built In Events
 ^^^^^^^^^^^^^^^
 

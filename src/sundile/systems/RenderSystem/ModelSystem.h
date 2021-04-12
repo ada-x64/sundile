@@ -2,16 +2,7 @@
 
 #ifndef S_MODEL
 #define S_MODEL
-namespace sundile {
-	struct Model {
-		std::vector<Texture> textures_loaded;
-		std::string directory;
-		std::vector<Mesh> meshes;
-		bool is_visible = true;
-		bool is_wireframe = false;
-		glm::mat4 transform = glm::mat4(1.f);
-	};
-}
+
 
 SYSTEM(ModelSystem)
 

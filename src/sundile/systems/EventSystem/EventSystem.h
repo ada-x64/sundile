@@ -16,21 +16,18 @@ SYSTEM(EventSystem)
 		SmartEVW evw = std::make_shared<EventWrapper>();
 		evw->id = EVWs.size();
 		EVWs.push_back(evw);
+		if (currentEVW.use_count() == 0) {
+			currentEVW = evw;
+		}
 		return evw;
 	}
 
 	void init(SmartEVW evw) {
-		evw->dispatcher.trigger<initEvent>();
+		evw->dispatcher.trigger<InitEvent>(evw);
 		currentEVW = evw;
 	}
 
-	void initAll() {
-		for (SmartEVW evw : EVWs) {
-			evw->dispatcher.trigger<initEvent>(evw);
-		}
-	}
-
-	void updateAll() {
+	void update() {
 		if (EVWs.size() == 0) {
 			run = false;
 			return;
@@ -38,23 +35,16 @@ SYSTEM(EventSystem)
 
 		for (SmartEVW evw : EVWs) {
 			currentEVW = evw;
-			evw->dispatcher.trigger<preStepEvent>();
-			evw->dispatcher.trigger<stepEvent>();
-			evw->dispatcher.trigger<postStepEvent>();
+			evw->dispatcher.trigger<PreStepEvent>();
+			evw->dispatcher.trigger<StepEvent>();
+			evw->dispatcher.trigger<PostStepEvent>();
 			evw->dispatcher.clear();
 		}
 	}
 
 	void terminate(SmartEVW evw) {
-		evw->dispatcher.update<terminateEvent>();
+		evw->dispatcher.update<TerminateEvent>();
 		removeErase<SmartEVW>(EVWs, evw);
-	}
-
-	void terminateAll() {
-		for (SmartEVW evw : EVWs) {
-			evw->dispatcher.update<terminateEvent>();
-			removeErase<SmartEVW>(EVWs, evw);
-		}
 	}
 
 END_SYSTEM

@@ -3,5 +3,12 @@
 namespace sundile {
 	typedef GLuint Shader;
 	typedef std::map<std::string, bool> StateMap;
+	
+	//Namespaces
+	namespace Components {
+	};
+	namespace Systems {
+	};
+
 }	
 #endif

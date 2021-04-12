@@ -1,3 +1,16 @@
+//components
+//- TODO: Migrate all types into the appropriate file
+#include "../globals/Common.h"
+#include "./EventSystem/EventTypes.h"
+#include "./GuiSystem/GuiTypes.h"
+#include "./GuiSystem/GuiMeta.h"
+#include "./SceneSystem/SceneTypes.h"
+#include "./InputSystem/InputTypes.h"
+#include "./ProjectSystem/ProjectTypes.h" //todo
+#include "./RenderSystem/RenderTypes.h" //todo
+#include "./WindowSystem/WindowTypes.h"
+
+//systems 
 #include "./EventSystem/EventSystem.h"
 #include "./WindowSystem/WindowSystem.h"
 #include "./RenderSystem/RenderSystem.h"
@@ -29,12 +42,17 @@ namespace sundile { namespace Systems {
 		//ProjectSystem::loadProject();
 
 		//Sink initialization events
-		evw->dispatcher.sink<WindowInitEvent>().connect<InputSystem::windowInit>();
 
-		evw->dispatcher.sink<SceneInitEvent>().connect<CameraSystem::init>();
-		evw->dispatcher.sink<SceneInitEvent>().connect<InputSystem::init>();
-		evw->dispatcher.sink<SceneInitEvent>().connect<RenderSystem::init>();
+		//TODO: 
+		/*
+		* template<typename T>
+		* sinkEvents {
+			evw->dispathcer.sink<InitEvent>().connect<T::init>();
+			}
+		*/
 
-		EventSystem::initAll();
+		evw->dispatcher.sink<InitEvent>().connect<CameraSystem::init>();
+		evw->dispatcher.sink<InitEvent>().connect<InputSystem::init>();
+		evw->dispatcher.sink<InitEvent>().connect<RenderSystem::init>();
 	};
 }}

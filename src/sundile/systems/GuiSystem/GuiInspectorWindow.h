@@ -17,8 +17,9 @@ SYSTEM(GuiSystem)
 // [SECTION] - Structs & namespace globals
 
 //static std::vector<sceneTab> sceneTabs;
-	static guiTreeContainer<SmartScene> sceneTree;
+	static guiTreeContainer<Scene> sceneTree;
 	static std::vector<entityTab> entityTabs;
+	static guiTab<listEntity> currentEntityTab;
 	static std::vector<componentTab> componentTabs;
 	static std::vector<dataTab> dataTabs;
 	static float guiInspectorHeight = 300.f;
@@ -67,8 +68,8 @@ SYSTEM(GuiSystem)
 			RenderGuiTree(tree);
 			ClipboardContextMenu(getClipboard<listComponent>(), tree.root, "Component", "Components");
 			}, &components);
-		tab.treeContainer.callbacks[leftClick] = componentTab_LeftClick;
-		tab.treeContainer.callbacks[rightClick] = componentTab_RightClick;
+		tab.treeContainer.callbacks[guiTreeInputEvent::leftClick] = componentTab_LeftClick;
+		tab.treeContainer.callbacks[guiTreeInputEvent::rightClick] = componentTab_RightClick;
 		return componentTabs.emplace_back<componentTab>(std::move(tab));
 	};
 	
@@ -114,15 +115,15 @@ SYSTEM(GuiSystem)
 			ClipboardContextMenu(getClipboard<listEntity>(), tree.root, "Entity", "Entities");
 			}, &entities);
 		tab.container.state["open"] = true;
-		tab.treeContainer.callbacks[leftClick] = entityTab_LeftClick;
-		tab.treeContainer.callbacks[rightClick] = entityTab_RightClick;
+		tab.treeContainer.callbacks[guiTreeInputEvent::leftClick] = entityTab_LeftClick;
+		tab.treeContainer.callbacks[guiTreeInputEvent::rightClick] = entityTab_RightClick;
 
 		return entityTabs.emplace_back<entityTab>(std::move(tab));
 	}
 
-	static const nodeEventCallback<SmartScene> sceneTree_LeftClick = [&](listNodeRef<SmartScene> p_node, guiTreeContainer<SmartScene>& tree) {
+	static const nodeEventCallback<Scene> sceneTree_LeftClick = [&](listNodeRef<Scene> p_node, guiTreeContainer<Scene>& tree) {
 		auto& io = ImGui::GetIO();
-		auto clipboard = getClipboard<SmartScene>();
+		auto clipboard = getClipboard<Scene>();
 		auto& selected = clipboard->selected;
 		auto scene = *(p_node->content);
 
@@ -137,47 +138,34 @@ SYSTEM(GuiSystem)
 			selected.clear();
 			selected.push_back(p_node);
 			p_node->state["selected"] = true;
-
-			bool found = false;
-			for (auto& i : entityTabs) {
-				if (i.name == scene->name) {
-					found = true; break;
-				}
-			}
-			if (!found) {
-				createEntityTab(scene->name, entityList);
-			}
 		}
 	};
-	static const nodeEventCallback<SmartScene> sceneTree_DoubleClick = [&](listNodeRef<SmartScene> p_node, guiTreeContainer<SmartScene>& tree) {
-		auto scene = *(p_node->content);
-		SceneActivateEvent ev;
-		ev.currentTime = scene->currentTime;
-		ev.deltaTime = scene->deltaTime;
-		ev.id = scene->id;
-		ev.registry = scene->registry;
-		EventSystem::currentEVW->dispatcher.trigger<SceneActivateEvent>(ev);
+	static const nodeEventCallback<Scene> sceneTree_DoubleClick = [&](listNodeRef<Scene> p_node, guiTreeContainer<Scene>& tree) {
+		ActivateEvent<SmartScene> aev;
+		aev.member = (p_node->content);
+		EventSystem::currentEVW->dispatcher.trigger<ActivateEvent<SmartScene>>(aev);
+		currentEntityTab = createEntityTab(p_node->name, entityList);
 	};
-	static const nodeEventCallback<SmartScene> sceneTree_RightClick = [&](listNodeRef<SmartScene> p_node, guiTreeContainer<SmartScene>& tree) {
+	static const nodeEventCallback<Scene> sceneTree_RightClick = [&](listNodeRef<Scene> p_node, guiTreeContainer<Scene>& tree) {
 
 	};
 
 	void updateScenes() { //cf GuiFrontEnd.h : 132
 		sceneTree.root->children.clear(); //no memory leak with smart pointer
 		for (SmartScene scene : SceneSystem::scenes) {
-			listNode<SmartScene>* node = new listNode<SmartScene>(scene);
+			listNodeRef<Scene> node = std::make_shared<listNode<Scene>>(*scene);
 			node->name = scene->name;
-			sceneTree.root->children.emplace_back(std::move(node));
+			sceneTree.root->children.push_back(node);
 		}
+
 	}
 
 	// To be called on GuiInit, which should be called when GUI is loaded from ProjectSystem
 	void initInspector(guiContainer& container) {
-		sceneTree.callbacks[leftClick] = sceneTree_LeftClick;
-		sceneTree.callbacks[rightClick] = sceneTree_RightClick;
-
-		//Initialize Tabs (should be scene instead of entities, but this is fine for now)
-		createEntityTab("[scene name]", entityList);
+		sceneTree.callbacks[guiTreeInputEvent::leftClick] = sceneTree_LeftClick;
+		sceneTree.callbacks[guiTreeInputEvent::leftDoubleClick] = sceneTree_DoubleClick;
+		sceneTree.callbacks[guiTreeInputEvent::rightClick] = sceneTree_RightClick;
+		currentEntityTab = createEntityTab(SceneSystem::currentScene->name, entityList);
 	}
 	void Inspector(guiContainer& container) {
 		auto ctx = checkContext();
@@ -204,7 +192,7 @@ SYSTEM(GuiSystem)
 		ImGui::SameLine();
 		if (ImGui::BeginChild("Entity Selector", ImVec2(width, 0), true)) {
 			if (ImGui::BeginTabBar("Entity Selector Tabs", tabBarFlags)) {
-				RenderTabs<entityTab>(entityTabs);
+				currentEntityTab.render();
 				ImGui::EndTabBar();
 			}
 		}

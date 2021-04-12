@@ -6,15 +6,6 @@
 #ifndef SUNDILE_RENDERER_H
 #define SUNDILE_RENDERER_H
 
-namespace sundile {
-	struct Renderer {
-		Shader defaultShader;
-		bool initialized = false;
-		Vec2 pos;
-		Vec2 size;
-	};
-}
-
 SYSTEM(RenderSystem)
 	static Renderer* currentRenderer;
 
@@ -74,7 +65,7 @@ SYSTEM(RenderSystem)
 
 				//-- Do passthrough (no shader component required)
 				if (shader == defaultShader) {
-					registry->view<Model>().each([=](auto& entity, Model& model) {
+					registry->view<Model>().each([=](auto entity, auto& model) {
 						if (model.is_visible) {
 							//\todo: add a component which contains a vector of meshes and modles.
 							//get that component and loop over its contents.
@@ -165,7 +156,7 @@ SYSTEM(RenderSystem)
 	}
 	/**/
 
-	void init(const SceneInitEvent& ev) {
+	void init(const InitEvent& ev) {
 		//GL, STB
 		glEnable(GL_DEPTH_TEST);
 		stbi_set_flip_vertically_on_load(true);

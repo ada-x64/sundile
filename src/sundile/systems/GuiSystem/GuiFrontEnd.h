@@ -10,12 +10,14 @@ SYSTEM(GuiSystem)
 
 	//-- Editor Toolbar
 	void editorToolbar(guiContainer& container) {
+		ImGui::Text("Current Scene: %s", SceneSystem::currentScene->name.c_str());
 		if (ImGui::Button("select")) {
 			container.state["select"] = true;
 		}
 	}
 	//-- Editor Renderer
 	void editorFrame(guiContainer& container) {
+
 		if (WindowSystem::currentWindow != nullptr) {
 			auto gui = getPrimaryContainer();
 			if (gui->state["disable input"] == ImGui::IsWindowFocused()) {
@@ -129,7 +131,7 @@ SYSTEM(GuiSystem)
 		auto inspectorContainer = guiRegistry.emplace<guiContainer>(inspector, "Inspector", Inspector, ImVec2(0.f, 300.f), ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |ImGuiWindowFlags_NoMove);
 		getPrimaryContainer()->state["Inspector"] = true;
 		initInspector(inspectorContainer);
-		evw->dispatcher.sink<SceneInitEvent>().connect<updateScenes>(); //cf GuiInspectorWindow.h : 120
+		evw->dispatcher.sink<ChangeEvent<SmartScene>>().connect<updateScenes>(); //cf GuiInspectorWindow.h : 120
 
 		// main editor
 		GLfloat viewport[4];

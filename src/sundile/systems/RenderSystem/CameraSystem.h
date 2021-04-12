@@ -2,27 +2,7 @@
 #include "../../globals/Common.h"
 #ifndef S_CAMERA
 #define S_CAMERA
-COMPONENT(Camera)
-		//-- Matrices
-		Vec3 pos = Vec3(1.f, 1.f, 1.f);
-		Vec3 front = glm::normalize(glm::vec3(-1.f, -1.f, -1.f));
-		Vec3 dir = Vec3(0.f, 5.f * glm::quarter_pi<float>(), 0.f);
-		Vec3 spd = Vec3(0.f);
-		float fric = 0.01f;
-		float maxspd = 0.5f;
-		Vec2 cursorpos;
-		Vec2 cursorpos_prev;
-		bool locked = false;
-		Vec2 size = { 1920,1080 };
 
-		glm::mat4 projection = glm::perspective(glm::radians(45.0f), size.x / size.y, 0.1f, 100.0f);
-		glm::mat4 T =
-			glm::rotate(
-				glm::translate(glm::mat4(1.f), glm::vec3(-1.f, -1.f, -3.f)),
-				dir.y, glm::vec3(0, 1, 0));
-
-		SERIALIZE(Camera, pos, size, T);
-END_COMPONENT
 
 SYSTEM(CameraSystem)
 	using namespace Components;
@@ -33,7 +13,7 @@ SYSTEM(CameraSystem)
 		return vec;
 	}
 
-	void stepEvent(const SceneStepEvent& ev) {
+	void StepEvent(const SceneStepEvent& ev) {
 		using namespace glm;
 		ev.registry->view<Camera>().each([&](auto entity, Camera& cam) {
 			updateGUI<Camera>(entity, cam);
@@ -96,29 +76,18 @@ SYSTEM(CameraSystem)
 			if (InputSystem::isHeld(btn::trigger_right)) {
 				newspd.y += movspd;
 			}
-			if (Input.held[btn::up]) {
+			if (InputSystem::isHeld(btn::up)) {
 				newspd.z -= movspd;
 			}
-			if (Input.held[btn::down]) {
+			if (InputSystem::isHeld(btn::down)) {
 				newspd.z += movspd;
 			}
-			if (Input.held[btn::trigger_left]) {
+			if (InputSystem::isHeld(btn::trigger_left)) {
 				newspd.y -= movspd;
 			}
-			if (Input.held[btn::trigger_right]) {
+			if (InputSystem::isHeld(btn::trigger_right)) {
 				newspd.y += movspd;
 			}
-
-			//Clamp speed, do friction (probably a better way to do this)
-			float absx = abs(newspd.x);
-			newspd.x -= sign(newspd.x) * cam.fric;
-			if (absx < abs(cam.fric)) newspd.x = 0.f;
-			if (absx > cam.maxspd) newspd.x = absx * cam.maxspd;
-
-			float absy = abs(newspd.y);
-			newspd.y -= sign(newspd.y) * cam.fric;
-			if (abs(newspd.y) < abs(cam.fric)) newspd.y = 0.f;
-			if (absy > cam.maxspd) newspd.y = absy * cam.maxspd;
 
 			//Clamp speed, do friction (probably a better way to do this)
 			float absx = abs(newspd.x);
@@ -146,16 +115,16 @@ SYSTEM(CameraSystem)
 			});
 	}
 
-	void init(const SceneInitEvent& ev) {
-		ev.evw->dispatcher.sink<SceneStepEvent>().connect<&stepEvent>();
+	void init(const InitEvent& ev) {
+		ev.evw->dispatcher.sink<SceneStepEvent>().connect<&StepEvent>();
 
 		//dependencies
 		//ev.registry->on_construct<camera>().connect<&entt::registry::emplace_or_replace<velocity>>();
 
 		/**
-		defineGui<camera>([](const guiMeta& meta) {
+		defineGui<Camera>([](const guiMeta& meta) {
 			using namespace ImGui;
-			camera* c = meta_cast<camera>(meta);
+			Camera* c = meta_cast<Camera>(meta);
 			DragFloat("maxspd", &(c->maxspd));
 		});
 		/**/

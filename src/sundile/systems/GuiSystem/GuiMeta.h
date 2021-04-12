@@ -9,7 +9,6 @@
 
 #ifndef SUNDILE_EXPORT
 namespace sundile {
-	using namespace Systems::GuiSystem;
 	//--
 	//-- META FUNCTIONS
 	//--
@@ -45,23 +44,6 @@ namespace sundile {
 		}
 	}
 
-	template <typename T>
-	T emplace(SmartRegistry registry, entt::entity entt) {
-		auto returned = registry->emplace<T>(entt);
-		auto meta = entt::meta_any(returned);
-		guiMeta gm{ &returned, meta.type().type_id(), entt };
-		metaList.push_back(gm);
-		return returned;
-	}
-
-	template <typename T, typename ...Args>
-	T emplace(SmartRegistry registry, entt::entity entt, Args &&...args) {
-		auto returned = registry->emplace<T>(entt, args...);
-		auto meta = entt::meta_any(returned);
-		guiMeta gm{ &returned, meta.type().type_id(), entt };
-		metaList.push_back(gm);
-		return returned;
-	}
 
 	//--
 	//-- defineGui Helpers

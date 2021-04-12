@@ -8,22 +8,6 @@
 
 #include "../EventSystem/EventSystem.h"
 
-namespace sundile {
-	// Contains typeinfo for registered components.
-	struct guiMeta {
-		void* ref;
-		entt::id_type id = -1;
-		entt::entity entt;
-	};
-
-	// Contains the Dear IMGUI instructions for registered components
-	typedef std::function<void(const guiMeta&)> guiRenderFunc;
-
-	// Null members
-	static const guiMeta nullMeta;
-	static const guiRenderFunc nullRenderFunc = [](const guiMeta&) { ImGui::Text("(empty)"); };
-}
-
 #include "GuiMeta.h"
 #include "GuiTypes.h"
 #include "GuiFrontEnd.h"
@@ -40,10 +24,24 @@ SYSTEM(GuiSystem)
 	//-- Events
 	//back end - to be called according to a timer (every second?)
 
-	//- \TODO: Separate listEntity creation/destruction into events. 
+	listEntity createListEntity(entt::entity e) {
+		//Find or create guiEntity
+		listEntity guiEntity;
+		for (auto _e : entityList) {
+			if (_e.entity == e) {
+				guiEntity = _e;
+				break;
+			}
+		}
+		if (guiEntity.entity == entt::null) {
+			std::string name = "Entity #" + std::to_string(int(e));
+			guiEntity.entity = e;
+			guiEntity.name = ("Entity #" + std::to_string(int(e)));
+		}
+		return guiEntity;
+	}
 
-	void refreshEntities(SceneStepEvent& scene) {
-
+	void refreshEntities(ChangeEvent<SmartScene>& ev) {
 		//for every entity:
 		//	get the entity's component IDs.
 		//	if there is an associated listEntity then copy it.
@@ -52,93 +50,74 @@ SYSTEM(GuiSystem)
 		//		if the ID matches a captured ID:
 		//			find or create a listComponent
 
-		// Only call once per second.
-		//\TODO: use window time, not scene time.
-		float whole, fractional;
-		fractional = std::modf(scene.currentTime, &whole);
-		if (fractional > 2*scene.deltaTime) return;
-
-
-		auto registry = scene.registry;
+		entityList.clear();
+		auto registry = SceneSystem::currentScene->registry;
 		registry->each([=](entt::entity e) {
 
-			//Find or create guiEntity
-			listEntity guiEntity;
-			for (auto _e : entityList) {
-				if (_e.entity == e) {
-					guiEntity = _e;
-					break;
-				}
-			}
-			if (guiEntity.entity == entt::null) {
-				std::string name = "Entity #" + std::to_string(int(e));
-				listEntity _e;
-				_e.entity = e;
-				_e.name = ("Entity #" + std::to_string(int(e)));
-				guiEntity = _e;
-			}
+		listEntity guiEntity = createListEntity(e);
 
-			//Find or create component
-			if (!registry->orphan(e)) {
-				registry->visit(e, [&](const entt::id_type id) {
-					for (auto& meta : metaList) {
-						if (meta.id == id) {
-							//Find or create listComponent
-							listComponent component;
-							for (listComponent& c : guiEntity.componentList) {
-								if (id == c.index.id) {
-									component = c;
-									break;
-								}
+		//Find or create component
+		if (!registry->orphan(e)) {
+			registry->visit(e, [&](const entt::id_type id) {
+				for (auto& meta : ev.member->guiMetas) {
+					if (meta.id == id) {
+						//Find or create listComponent
+						listComponent component;
+						for (listComponent& c : guiEntity.componentList) {
+							if (id == c.index.id) {
+								component = c;
+								break;
 							}
-
-							//Initialize empty listComponent
-							if (component.meta.id == -1) {
-								//set meta
-								component.meta = meta;
-
-								//get guiIndex
-								for (guiIndex& i : guiIndices) {
-									if (i.id == component.meta.id) {
-										component.index = i;
-										break;
-									}
-								}
-							}
-
-							//Replace or push_back
-							bool set = false;
-							for (auto& _c : guiEntity.componentList) {
-								if (_c.index.id == component.index.id) {
-									_c = component;
-									set = true;
-									break;
-								}
-							}
-							if (!set) {
-								guiEntity.componentList.push_back(component);
-							}
-
-							break;
 						}
-					}
-				});
-			}
 
-			//Add guiEntity to entityList
-			bool set = false;
-			for (auto& _e : entityList) {
-				if (_e.entity == e) {
-					_e = guiEntity;
-					set = true;
-					break;
+						//Initialize empty listComponent
+						if (component.meta.id == -1) {
+							//set meta
+							component.meta = meta;
+
+							//get guiIndex
+							for (guiIndex& i : guiIndices) {
+								if (i.id == component.meta.id) {
+									component.index = i;
+									break;
+								}
+							}
+						}
+
+						//Replace or push_back
+						bool set = false;
+						for (auto& _c : guiEntity.componentList) {
+							if (_c.index.id == component.index.id) {
+								_c = component;
+								set = true;
+								break;
+							}
+						}
+						if (!set) {
+							guiEntity.componentList.push_back(component);
+						}
+
+						break;
+					}
 				}
+				});
+		}
+
+		//Add guiEntity to entityList
+		bool set = false;
+		for (auto& _e : entityList) {
+			if (_e.entity == e) {
+				_e = guiEntity;
+				set = true;
+				break;
 			}
-			if (!set) {
-				entityList.push_back(guiEntity);
-			}
+		}
+		if (!set) {
+			entityList.push_back(guiEntity);
+		}
 		});
 	}
+
 	void render() {
 		checkContext();
 		ImGui_ImplOpenGL3_NewFrame();
@@ -188,8 +167,8 @@ SYSTEM(GuiSystem)
 		currentEVW = evw->id;
 		evw->dispatcher.sink<WindowInitEvent>().connect<GuiSystem::windowInit>();
 		evw->dispatcher.sink<RenderGuiEvent>().connect<&render>();
-		evw->dispatcher.sink<terminateEvent>().connect<&terminate>();
-		evw->dispatcher.sink<SceneStepEvent>().connect<&refreshEntities>(); //\TODO: Replace this with something that updates entities only when a change is detected
+		evw->dispatcher.sink<TerminateEvent>().connect<&terminate>();
+		evw->dispatcher.sink<ChangeEvent<SmartScene>>().connect<&refreshEntities>(); //\TODO: Replace this with something that updates entities only when a change is detected
 
 		primaryGuiEntity = guiRegistry.create();
 		guiRegistry.emplace<guiContainer>(primaryGuiEntity, "primary container",

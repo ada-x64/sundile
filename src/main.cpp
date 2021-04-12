@@ -4,16 +4,18 @@
 #include "./sundile/sundile.h"
 
 //\TODO: Move these to their own files to be loaded.
-void scene1(sundile::SmartEVW evw) {
+void scene1(sundile::SmartEVW& evw) {
 	using namespace sundile;
 
-	SmartScene scene = Systems::SceneSystem::create(evw);
-	scene->name = "Suzannes";
+	SmartScene scene = Systems::SceneSystem::create(evw, "Suzannes");
 	auto& registry = scene->registry;
-	scene->open = [](SmartRegistry& registry) {
+	scene->open = [](SmartScene& scene) {
 		//Prelim
 		using namespace Components;
 		using namespace Systems;
+		using namespace SceneSystem;
+
+		auto registry = scene->registry;
 
 		//Assets
 		Model suzanne = ModelSystem::loadModel(asset_directory + "models/monkey.obj");
@@ -23,18 +25,18 @@ void scene1(sundile::SmartEVW evw) {
 		int count = 8;
 		for (int i = 0; i < count; i++) {
 			auto eMonkey = registry->create();
-			Model model = emplace<Model>(registry, eMonkey, suzanne);
+			Model model = emplace<Model>(scene, eMonkey, suzanne);
 			registry->get<Model>(eMonkey).transform = glm::translate(model.transform, glm::vec3(10 * cos(i * 2 * pi / count), 0.f, 10 * sin(i * 2 * pi / count)));
 		}
 
 		//--
 		//-- Light of our lives
 		auto eLightMonkey = registry->create();
-		auto model = emplace<Model>(registry, eLightMonkey, suzanne);
+		auto model = emplace<Model>(scene, eLightMonkey, suzanne);
 		Shader lightsource = ShaderSystem::create(asset_directory + "shaders/passthrough.vert", asset_directory + "shaders/light_global.frag");
 		ShaderSystem::use(lightsource);
 		ShaderSystem::setVec4(lightsource, "color", { 1.f,1.f,1.f,1.f });
-		emplace<Shader>(registry, eLightMonkey, lightsource);
+		emplace<Shader>(scene, eLightMonkey, lightsource);
 
 	};
 
@@ -45,20 +47,19 @@ void scene1(sundile::SmartEVW evw) {
 	evw->dispatcher.trigger<SceneInitEvent>(ev);
 }
 
-void scene2(sundile::SmartEVW evw) {
+void scene2(sundile::SmartEVW& evw) {
 	using namespace sundile;
-	SmartScene scene = Systems::SceneSystem::create(evw);
+	SmartScene scene = Systems::SceneSystem::create(evw, "Suzanne");
 	auto& registry = scene->registry;
-	scene->name = "Empty";
-	scene->open = [](SmartRegistry& registry) {
+	scene->open = [](SmartScene& scene) {
 		//Boilerplate
 		using namespace Components;
 		using namespace Systems;
 
 		//Assets
 		Model suzanne = ModelSystem::loadModel(asset_directory + "models/monkey.obj");
-		auto eSuzanne = registry->create();
-		emplace<Model>(registry, eSuzanne, suzanne);
+		auto eSuzanne = scene->registry->create();
+		SceneSystem::emplace<Model>(scene, eSuzanne, suzanne);
 
 	};
 
@@ -78,7 +79,7 @@ int main(void)
 	scene1(evw);
 	scene2(evw);
 
-	sundile::mainLoop();
+	sundile::mainLoop(evw);
 
 	return 0;
 }

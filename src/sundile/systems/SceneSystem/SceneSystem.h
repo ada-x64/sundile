@@ -6,28 +6,35 @@
 #define SYSTEMS_H
 #include "../EventSystem/EventSystem.h"
 
-COMPONENT(Scene)
-	unsigned int id = -1;
-	std::string name = "NEW SCENE";
-	SmartRegistry registry;
-	std::function<void(SmartRegistry&)> open = [](SmartRegistry&) {};
-	std::function<void(SmartRegistry&)> close = [](SmartRegistry&) {};
-
-	//-- When incrementing, "n * deltaTime" means "n per second".
-	float deltaTime = 0.f;
-	float lastTime = 0.f;
-	float currentTime = 0.0f;
-END_COMPONENT
-
-namespace sundile {
-	typedef std::shared_ptr<Scene> SmartScene;
+SYSTEM(SceneSystem)
+	static std::vector<SmartScene> scenes = std::vector<SmartScene>();
+	static SmartScene currentScene;
 
 	//--
-	//-- Coord map
-	entt::entity addCoords(sundile::SmartRegistry registry) {
+	//-- Creation
+	//--
+	template <typename T>
+	T emplace(SmartScene scene, entt::entity entt) {
+		auto returned = scene->registry->emplace<T>(entt);
+		auto meta = entt::meta_any(returned);
+		guiMeta gm{ &returned, meta.type().type_id(), entt };
+		scene->guiMetas.push_back(gm);
+		return returned;
+	}
+
+	template <typename T, typename ...Args>
+	T emplace(SmartScene scene, entt::entity entt, Args &&...args) {
+		auto returned = scene->registry->emplace<T>(entt, args...);
+		auto meta = entt::meta_any(returned);
+		guiMeta gm{ &returned, meta.type().type_id(), entt };
+		scene->guiMetas.push_back(gm);
+		return returned;
+	}
+
+	entt::entity addCoords(SmartScene scene) {
 		/**/
 		using namespace Systems;
-		auto eCoords = registry->create();
+		auto eCoords = scene->registry->create();
 		Vertex v0{ glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
 		Vertex vx{ glm::vec3(1.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
 		Vertex vy{ glm::vec3(0.f, 1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
@@ -36,16 +43,10 @@ namespace sundile {
 		Vertex vny{ glm::vec3(0.f, -1.f, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec2(0.f, 0.f) };
 		Vertex vnz{ glm::vec3(0.f, 0.f, -1.f), glm::vec3(0.f, 0.f, 1.f), glm::vec2(0.f, 0.f) };
 		Mesh coords = Mesh({ v0, vx, vy, vz, vnx, vny, vnz }, { 0,1,0, 0,2,0, 0,3,0, 0,4,0, 0,5,0, 0,6,0 }, {});
-		registry->emplace<Mesh>(eCoords, coords);
+		emplace<Mesh>(scene, eCoords, coords);
 		return eCoords;
 		/**/
 	}
-}
-
-SYSTEM(SceneSystem)
-	static std::vector<SmartScene> scenes = std::vector<SmartScene>();
-	static SmartScene currentScene;
-
 
 	//--
 	//-- Main Loop
@@ -96,90 +97,94 @@ SYSTEM(SceneSystem)
 			exit(EXIT_FAILURE);
 		}
 
-		for (auto scene : scenes) {
-			SceneInputEvent ev;
-			ev.registry = scene->registry;
-			ev.deltaTime = scene->deltaTime;
-			ev.key = wev.key;
-			ev.scancode = wev.scancode;
-			ev.action = wev.action;
-			ev.mods = wev.mods;
-			EventSystem::currentEVW->dispatcher.trigger<SceneInputEvent>(ev);
-		}
+		SceneInputEvent ev;
+		ev.registry = currentScene->registry;
+		ev.deltaTime = currentScene->deltaTime;
+		ev.key = wev.key;
+		ev.scancode = wev.scancode;
+		ev.action = wev.action;
+		ev.mods = wev.mods;
+		EventSystem::currentEVW->dispatcher.trigger<SceneInputEvent>(ev);
 	}
 
-	SmartScene create(SmartEVW evw) {
+	SmartScene create(SmartEVW evw, std::string name = "NEW SCENE") {
 		// Initialize
-		Scene* p_scene = new Scene();
-		p_scene->registry = std::make_shared<entt::registry>();
-		p_scene->id = rand();
-		SmartScene scene;
-		scene.reset(p_scene);
+		SmartScene scene = std::make_shared<Scene>();
+		scene->registry = std::make_shared<entt::registry>();
+		scene->id = rand();
+		scene->name = name;
 
 		// Required entities
 		auto eRenderer = scene->registry->create();
-		scene->registry->emplace<Renderer>( eRenderer, RenderSystem::create());
+		emplace<Renderer>(scene, eRenderer, RenderSystem::create());
 
 		auto eCam = scene->registry->create();
-		scene->registry->emplace<Camera>(eCam);
+		emplace<Camera>(scene,eCam);
 
-		addCoords(scene->registry);
+		auto eInput = scene->registry->create();
+		auto input = emplace<Input>(scene, eInput);
+
+		addCoords(scene);
 
 		//Add to scenes
-		scenes.emplace_back(scene);
+		scenes.push_back(scene);
 
 		//Ensure scene registry isn't empty
 		if (currentScene.use_count() == 0) {
-			currentScene.reset(scene.get());
+			ActivateEvent<SmartScene> ev;
+			ev.member = scene;
+			evw->dispatcher.trigger(ev);
 		}
 
+		ChangeEvent<SmartScene> ev;
+		ev.member = scene;
+		evw->dispatcher.trigger(ev);
 
 		return scene;
 	}
 
-	void init(SmartEVW evw) {
-		// Connect event listeners
-		evw->dispatcher.sink<stepEvent>().connect<update>();
-		evw->dispatcher.sink<WindowInputEvent>().connect<handleInput>();
-		//evw->dispatcher.sink<initEvent>().connect<catchInit>();
-		evw->dispatcher.sink<SceneRegistryQuery>().connect<sceneRegistryQuery>();
-
-		//Default scene
-		create(evw);
-	}
-
-
-	void closeScene(SceneDestroyEvent ev) {
+	void closeScene(const DestroyEvent<SmartScene>& ev) {
 		for (auto& scene : scenes) {
-			if (scene->id == ev.id) {
-				scene->close(scene->registry);
+			if (scene->id == ev.member->id) {
+				scene->close(scene);
 				break;
 			}
 		}
-		SceneDeactivateEvent sde;
-		sde.id = currentScene->id;
-		sde.registry = currentScene->registry;
-		EventSystem::currentEVW->dispatcher.trigger<SceneDeactivateEvent>(sde);
+		DeactivateEvent<SmartScene> dev;
+		dev.member = currentScene;
+		EventSystem::currentEVW->dispatcher.trigger<DeactivateEvent<SmartScene>>(dev);
 		currentScene = nullptr;
 	}
-	void openScene(SceneCreateEvent ev) {
+	void openScene(const CreateEvent<SmartScene>& ev) {
 		if (currentScene->id != -1)
-			currentScene->close(currentScene->registry);
+			currentScene->close(currentScene);
 
 		for (auto& scene : scenes) {
-			if (scene->id == ev.id) {
-				scene->open(scene->registry);
+			if (scene->id == ev.member->id) {
+				scene->open(scene);
 				currentScene = scene;
 				break;
 			}
 		}
 	}
 
-	void activateScene(SceneActivateEvent ev) {
+	void activateScene(ActivateEvent<SmartScene>& ev) {
+		DeactivateEvent<SmartScene> dev;
+		ChangeEvent<SmartScene> cev;
+
+		dev.member = ev.member;
+		ev.member->open(ev.member);
+		cev.member = currentScene;
+		currentScene = ev.member;
+
+		EventSystem::currentEVW->dispatcher.trigger<DeactivateEvent<SmartScene>>(dev);
+		EventSystem::currentEVW->dispatcher.trigger<ChangeEvent<SmartScene>>(cev);
 
 	}
-	void deactivateScene(SceneDeactivateEvent ev) {
-
+	void deactivateScene(DeactivateEvent<SmartScene>& ev) {
+		ev.member->close(ev.member);
+		//somehow tell all the systems to stop.
+		//probably they should handle this independently.
 	}
 
 	//\TODO: Start implementing editor tools
@@ -187,6 +192,19 @@ SYSTEM(SceneSystem)
 
 	}
 
+	void init(SmartEVW evw) {
+		// Connect event listeners
+		evw->dispatcher.sink<StepEvent>().connect<update>();
+		evw->dispatcher.sink<WindowInputEvent>().connect<handleInput>();
+		evw->dispatcher.sink<SceneRegistryQuery>().connect<sceneRegistryQuery>();
+
+		evw->dispatcher.sink<DestroyEvent<SmartScene>>().connect<closeScene>();
+		evw->dispatcher.sink<CreateEvent<SmartScene>>().connect<openScene>();
+		evw->dispatcher.sink<ActivateEvent<SmartScene>>().connect<activateScene>();
+		evw->dispatcher.sink<DeactivateEvent<SmartScene>>().connect<deactivateScene>();
+		//Default scene
+		create(evw);
+	}
 END_SYSTEM
 
 #endif

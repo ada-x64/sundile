@@ -23,14 +23,14 @@ namespace sundile {
 		return evw;
 	}
 
-	void mainLoop() {
+	void mainLoop(SmartEVW evw) {
 		//main loop
-		Systems::EventSystem::initAll();
+		Systems::EventSystem::init(evw);
 
 		while (Systems::EventSystem::run) {
-			Systems::EventSystem::updateAll();
+			Systems::EventSystem::update();
 		}
 
-		Systems::EventSystem::terminateAll();
+		Systems::EventSystem::terminate(evw);
 	}
 }

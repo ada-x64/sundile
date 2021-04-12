@@ -2,29 +2,7 @@
 
 #ifndef S_MESH
 #define S_MESH
-namespace sundile {
-	//types
-	struct Vertex {
-		glm::vec3 Position;
-		glm::vec3 Normal;
-		glm::vec2 TexCoords;
-	};
-	struct Texture {
-		unsigned int id;
-		std::string type; //"specular" or "diffuse"
-		std::string path;
-	};
-	struct Mesh {
-		Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures) : vertices(vertices), indices(indices), textures(textures) {};
-		std::vector<Vertex> vertices;
-		std::vector<unsigned int> indices;
-		std::vector<Texture> textures;
-		bool is_wireframe = false;
-		bool is_visible = true;
-		glm::mat4 transform = glm::mat4(1.f);
-		unsigned int VAO, VBO, EBO;
-	};
-}
+
 SYSTEM(MeshSystem)
 	namespace {
 		void checkError() {

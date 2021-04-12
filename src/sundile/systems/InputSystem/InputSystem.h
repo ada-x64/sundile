@@ -4,92 +4,27 @@
 #define	SUNDILE_INPUT
 #include "../EventSystem/EventSystem.h"
 
-namespace sundile {
-	enum btn {
-		up, //keyboard up
-		down, //keyboard down
-		left, //keyboard left
-		right, //keyboard right
-		btn1, //Y, Triangle
-		btn2, //B, Circle
-		btn3, //A, Cross
-		btn4, //X, Square
-		btn5, //L3
-		btn6, //R3
-		pad_up, //dpad up
-		pad_down, //dpad down
-		pad_left, //dpad left
-		pad_right, //dpad right
-		bumper_left, //L1
-		bumper_right, //R1
-		trigger_left, //L2
-		trigger_right, //R2
-		start, //Start button
-		select, //Select button / Touch pad
-		mb_left, //left mouse button
-		mb_middle, //right mouse button
-		mb_right, //middle mouse button / scroll wheel pressed
-		COUNT
-	};
-
-	typedef std::multimap<btn, int> inputMap;
-}
-
-COMPONENT(input)
-	bool pressed[btn::COUNT];
-	bool held[btn::COUNT];
-	bool released[btn::COUNT];
-	Vec2 cursorpos;
-	Vec2 cursorpos_prev;
-	GLFWwindow* window;
-	bool locked = false;   //continues current state
-	bool disabled = false; //resets all keys
-	inputMap map = {
-		{btn::up, GLFW_KEY_W},
-		{btn::down, GLFW_KEY_S},
-		{btn::left, GLFW_KEY_A},
-		{btn::right, GLFW_KEY_D},
-		{btn::btn1, GLFW_KEY_O},
-		{btn::btn2, GLFW_KEY_SEMICOLON},
-		{btn::btn3, GLFW_KEY_L},
-		{btn::btn4, GLFW_KEY_K},
-		{btn::pad_up, GLFW_KEY_UP},
-		{btn::pad_down, GLFW_KEY_DOWN},
-		{btn::pad_left, GLFW_KEY_LEFT},
-		{btn::pad_right, GLFW_KEY_RIGHT},
-		{btn::bumper_left, GLFW_KEY_Q},
-		{btn::bumper_right, GLFW_KEY_E},
-		{btn::trigger_left, GLFW_KEY_1},
-		{btn::trigger_right, GLFW_KEY_3},
-		{btn::start, GLFW_KEY_ENTER},
-		{btn::select, GLFW_KEY_RIGHT_CONTROL},
-		{btn::mb_left, GLFW_MOUSE_BUTTON_LEFT},
-		{btn::mb_middle, GLFW_MOUSE_BUTTON_MIDDLE},
-		{btn::mb_right, GLFW_MOUSE_BUTTON_RIGHT}
-	};
-END_COMPONENT //input
-
 SYSTEM(InputSystem)
 	using namespace Components;
 
 	namespace { //private
-		inline input current;
+		inline Input current;
 	}
 
 	bool isHeld(btn key) {
-		return current.held[key];
+		return current.held[static_cast<int>(key)];
 	}
 	bool isPressed(btn key) {
-		return current.pressed[key];
+		return current.pressed[static_cast<int>(key)];
 	}
 	bool isReleased(btn key) {
-		return current.released[key];
+		return current.released[static_cast<int>(key)];
 	}
 
 	class cursorStat {
-		input current;
+		Input current;
 	public:
-		cursorStat(input current) : current(current) {};
+		cursorStat(Input current) : current(current) {};
 		bool isChanged() {
 			return current.cursorpos != current.cursorpos_prev;
 		}
@@ -104,34 +39,31 @@ SYSTEM(InputSystem)
 		current.map = map;
 	}
 
-	//\todo: this is breaking - something with the initializer list being wrong?
-	//WWID: Removing Scene and winc references from GUI initialization - should only need evw
-	//- May have something to do with the way I redid GuiEvent, or passing const entt::registry*'s.
 	void guiEvent(const GuiEvent& ev) {
 		ev;
-		ev.registry->view<input>().each([&ev](auto& entity, input& c) {
+		ev.registry->view<Input>().each([&ev](auto& entity, Input& c) {
 			c.disabled = ev.payload.at("disable input");
 		});
 	}
 	void inputEvent(const SceneInputEvent& ev) {
 		if (ev.action != GLFW_PRESS && ev.action != GLFW_RELEASE) return;
-		ev.registry->view<input>().each([&](auto& entity, input& in) {
+		ev.registry->view<Input>().each([&](auto& entity, Input& in) {
 			if (in.disabled || in.locked) return;
 			auto map = in.map;
 			bool* valueToChange = ev.action == GLFW_PRESS ? in.pressed : in.released;
 			for (auto pair : map) {
 				if (ev.key == pair.second) {
-					valueToChange[pair.first] = true;
+					valueToChange[static_cast<int>(pair.first)] = true;
 					return;
 				}
 			}
 		});
 	}
-	void stepEvent(const SceneStepEvent& ev) {
-		ev.registry->view<input>().each([&](auto& entity, input& in) {
-			updateGUI<input>(entity, in);
+	void StepEvent(const SceneStepEvent& ev) {
+		ev.registry->view<Input>().each([&](auto& entity, Input& in) {
+			updateGUI<Input>(entity, in);
 			if (in.disabled) {
-				for (int i = 0; i < btn::COUNT; ++i) {
+				for (int i = 0; i < static_cast<int>(btn::COUNT); ++i) {
 					in.pressed[i] = false;
 					in.held[i] = false;
 					in.released[i] = false;
@@ -142,7 +74,8 @@ SYSTEM(InputSystem)
 			else {
 
 				//cursor input
-				in.window = current.window;
+				in.window = WindowSystem::currentWindow->window;
+				if (in.window == nullptr) return;
 				int* width = new int;
 				int* height = new int;
 				double* xpos = new double;
@@ -156,7 +89,7 @@ SYSTEM(InputSystem)
 				delete xpos;
 				delete ypos;
 
-				for (int i = 0; i < btn::COUNT; ++i) {
+				for (int i = 0; i < static_cast<int>(btn::COUNT); ++i) {
 					if (in.released[i] && !in.held[i]) {
 						in.released[i] = false;
 					}
@@ -187,7 +120,7 @@ SYSTEM(InputSystem)
 	}
 	void drawGui(const guiMeta& meta) {
 		using namespace ImGui;
-		input* in = meta_cast<input>(meta);
+		Input* in = meta_cast<Input>(meta);
 
 		std::map<const btn, const char*> nameMap = {
 			{btn::up, "up"},
@@ -219,29 +152,28 @@ SYSTEM(InputSystem)
 		Text("Cursorpos: %f, %f", in->cursorpos.x, in->cursorpos.y);
 
 		for (auto pair : in->map) {
-			auto key = pair.first;
+			int key = static_cast<int>(pair.first);
 			auto val = pair.second;
-			ImGui::Text("%s: %s", nameMap[key], getKeyNameByValue(val));
+			ImGui::Text("%s: %s", nameMap[pair.first], getKeyNameByValue(val));
 			auto drawlist = GetWindowDrawList();
 			auto p = ImGui::GetCursorScreenPos();
-			drawlist->AddRectFilled({ p.x - 8,p.y - 8 }, { p.x + 8,p.y + 8 }, ImGui::ColorConvertFloat4ToU32({ static_cast<float>(in->pressed[key]), static_cast<float>(in->held[key]), static_cast<float>(in->released[key]), 1 }));
+			drawlist->AddRectFilled({ p.x - 8,p.y - 8 }, { p.x + 8,p.y + 8 },
+				ImGui::ColorConvertFloat4ToU32({
+					static_cast<float>(in->pressed[key]),
+					static_cast<float>(in->held[key]),
+					static_cast<float>(in->released[key]),
+					1
+				}));
+
 		}
 	}
 
-	void windowInit(const WindowInitEvent& ev) {
-		current.window = ev.window; //HACKY AS FUCK - \todo: REPLACE THIS
-	}
-
-	void init(const SceneInitEvent& ev) {
-
+	void init(const InitEvent& ev) {
 		ev.evw->dispatcher.sink<SceneInputEvent>().connect<&inputEvent>();
-		ev.evw->dispatcher.sink<SceneStepEvent>().connect<&stepEvent>();
+		ev.evw->dispatcher.sink<SceneStepEvent>().connect<&StepEvent>();
 		ev.evw->dispatcher.sink<GuiEvent>().connect<&guiEvent>();
 
-		auto eInput = ev.registry->create();
-		current = emplace<input>(ev.registry, eInput);
-
-		defineGui<input>(drawGui);
+		defineGui<Input>(drawGui);
 	}
 END_SYSTEM
 #endif

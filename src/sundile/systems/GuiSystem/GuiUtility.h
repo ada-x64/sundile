@@ -16,7 +16,7 @@ SYSTEM(GuiSystem)
 		GuiEvent ev((SceneSystem::currentScene->registry), gui.state);
 		evw->dispatcher.trigger<GuiEvent>(ev);
 	}
-	void terminate(const terminateEvent& ev) {
+	void terminate(const TerminateEvent& ev) {
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
@@ -119,13 +119,22 @@ SYSTEM(GuiSystem)
 		static const auto doCallbacks = [&tree](listNodeRef<T>& p_node, listNodeRef<T>& parent) {
 			auto& callbacks = tree.callbacks;
 			if (ImGui::IsItemClicked(0)) {
-				callbacks[leftClick](p_node, tree);
+				if (ImGui::IsMouseDoubleClicked(0))
+					callbacks[guiTreeInputEvent::leftDoubleClick](p_node, tree);
+				else
+					callbacks[guiTreeInputEvent::leftClick](p_node, tree);
 			}
 			if (ImGui::IsItemClicked(1)) {
-				callbacks[rightClick](p_node, tree);
+				if (ImGui::IsMouseDoubleClicked(1))
+					callbacks[guiTreeInputEvent::rightDoubleClick](p_node, tree);
+				else
+					callbacks[guiTreeInputEvent::rightClick](p_node, tree);
 			}
 			if (ImGui::IsItemClicked(2)) {
-				callbacks[middleClick](p_node, tree);
+				if (ImGui::IsMouseDoubleClicked(2))
+					callbacks[guiTreeInputEvent::middleDoubleClick](p_node, tree);
+				else
+					callbacks[guiTreeInputEvent::middleClick](p_node, tree);
 			}
 
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
