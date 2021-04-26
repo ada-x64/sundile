@@ -10,10 +10,7 @@ SYSTEM(EventSystem)
 	inline std::vector<SmartEVW> EVWs;
 	static SmartEVW currentEVW;
 
-	void catchTerminate(TerminateEvent& tev) {
-		run = false;
-		EVWs.clear();
-	}
+	SmartEVW create();
 
 	SmartEVW create() {
 		SmartEVW evw = std::make_shared<EventWrapper>();
@@ -22,9 +19,6 @@ SYSTEM(EventSystem)
 		if (currentEVW.use_count() == 0) {
 			currentEVW = evw;
 		}
-
-		evw->dispatcher.sink<TerminateEvent>().connect<catchTerminate>();
-
 		return evw;
 	}
 
@@ -34,14 +28,13 @@ SYSTEM(EventSystem)
 	}
 
 	void update() {
-		if (EVWs.size() == 0 || !run) {
-			currentEVW->dispatcher.trigger<TerminateEvent>({});
+		if (EVWs.size() == 0) {
+			run = false;
 			return;
 		}
 
 		for (SmartEVW evw : EVWs) {
 			currentEVW = evw;
-
 			evw->dispatcher.trigger<PreStepEvent>();
 			evw->dispatcher.trigger<StepEvent>();
 			evw->dispatcher.trigger<PostStepEvent>();
@@ -53,7 +46,6 @@ SYSTEM(EventSystem)
 		evw->dispatcher.update<TerminateEvent>();
 		removeErase<SmartEVW>(EVWs, evw);
 	}
-
 
 END_SYSTEM
 

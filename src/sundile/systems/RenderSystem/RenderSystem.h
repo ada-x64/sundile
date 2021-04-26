@@ -19,9 +19,11 @@ SYSTEM(RenderSystem)
 			}
 		}
 
-		void UpdateCamera(Renderer& rend, const RenderEvent& ev) {
+		void UpdateCamera(RenderEvent<SmartScene>& ev) {
+			auto& scene = ev.member;
+			auto& rend = scene->renderer;
+			auto& registry = scene->registry;
 			Shader defaultShader = rend.defaultShader;
-			SmartRegistry registry = ev.registry;
 
 			//-- Apply camera
 			registry->view<Camera>().each([=](auto entity, auto& cam) {
@@ -36,27 +38,30 @@ SYSTEM(RenderSystem)
 				});
 		}
 
-		void SetCamera(Renderer& rend, const RenderEvent& ev) {
+		void SetCamera(RenderEvent<SmartScene>& ev) {
+			auto& scene = ev.member;
+			auto& rend = scene->renderer;
+			auto& registry = scene->registry;
 			Shader defaultShader = rend.defaultShader;
-			SmartRegistry registry = ev.registry;
+			Camera cam = rend.defaultCamera;
 
 			//-- Apply camera
-			registry->view<Camera>().each([=](auto entity, auto& cam) {
-				ShaderSystem::use(defaultShader);
-				int uView = glGetUniformLocation(defaultShader, "view");
-				glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(cam.T));
-				checkError();
+			ShaderSystem::use(defaultShader);
+			int uView = glGetUniformLocation(defaultShader, "view");
+			glUniformMatrix4fv(uView, 1, GL_FALSE, glm::value_ptr(cam.T));
+			checkError();
 
-				int uProj = glGetUniformLocation(defaultShader, "projection");
-				glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(cam.projection));
-				checkError();
-				});
+			int uProj = glGetUniformLocation(defaultShader, "projection");
+			glUniformMatrix4fv(uProj, 1, GL_FALSE, glm::value_ptr(cam.projection));
+			checkError();
 
 		}
 
-		void RenderVisible(Renderer& rend, const RenderEvent& ev) {
+		void RenderVisible(RenderEvent<SmartScene>& ev) {
+			auto& scene = ev.member;
+			auto& rend = scene->renderer;
+			auto& registry = scene->registry;
 			Shader defaultShader = rend.defaultShader;
-			SmartRegistry registry = ev.registry;
 
 			//-- Render visible models
 			for (Shader shader : ShaderSystem::ShaderRegistry) {
@@ -127,19 +132,24 @@ SYSTEM(RenderSystem)
 	}
 
 	//-- Event Handling
-	void catchRenderEvent(const RenderEvent& ev) {
+	void catchRenderEvent(RenderEvent<SmartScene>& ev) {
+
+		auto& scene = ev.member;
+		auto& rend = scene->renderer;
+		auto& registry = scene->registry;
+		Shader defaultShader = rend.defaultShader;
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		ev.registry->view<Renderer>().each([&](auto& e, auto& rend) {
-			currentRenderer = &rend;
-			if (!rend.initialized) {
-				SetCamera(rend, ev);
-			}
-			UpdateCamera(rend, ev);
-			RenderVisible(rend, ev);
-			glBindVertexArray(0);
-			});
+		currentRenderer = &rend;
+		if (!rend.initialized) {
+			SetCamera(ev);
+		}
+		UpdateCamera(ev);
+		RenderVisible(ev);
+		glBindVertexArray(0);
 	}
 
+	//-- public API
 	Renderer create(fs::path vert = asset_directory + "/shaders/passthrough.vert", fs::path frag = asset_directory + "/shaders/passthrough.frag", Vec2 size = { 1920,1080 }) {
 		Renderer r;
 		r.defaultShader = ShaderSystem::create(vert, frag);
@@ -147,6 +157,15 @@ SYSTEM(RenderSystem)
 		checkError();
 		return r;
 	}
+
+	void setSizePos(Renderer rend, Vec4 vec) {
+		glViewport(vec.x, vec.y, vec.z, vec.w);
+		rend.size = { vec.z, vec.w };
+		rend.defaultCamera.size = { vec.z, vec.w };
+		auto& cam = rend.defaultCamera;
+		cam.projection = glm::perspective(cam.fovy, cam.size.x / cam.size.y, cam.renderNear, cam.renderFar);
+	}
+
 
 	/**
 	void gui(const guiMeta& meta) {
@@ -161,7 +180,7 @@ SYSTEM(RenderSystem)
 		glEnable(GL_DEPTH_TEST);
 		stbi_set_flip_vertically_on_load(true);
 
-		ev.evw->dispatcher.sink<RenderEvent>().connect<catchRenderEvent>();
+		ev.evw->dispatcher.sink<RenderEvent<SmartScene>>().connect<catchRenderEvent>();
 		//defineGui<Renderer>(gui);
 	}
 

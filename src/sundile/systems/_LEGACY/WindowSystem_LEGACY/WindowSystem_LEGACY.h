@@ -46,9 +46,9 @@ SYSTEM(WindowSystem)
 			window->HEIGHT = height;
 		}
 		void windowCloseCallback(GLFWwindow* w) {
-			DestroyEvent<SmartWindow> ev;
-			ev.member = getSmartWindow(w);
-			currentEVW->dispatcher.enqueue<DestroyEvent<SmartWindow>>(ev);
+			WindowTerminateEvent ev;
+			ev.id = getSmartWindow(w)->id;
+			currentEVW->dispatcher.enqueue<WindowTerminateEvent>(ev);
 
 		}
 		//etc.
@@ -68,16 +68,6 @@ SYSTEM(WindowSystem)
 
 	namespace /* Event catchers */ {
 
-		void closeWindow(SmartWindow& winc) {
-			WindowEvent ev;
-			ev.id = winc->id;
-			currentEVW->dispatcher.enqueue<WindowEvent>(ev);
-			glfwSetWindowShouldClose(winc->window, GLFW_TRUE);
-			removeErase(windows, winc);
-			eraseEmptyWindows();
-			glfwDestroyWindow(winc->window);
-		}
-
 		void windowSizeQuery(const WindowSizeQuery& ev) {
 			SmartWindow window = getSmartWindow(ev.id);
 			ev.size->x = window->WIDTH;
@@ -90,38 +80,30 @@ SYSTEM(WindowSystem)
 			}
 		}
 
-		void catchTerminateEvent(DestroyEvent<SmartWindow>& wev) {
-			closeWindow(wev.member);
+		void catchTerminateEvent(const WindowTerminateEvent& wev) {
+			terminate(getSmartWindow(wev.id));
 		}
 
 		void preupdate(SmartWindow& winc) {
-
-			if (windows.size() == 0) {
-				DestroyEvent<SmartWindow> tev;
-				tev.member = winc;
-				winc->evw->dispatcher.trigger<DestroyEvent<SmartWindow>>(tev);
-			}
 			currentWindow = winc;
 			auto window = winc->window;
 
 			if (winc->windowShouldClose) {
-				closeWindow(winc);
+				WindowEvent ev;
+				ev.id = winc->id;
+				currentEVW->dispatcher.enqueue<WindowEvent>(ev);
+				glfwSetWindowShouldClose(window, GLFW_TRUE);
 			}
-			else if (winc->window) {
+			else {
 				glfwMakeContextCurrent(window);
 				glfwPollEvents();
 			}
 		}
 
 		void postupdate(SmartWindow& winc) {
-			if (winc->windowShouldClose) {
-				closeWindow(winc);
-			}
-			else if (winc->window) {
-				auto window = winc->window;
-				glfwMakeContextCurrent(window);
-				glfwSwapBuffers(window);
-			}
+			auto window = winc->window;
+			glfwMakeContextCurrent(window);
+			glfwSwapBuffers(window);
 		}
 
 		void updateAll(const PreStepEvent& ev) {
@@ -142,12 +124,12 @@ SYSTEM(WindowSystem)
 
 		void postStep(const PostStepEvent& ev) {
 			for (auto window : windows) {
-				window->evw->dispatcher.update<DestroyEvent<SmartWindow>>();
+				window->evw->dispatcher.update<WindowTerminateEvent>();
 			}
 		}
 
 		void setEventCallbacks(SmartEVW evw) {
-			evw->dispatcher.sink<DestroyEvent<SmartWindow>>().connect<catchTerminateEvent>();
+			evw->dispatcher.sink<WindowTerminateEvent>().connect<catchTerminateEvent>();
 			evw->dispatcher.sink<PreStepEvent>().connect<updateAll>();
 			evw->dispatcher.sink<PostStepEvent>().connect<postStep>();
 			evw->dispatcher.sink<InitEvent>().connect<eventSystemInit>();
@@ -208,10 +190,10 @@ SYSTEM(WindowSystem)
 	// Manually update a window.
 	void update(SmartWindow winc) {
 		currentEVW = winc->evw;
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		preupdate(winc);
 
+		//currentevw->dispatcher.enqueue<Event>(DrawEvent{ EventType::generic_draw });
 		currentEVW->dispatcher.update<WindowEvent>();
 		currentEVW->dispatcher.update<WindowInputEvent>();
 		currentEVW->dispatcher.update<TypedWindowEvent<double>>();

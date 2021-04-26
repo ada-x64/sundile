@@ -67,18 +67,6 @@ SYSTEM(SceneSystem)
 		sev.deltaTime = scene->deltaTime;
 		sev.currentTime = scene->currentTime;
 		evw->dispatcher.trigger<SceneStepEvent>(sev);
-
-		RenderEvent rev;
-		rev.registry = scene->registry;
-		rev.deltaTime = scene->deltaTime;
-		rev.currentTime = scene->currentTime;
-		evw->dispatcher.trigger<RenderEvent>(rev);
-
-		RenderGuiEvent gev;
-		gev.registry = scene->registry;
-		gev.deltaTime = scene->deltaTime;
-		gev.currentTime = scene->currentTime;
-		evw->dispatcher.trigger<RenderGuiEvent>(gev);
 	}
 
 	void sceneRegistryQuery(const SceneRegistryQuery& srq) {
@@ -116,7 +104,7 @@ SYSTEM(SceneSystem)
 
 		// Required entities
 		auto eRenderer = scene->registry->create();
-		emplace<Renderer>(scene, eRenderer, RenderSystem::create());
+		scene->renderer = emplace<Renderer>(scene, eRenderer, RenderSystem::create());
 
 		auto eCam = scene->registry->create();
 		emplace<Camera>(scene,eCam);

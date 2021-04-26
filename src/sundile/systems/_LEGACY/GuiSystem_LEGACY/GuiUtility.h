@@ -11,10 +11,27 @@ SYSTEM(GuiSystem)
 		if (!ctx) { ctx = ImGui::CreateContext(); ImGui::SetCurrentContext(ctx); }
 		return ctx;
 	}
+	void setState(const SmartEVW& evw, guiContainer& gui, const char* key, bool value) {
+		gui.state[key] = value;
+		GuiEvent ev((SceneSystem::currentScene->registry), gui.state);
+		evw->dispatcher.trigger<GuiEvent>(ev);
+	}
 	void terminate(const TerminateEvent& ev) {
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
+	}
+	void stateSetter(const SmartEVW& evw, guiContainer& gui, ImVec2 windowSize) {
+		using namespace ImGui;
+		auto& io = ImGui::GetIO();
+		if (IsWindowFocused(ImGuiFocusedFlags_AnyWindow)) {
+			if (!gui.state["focus any"]) {
+				setState(evw, gui, "focus any", true);
+			}
+		}
+		else if (gui.state["focus any"]) {
+			setState(evw, gui, "focus any", false);
+		}
 	}
 
 	guiContainer* getPrimaryContainer() {
@@ -91,7 +108,7 @@ SYSTEM(GuiSystem)
 
 	template<typename T>
 	void RenderListNode(listNodeRef<T>& p_node, guiTreeContainer<T>& tree) {
-		static const auto  = [](listNodeRef<T>& p_node) {
+		static const auto setState = [](listNodeRef<T>& p_node) {
 			//note: was using this to do the recomended mouseDelta method for rearranging items
 			//p_node->state["hovered"] = ImGui::IsItemHovered();
 			//p_node->state["active"] = ImGui::IsItemActive();
@@ -160,7 +177,7 @@ SYSTEM(GuiSystem)
 				}
 				ImGui::TreePop();
 			}
-			(p_node);
+			setState(p_node);
 			doCallbacks(p_node, parent);
 			doDragDrop(p_node);
 		};
@@ -192,5 +209,7 @@ SYSTEM(GuiSystem)
 	}
 
 END_SYSTEM
+
+#include "GuiClipboard.h"
 
 #endif

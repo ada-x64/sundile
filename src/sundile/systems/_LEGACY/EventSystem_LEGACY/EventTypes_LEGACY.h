@@ -41,8 +41,6 @@ namespace sundile {
 	struct SerializeEvent : Event { T member; };
 	template <typename T>
 	struct DeserializeEvent : Event { T member; };
-	template <typename T>
-	struct RenderEvent : Event { T member; };
 
 
 	// WINDOW EVENTS
@@ -84,6 +82,8 @@ namespace sundile {
 			mods;
 	};
 	struct SceneStepEvent : SceneEvent {};
+
+	struct RenderEvent : SceneEvent {};
 
 	struct registryWrapper {
 		entt::registry* registry;

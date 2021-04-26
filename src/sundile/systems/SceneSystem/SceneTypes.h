@@ -8,6 +8,7 @@ COMPONENT(Scene)
 	unsigned int id = -1;
 	std::string name = "NEW SCENE";
 	SmartRegistry registry;
+	Renderer renderer;
 	std::function<void(std::shared_ptr<Scene>&)> open = [](std::shared_ptr<Scene>&) {};
 	std::function<void(std::shared_ptr<Scene>&)> close = [](std::shared_ptr<Scene>&) {};
 

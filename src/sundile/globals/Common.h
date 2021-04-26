@@ -72,7 +72,8 @@ namespace fs = std::filesystem;
 //#include "../ext/imgui/imgui.h"
 #include "../ext/imgui/imgui_impl_opengl3.h"
 #include "../ext/imgui/imgui_impl_glfw.h"
-//#include "../ext/imgui/ImGuiFileDialog.h"
+#include "../ext/imgui/ImGuiFileDialog.h"
+#include "../ext/imgui/imgui_node_editor.h"
 
 //cereal
 

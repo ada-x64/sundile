@@ -146,7 +146,8 @@ namespace sundile {
 		ImGuiWindowFlags windowFlags;
 		styleVarMap styleVars;
 		ImVec2 size;
-		std::vector<guiContainer> children;
+		unsigned int id;
+		static unsigned int count;
 
 		guiContainer(const char* name = "UNDEFINED",
 			guiContainerFunc renderFunc = nullContainerFunc,
@@ -160,8 +161,11 @@ namespace sundile {
 			windowFlags(windowFlags),
 			styleVars(styleVars)
 		{
+			id = count;
+			count++;
 		};
 	};
+	unsigned int guiContainer::count = 0;
 
 	// General purpose clipboard
 	template <typename T>
@@ -255,10 +259,10 @@ namespace sundile {
 	static const listEntity nullListEntity;
 	static entt::registry guiRegistry;
 	static entt::entity primaryGuiEntity;
-	static guiContainer primaryGuiContainer;
 
 	static windowID currentWindow = -1;
 	static sceneID currentScene = -1;
+	static evwID currentEVW = -1;
 
 }
 #endif

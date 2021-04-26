@@ -130,7 +130,9 @@ SYSTEM(CameraSystem)
 		/**/
 	}
 
-
+	void setProjection(Camera cam, glm::mat4 projmat) {
+		cam.projection = projmat;
+	}
 
 END_COMPONENT
 #endif
