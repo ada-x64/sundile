@@ -13,10 +13,11 @@ SYSTEM(CameraSystem)
 		return vec;
 	}
 
-	void StepEvent(const SceneStepEvent& ev) {
+	void catchStep(const StepEvent<SmartScene>& ev) {
 		using namespace glm;
-		ev.registry->view<Camera>().each([&](auto entity, Camera& cam) {
-			updateGUI<Camera>(entity, cam);
+		ev.member->registry->view<Camera>().each([&](auto entity, Camera& cam) {
+			updateGUI<Camera>(entity, cam, SceneSystem::currentScene);
+			Input& in = SceneSystem::currentScene->input;
 
 			//
 			//Identity and inverse.
@@ -30,18 +31,16 @@ SYSTEM(CameraSystem)
 			//
 			//Rotation
 			vec3 newdir = vec3(0.f);
-			if (InputSystem::cursorStatus().isChanged()) {
-				float scale = pi;
-				Vec2 delta = InputSystem::cursorStatus().getDelta();
+			float scale = pi;
+			Vec2 delta = in.cursorpos - in.cursorpos_prev;
 
-				if (InputSystem::isHeld(btn::mb_left)) {
-					float radians = delta.x * scale;
-					newdir.y += radians;
-				}
-				if (InputSystem::isHeld(btn::mb_right)) {
-					float radians = delta.y * scale;
-					newdir.x += radians;
-				}
+			if (InputSystem::isHeld(in, btn::mb_right)) {
+				float radians = delta.x * scale;
+				newdir.y += radians;
+			}
+			if (InputSystem::isHeld(in, btn::mb_right)) {
+				float radians = delta.y * scale;
+				newdir.x += radians;
 			}
 			dir += newdir;
 
@@ -58,34 +57,22 @@ SYSTEM(CameraSystem)
 			//Translation
 			float movspd = -.1f;
 			vec3 newspd = vec3(0.f);
-			if (InputSystem::isHeld(btn::left)) {
+			if (InputSystem::isHeld(in, btn::left)) {
 				newspd.x -= movspd;
 			}
-			if (InputSystem::isHeld(btn::right)) {
+			if (InputSystem::isHeld(in, btn::right)) {
 				newspd.x += movspd;
 			}
-			if (InputSystem::isHeld(btn::up)) {
+			if (InputSystem::isHeld(in, btn::up)) {
 				newspd.z -= movspd;
 			}
-			if (InputSystem::isHeld(btn::down)) {
+			if (InputSystem::isHeld(in, btn::down)) {
 				newspd.z += movspd;
 			}
-			if (InputSystem::isHeld(btn::trigger_left)) {
+			if (InputSystem::isHeld(in, btn::trigger_left)) {
 				newspd.y -= movspd;
 			}
-			if (InputSystem::isHeld(btn::trigger_right)) {
-				newspd.y += movspd;
-			}
-			if (InputSystem::isHeld(btn::up)) {
-				newspd.z -= movspd;
-			}
-			if (InputSystem::isHeld(btn::down)) {
-				newspd.z += movspd;
-			}
-			if (InputSystem::isHeld(btn::trigger_left)) {
-				newspd.y -= movspd;
-			}
-			if (InputSystem::isHeld(btn::trigger_right)) {
+			if (InputSystem::isHeld(in, btn::trigger_right)) {
 				newspd.y += movspd;
 			}
 
@@ -115,8 +102,8 @@ SYSTEM(CameraSystem)
 			});
 	}
 
-	void init(const InitEvent& ev) {
-		ev.evw->dispatcher.sink<SceneStepEvent>().connect<&StepEvent>();
+	void init(const InitEvent<SmartEVW>& ev) {
+		ev.member->dispatcher.sink<StepEvent<SmartScene>>().connect<&catchStep>();
 
 		//dependencies
 		//ev.registry->on_construct<camera>().connect<&entt::registry::emplace_or_replace<velocity>>();
@@ -133,6 +120,12 @@ SYSTEM(CameraSystem)
 	void setProjection(Camera cam, glm::mat4 projmat) {
 		cam.projection = projmat;
 	}
+
+
+	//TODO
+	static guiRenderFunc DefineGui = [](const guiMeta& meta) -> void {
+		ImGui::Text("This is a camera.");
+	};
 
 END_COMPONENT
 #endif

@@ -29,8 +29,8 @@ namespace sundile {
 	//\todo: REPLACE THIS FUNCTION
 	//Performs live updates
 	template <typename T>
-	void updateGUI(entt::entity entt, T& value) {
-		for (auto& e : entityList) {
+	void updateGUI(entt::entity entt, T& value, SmartScene& scene) {
+		for (auto& e : scene->entityList) {
 			if (e.entity == entt) {
 				auto meta_any = entt::meta_any(value);
 				for (auto& c : e.componentList) {

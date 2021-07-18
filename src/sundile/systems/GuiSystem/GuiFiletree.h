@@ -27,20 +27,6 @@ namespace Filetree {
 		return root;
 	}
 
-	void findAndReplaceAll(std::string& data, std::string toSearch, std::string replaceStr)
-	{
-		// Get the first occurrence
-		size_t pos = data.find(toSearch);
-		// Repeat till end is reached
-		while (pos != std::string::npos)
-		{
-			// Replace this occurrence of Sub String
-			data.replace(pos, toSearch.size(), replaceStr);
-			// Get the next occurrence from the current position
-			pos = data.find(toSearch, pos + replaceStr.size());
-		}
-	}
-
 	void renderNode(filetreeNode node, int id) {
 		for (auto& child : node.children) {
 			std::stringstream ss;
@@ -62,6 +48,9 @@ namespace Filetree {
 		renderNode(root, 0);
 	}
 
+	void destroy(TerminateEvent<SmartEVW>& ev) {
+
+	}
 	void init() {
 
 		guiContainer fileDialog("file dialog", Filetree::render);
@@ -69,9 +58,7 @@ namespace Filetree {
 		primaryGuiContainer.children.push_back(fileDialog);
 
 		root = scanFiletree(ProjectSystem::currentProject->projectRoot);
-	}
-	void destroy() {
-
+		EventSystem::currentEVW->dispatcher.sink<TerminateEvent<SmartEVW>>().connect<&destroy>();
 	}
 }
 

@@ -20,96 +20,44 @@ namespace sundile {
 	typedef std::shared_ptr<entt::registry> SmartRegistry;
 
 	// GENERIC EVENTS
-	struct Event {};
-	struct InitEvent { SmartEVW evw; };
-	struct PreStepEvent :Event {};
-	struct StepEvent :Event {};
-	struct PostStepEvent :Event {};
-	struct TerminateEvent :Event {};
+	template <typename T>
+	struct Event { T member; };
 
 	template <typename T>
-	struct ActivateEvent : Event { T member; };
+	struct InitEvent : Event<T> {};
 	template <typename T>
-	struct DeactivateEvent : Event { T member; };
+	struct ReadyEvent : Event<T> {};
 	template <typename T>
-	struct CreateEvent : Event { T member; };
+	struct PreStepEvent : Event<T> {};
 	template <typename T>
-	struct DestroyEvent : Event { T member; };
+	struct StepEvent : Event<T> {};
 	template <typename T>
-	struct ChangeEvent : Event { T member; };
+	struct PostStepEvent : Event<T> {};
 	template <typename T>
-	struct SerializeEvent : Event { T member; };
+	struct TerminateEvent : Event<T> {};
+
 	template <typename T>
-	struct DeserializeEvent : Event { T member; };
+	struct ActivateEvent : Event<T> {};
 	template <typename T>
-	struct RenderEvent : Event { T member; };
+	struct DeactivateEvent : Event<T> {};
 
+	template <typename T>
+	struct CreateEvent : Event<T> {};
+	template <typename T>
+	struct DestroyEvent : Event<T> {};
 
-	// WINDOW EVENTS
-	struct WindowEvent : Event { unsigned int id; };
-	struct WindowInitEvent : WindowEvent {
-		GLFWwindow* window;
-		WindowInitEvent(unsigned int id, GLFWwindow* window) { this->id = id; this->window = window; };
-	};
-	template <typename t>
-	struct TypedWindowEvent : WindowEvent { std::vector<t> vals; };
-	struct WindowInputEvent : WindowEvent {
-		int key,
-			scancode,
-			action,
-			mods;
-	};
-	struct WindowTerminateEvent : WindowEvent {};
+	template <typename T>
+	struct ChangeEvent : Event<T> {};
 
-	struct WindowSizeQuery : WindowEvent {
-		Vec2* size;
-	};
+	template <typename T>
+	struct SerializeEvent : Event<T> {};
+	template <typename T>
+	struct DeserializeEvent : Event<T> {};
 
-	// SCENE EVENTS
-	// This includes GUI and Project events
-	struct SceneEvent : Event {
-		unsigned int id;
-		SmartRegistry registry;
-		float deltaTime;
-		float currentTime;
-		SceneEvent(SmartRegistry registry, float deltaTime, float currentTime) : registry(registry), deltaTime(deltaTime), currentTime(currentTime) {};
-		SceneEvent(SmartRegistry registry) :registry(registry), deltaTime(-1), currentTime(-1) {};
-		SceneEvent() = default;
-	};
-	struct SceneInitEvent : SceneEvent { SmartEVW evw; };
-	struct SceneInputEvent : SceneEvent {
-		int key,
-			scancode,
-			action,
-			mods;
-	};
-	struct SceneStepEvent : SceneEvent {};
+	template <typename T>
+	struct RenderEvent : Event<T> {};
 
-	struct registryWrapper {
-		entt::registry* registry;
-	};
-	struct SceneRegistryQuery : Event {
-		unsigned int id;
-		registryWrapper* wrapper;
-	};
-
-	struct ScenePlayEvent : SceneEvent {};
-	struct ScenePauseEvent : SceneEvent {};
-
-	// GUI EVENTS
-	// for interaction with defineGui()
-	struct GuiEvent : Event {
-		SmartRegistry registry;
-		StateMap payload;
-		GuiEvent(SmartRegistry registry, StateMap payload) : registry(registry), payload(payload) {};
-	};
-	struct RenderGuiEvent : SceneEvent {};
-
-	// PROJECT EVENTS
-	struct ProjEvent : Event {};
-	struct ProjSaveEvent : ProjEvent {};
-	struct ProjLoadEvent : ProjEvent {};
-	struct ProjInitEvent : ProjEvent {};
-
+	template <typename T>
+	struct InputEvent : Event<T> {};
 }
 #endif

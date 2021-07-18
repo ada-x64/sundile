@@ -10,7 +10,7 @@ SYSTEM(EventSystem)
 	inline std::vector<SmartEVW> EVWs;
 	static SmartEVW currentEVW;
 
-	void catchTerminate(TerminateEvent& tev) {
+	void catchTerminate(TerminateEvent<SmartEVW>& tev) {
 		run = false;
 		EVWs.clear();
 	}
@@ -23,34 +23,35 @@ SYSTEM(EventSystem)
 			currentEVW = evw;
 		}
 
-		evw->dispatcher.sink<TerminateEvent>().connect<catchTerminate>();
+		evw->dispatcher.sink<TerminateEvent<SmartEVW>>().connect<catchTerminate>();
 
 		return evw;
 	}
 
 	void init(SmartEVW evw) {
-		evw->dispatcher.trigger<InitEvent>(evw);
+		evw->dispatcher.trigger<InitEvent<SmartEVW>>({ evw });
+		evw->dispatcher.trigger<ReadyEvent<SmartEVW>>({ evw });
 		currentEVW = evw;
 	}
 
 	void update() {
 		if (EVWs.size() == 0 || !run) {
-			currentEVW->dispatcher.trigger<TerminateEvent>({});
+			currentEVW->dispatcher.trigger<TerminateEvent<SmartEVW>>({ currentEVW });
 			return;
 		}
 
 		for (SmartEVW evw : EVWs) {
 			currentEVW = evw;
 
-			evw->dispatcher.trigger<PreStepEvent>();
-			evw->dispatcher.trigger<StepEvent>();
-			evw->dispatcher.trigger<PostStepEvent>();
+			evw->dispatcher.trigger<PreStepEvent<SmartEVW>>({evw});
+			evw->dispatcher.trigger<StepEvent<SmartEVW>>({ evw });
+			evw->dispatcher.trigger<PostStepEvent<SmartEVW>>({ evw });
 			evw->dispatcher.clear();
 		}
 	}
 
 	void terminate(SmartEVW evw) {
-		evw->dispatcher.update<TerminateEvent>();
+		evw->dispatcher.update<TerminateEvent<SmartEVW>>();
 		removeErase<SmartEVW>(EVWs, evw);
 	}
 

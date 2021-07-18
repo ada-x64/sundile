@@ -8,7 +8,7 @@ namespace sundile {
 		//Initialize
 		SmartEVW evw = Systems::EventSystem::create();
 		SmartWindow winc = Systems::WindowSystem::initWindowedFullscreen(evw);
-		Project project(evw);
+		SmartProject project = Systems::ProjectSystem::create(evw);
 		Systems::init(evw, project);
 		Systems::SceneSystem::init(evw);
 		Systems::GuiSystem::init(evw);

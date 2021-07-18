@@ -7,38 +7,38 @@ SYSTEM(WindowSystem)
 			fprintf(stderr, "GLFW Error: %s\n", description);
 		}
 		void keyCallback(GLFWwindow* w, int key, int scancode, int action, int mods) {
-			WindowInputEvent ev;
-			SmartWindow window = getSmartWindow(w);
-
-			ev.id = window->id;
-			ev.key = key;
-			ev.scancode = scancode;
-			ev.action = action;
-			ev.mods = mods;
-			currentEVW->dispatcher.trigger<WindowInputEvent>(ev);
+			InputEvent<SmartWindow> ev{ getSmartWindow(w) };
+			InputSystem::interpretInput(ev.member->input, key, scancode, action, mods);
+			currentEVW->dispatcher.trigger<InputEvent<SmartWindow>>(ev);
 		}
 		void mouseBtnCallback(GLFWwindow* w, int button, int actions, int mods) {
-			WindowInputEvent ev;
-			ev.id = getSmartWindow(w)->id;
-			ev.key = button;
-			ev.scancode = GLFW_KEY_UNKNOWN;
-			ev.action = actions;
-			ev.mods = mods;
-			currentEVW->dispatcher.trigger<WindowInputEvent>(ev);
+			InputEvent<SmartWindow> ev{ getSmartWindow(w) };
+			InputSystem::interpretInput(ev.member->input, button, GLFW_KEY_UNKNOWN, actions, mods);
+			currentEVW->dispatcher.trigger<InputEvent<SmartWindow>>(ev);
 		}
 		void cursorPosCallback(GLFWwindow* w, double x, double y) {
-			TypedWindowEvent<double> ev;
-			ev.id = getSmartWindow(w)->id;
-			ev.vals = std::vector<double>{ x,y };
-			currentEVW->dispatcher.trigger<TypedWindowEvent<double>>(ev);
+			InputEvent<SmartWindow> ev{ getSmartWindow(w) };
+			auto& window = WindowSystem::currentWindow->window;
+			if (window == nullptr) return;
+			int* width = new int;
+			int* height = new int;
+			double* xpos = new double;
+			double* ypos = new double;
+			glfwGetFramebufferSize(window, width, height);
+			glfwGetCursorPos(window, xpos, ypos);
+			Vec2 cursorpos = Vec2((*xpos) / (*width), (*ypos) / (*height)); //normalized :)
+			delete width;
+			delete height;
+			delete xpos;
+			delete ypos;
+			InputSystem::interpretCursorPos(ev.member->input, cursorpos);
+			currentEVW->dispatcher.trigger<InputEvent<SmartWindow>>(ev);
 		}
 		void framebufferSizeCallback(GLFWwindow* w, int width, int height) {
 			auto window = getSmartWindow(w);
 			window->framebufferHeight = height;
 			window->framebufferWidth = width;
 			glViewport(0, 0, width, height);
-			//TypedWindowEvent<int> wev{  w, {width, height} };
-			//currentevw->getEvent(wev);
 		}
 		void windowSizeCallback(GLFWwindow* w, int width, int height) {
 			auto window = getSmartWindow(w);
@@ -69,24 +69,19 @@ SYSTEM(WindowSystem)
 	namespace /* Event catchers */ {
 
 		void closeWindow(SmartWindow& winc) {
-			WindowEvent ev;
-			ev.id = winc->id;
-			currentEVW->dispatcher.enqueue<WindowEvent>(ev);
+			Event<SmartWindow> ev;
+			ev.member = winc;
+			currentEVW->dispatcher.enqueue<Event<SmartWindow>>(ev);
 			glfwSetWindowShouldClose(winc->window, GLFW_TRUE);
 			removeErase(windows, winc);
 			eraseEmptyWindows();
 			glfwDestroyWindow(winc->window);
 		}
 
-		void windowSizeQuery(const WindowSizeQuery& ev) {
-			SmartWindow window = getSmartWindow(ev.id);
-			ev.size->x = window->WIDTH;
-			ev.size->y = window->HEIGHT;
-		}
-		void eventSystemInit(const InitEvent& ev) {
+		void eventSystemInit(const InitEvent<SmartEVW>& ev) {
 			for (auto window : windows) {
-				WindowInitEvent wev{ window->id, window->window };
-				ev.evw->dispatcher.trigger<WindowInitEvent>(wev);
+				InitEvent<SmartWindow> wev{ window};
+				ev.member->dispatcher.trigger<InitEvent<SmartWindow>>(wev);
 			}
 		}
 
@@ -124,15 +119,14 @@ SYSTEM(WindowSystem)
 			}
 		}
 
-		void updateAll(const PreStepEvent& ev) {
+		void updateAll(const PreStepEvent<SmartEVW>& ev) {
 			for (auto window : windows) {
 				preupdate(window);
 			}
 
 			for (auto window : windows) {
-				window->evw->dispatcher.update<WindowEvent>();
-				window->evw->dispatcher.update<WindowInputEvent>();
-				window->evw->dispatcher.update<TypedWindowEvent<double>>();
+				window->evw->dispatcher.update<Event<SmartWindow>>();
+				window->evw->dispatcher.update<InputEvent<SmartWindow>>();
 			}
 
 			for (auto window : windows) {
@@ -140,7 +134,7 @@ SYSTEM(WindowSystem)
 			}
 		}
 
-		void postStep(const PostStepEvent& ev) {
+		void postStep(const PostStepEvent<SmartEVW>& ev) {
 			for (auto window : windows) {
 				window->evw->dispatcher.update<DestroyEvent<SmartWindow>>();
 			}
@@ -148,12 +142,9 @@ SYSTEM(WindowSystem)
 
 		void setEventCallbacks(SmartEVW evw) {
 			evw->dispatcher.sink<DestroyEvent<SmartWindow>>().connect<catchTerminateEvent>();
-			evw->dispatcher.sink<PreStepEvent>().connect<updateAll>();
-			evw->dispatcher.sink<PostStepEvent>().connect<postStep>();
-			evw->dispatcher.sink<InitEvent>().connect<eventSystemInit>();
-
-			//Queries
-			evw->dispatcher.sink<WindowSizeQuery>().connect<windowSizeQuery>();
+			evw->dispatcher.sink<PreStepEvent<SmartEVW>>().connect<updateAll>();
+			evw->dispatcher.sink<PostStepEvent<SmartEVW>>().connect<postStep>();
+			evw->dispatcher.sink<InitEvent<SmartEVW>>().connect<eventSystemInit>();
 		}
 	}
 	//-----------------------------------------------------------------------------------------
@@ -212,9 +203,8 @@ SYSTEM(WindowSystem)
 
 		preupdate(winc);
 
-		currentEVW->dispatcher.update<WindowEvent>();
-		currentEVW->dispatcher.update<WindowInputEvent>();
-		currentEVW->dispatcher.update<TypedWindowEvent<double>>();
+		currentEVW->dispatcher.update<Event<SmartWindow>>();
+		currentEVW->dispatcher.update<InputEvent<SmartWindow>>();
 
 		postupdate(winc);
 	}
@@ -223,8 +213,7 @@ SYSTEM(WindowSystem)
 	void terminate(SmartWindow winc) {
 		//\TODO: this isn't actually destroying the window...?
 		currentEVW = winc->evw;
-		WindowEvent ev;
-		ev.id = winc->id;
+		Event<SmartWindow> ev{ winc };
 		glfwDestroyWindow(winc->window);
 		winc->window = nullptr;
 		currentWindow = nullptr;

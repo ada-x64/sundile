@@ -65,3 +65,16 @@
 	Vec4 operator -= (const Vec4 other) { x -= other.x; y -= other.y; z -= other.z; w -= other.w; return *this; }
 	Vec4 operator - (const Vec4 other) { return Vec4(x + other.x, y + other.y, z + other.z, w + other.w); }
 };
+
+ template<typename Archive>
+ void serialize(Archive& ar, Vec2 vec) {
+	 ar(vec.x, vec.y);
+ }
+ template<typename Archive>
+	 void serialize(Archive& ar, Vec3 vec) {
+	 ar(vec.x, vec.y, vec.z);
+ }
+template<typename Archive>
+	 void serialize(Archive& ar, Vec4 vec) {
+	 ar(vec.x, vec.y, vec.z, vec.w);
+ }

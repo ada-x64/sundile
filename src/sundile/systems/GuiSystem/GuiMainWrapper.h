@@ -10,6 +10,13 @@ SYSTEM(GuiSystem)
 		using namespace ImGui;
 		auto& io = ImGui::GetIO();
 		if (BeginMainMenuBar()) {
+			if (BeginMenu("Project")) {
+				if (MenuItem("Save Project"))
+					ProjectSystem::saveProject();
+
+				ImGui::EndMenu();
+			}
+
 			std::string label;
 			if (BeginMenu("Debug")) {
 				label = gui.state["demo"] ? "Hide ImGUI Demo" : "Show ImGui Demo";

@@ -5,8 +5,6 @@
 //-- Component macros
 struct Component {};
 
-#define SERIALIZE(_componentName, ...) template <class Archive> void serialize(Archive& archive) { archive(__VA_ARGS__);}
-
 #define COMPONENT(_componentName) \
 	namespace sundile { namespace Components { struct _componentName:Component { static constexpr char const* __name = #_componentName;
 #define END_COMPONENT };}};

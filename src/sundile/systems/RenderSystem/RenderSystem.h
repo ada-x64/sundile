@@ -23,7 +23,7 @@ SYSTEM(RenderSystem)
 			auto& scene = ev.member;
 			auto& rend = scene->renderer;
 			auto& registry = scene->registry;
-			Shader defaultShader = rend.defaultShader;
+			auto& defaultShader = rend.defaultShader;
 
 			//-- Apply camera
 			registry->view<Camera>().each([=](auto entity, auto& cam) {
@@ -42,7 +42,7 @@ SYSTEM(RenderSystem)
 			auto& scene = ev.member;
 			auto& rend = scene->renderer;
 			auto& registry = scene->registry;
-			Shader defaultShader = rend.defaultShader;
+			auto& defaultShader = rend.defaultShader;
 			Camera cam = rend.defaultCamera;
 
 			//-- Apply camera
@@ -61,8 +61,24 @@ SYSTEM(RenderSystem)
 			auto& scene = ev.member;
 			auto& rend = scene->renderer;
 			auto& registry = scene->registry;
-			Shader defaultShader = rend.defaultShader;
 
+			registry->view<Model>().each([&rend](auto& entt, Model& model) {
+				auto& shader = model.shader? model.shader : rend.defaultShader;
+				ShaderSystem::use(shader);
+				ShaderSystem::setMat4(shader, "model", model.transform);
+				ShaderSystem::checkError();
+				if (model.is_wireframe) {
+					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+					ModelSystem::Draw(std::move(model), shader);
+					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				}
+				else {
+					ModelSystem::Draw(std::move(model), shader);
+				}
+				});
+
+
+			/*
 			//-- Render visible models
 			for (Shader shader : ShaderSystem::ShaderRegistry) {
 				//-- Use current shader.
@@ -128,6 +144,7 @@ SYSTEM(RenderSystem)
 						});
 				}
 			}
+		/**/
 		}
 	}
 
@@ -137,7 +154,6 @@ SYSTEM(RenderSystem)
 		auto& scene = ev.member;
 		auto& rend = scene->renderer;
 		auto& registry = scene->registry;
-		Shader defaultShader = rend.defaultShader;
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		currentRenderer = &rend;
@@ -158,11 +174,12 @@ SYSTEM(RenderSystem)
 		return r;
 	}
 
-	void setSizePos(Renderer rend, Vec4 vec) {
-		glViewport(vec.x, vec.y, vec.z, vec.w);
+	void setBbox(Renderer& rend, Vec4 vec) {
+		glViewport(vec.x, WindowSystem::currentWindow->HEIGHT-vec.y - vec.w, vec.z, vec.w);
 		rend.size = { vec.z, vec.w };
-		rend.defaultCamera.size = { vec.z, vec.w };
+		rend.pos = { vec.x, vec.y };
 		auto& cam = rend.defaultCamera;
+		cam.size = { vec.z, vec.w };
 		cam.projection = glm::perspective(cam.fovy, cam.size.x / cam.size.y, cam.renderNear, cam.renderFar);
 	}
 
@@ -175,13 +192,17 @@ SYSTEM(RenderSystem)
 	}
 	/**/
 
-	void init(const InitEvent& ev) {
+	void init(const InitEvent<SmartEVW>& ev) {
 		//GL, STB
 		glEnable(GL_DEPTH_TEST);
 		stbi_set_flip_vertically_on_load(true);
 
-		ev.evw->dispatcher.sink<RenderEvent<SmartScene>>().connect<catchRenderEvent>();
-		//defineGui<Renderer>(gui);
+		ev.member->dispatcher.sink<RenderEvent<SmartScene>>().connect<catchRenderEvent>();
+
+		//Define GUI for Model, Mesh, Camera
+		defineGui<Model>(ModelSystem::DefineGui);
+		defineGui<Shader>(ShaderSystem::DefineGui);
+		defineGui<Camera>(CameraSystem::DefineGui);
 	}
 
 	void terminate(Renderer& rend) {

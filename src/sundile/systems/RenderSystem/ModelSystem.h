@@ -143,6 +143,7 @@ SYSTEM(ModelSystem)
 			}
 		}
 	}
+
 	Model loadModel(std::string const& path) {
 		Model m;
 		Assimp::Importer importer;
@@ -156,13 +157,21 @@ SYSTEM(ModelSystem)
 
 		processNode(m, scene->mRootNode, scene);
 
+
+
 		return m;
 	}
 	void Draw(Model&& m, Shader shader) {
+		m.shaderCallback(m, shader);
 		for (Mesh& mesh : m.meshes) {
 			MeshSystem::Draw(std::move(mesh), shader);
 		}
 	}
+
+	//TODO
+	static guiRenderFunc DefineGui = [](const guiMeta& meta) -> void {
+		ImGui::Text("This is a model.");
+	};
 
 END_SYSTEM
 #endif

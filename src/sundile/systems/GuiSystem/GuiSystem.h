@@ -5,9 +5,9 @@
 #include "GuiRenderView.h"
 #include "GuiNodeView.h"
 #include "GuiFiletree.h"
+#include "GuiDebugView.h"
 
 SYSTEM(GuiSystem)
-
 void sendRenderEvent() {
 	RenderEvent<guiContainer> ev;
 	ev.member = primaryGuiContainer;
@@ -28,19 +28,18 @@ void render(RenderEvent<guiContainer>& ev) {
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 }
-void windowInit(const WindowInitEvent& ev) {
+void windowInit(const InitEvent<SmartWindow>& ev) {
 	auto win = guiRegistry.create();
-	guiRegistry.emplace<windowID>(win, ev.id);
+	guiRegistry.emplace<windowID>(win, ev.member->id);
 
-	ImGui_ImplGlfw_InitForOpenGL(ev.window, true);
+	ImGui_ImplGlfw_InitForOpenGL(ev.member->window, true);
 	ImGui_ImplOpenGL3_Init(SUNDILE_GLSL_VERSION);
 
 	if (currentWindow == -1) {
-		currentWindow = ev.id;
+		currentWindow = ev.member->id;
 
-		Vec2 windowSize = getWindowSizeByID(EventSystem::currentEVW, currentWindow);
-		float ww = windowSize.x;
-		float wh = windowSize.y;
+		float ww = ev.member->WIDTH;
+		float wh = ev.member->HEIGHT;
 		float viewport_w = 800;
 		float viewport_h = 600;
 		float viewport_x = ww / 2 - viewport_w / 2;
@@ -48,6 +47,7 @@ void windowInit(const WindowInitEvent& ev) {
 		glViewport(viewport_x, viewport_y, viewport_w, viewport_h);
 	}
 }
+
 void init(SmartEVW evw) {
 	//Initalize
 	IMGUI_CHECKVERSION();
@@ -61,10 +61,10 @@ void init(SmartEVW evw) {
 	io.Fonts->GetTexDataAsRGBA32(&tex_pixels, &tex_w, &tex_h);
 
 	//do event stuff
-	evw->dispatcher.sink<WindowInitEvent>().connect<GuiSystem::windowInit>();
+	evw->dispatcher.sink<InitEvent<SmartWindow>>().connect<windowInit>();
 	evw->dispatcher.sink<RenderEvent<guiContainer>>().connect<&render>();
-	evw->dispatcher.sink<TerminateEvent>().connect<&terminate>();
-	evw->dispatcher.sink<PreStepEvent>().connect<sendRenderEvent>();
+	evw->dispatcher.sink<TerminateEvent<SmartEVW>>().connect<&terminate>();
+	evw->dispatcher.sink<PreStepEvent<SmartEVW>>().connect<&sendRenderEvent>();
 
 	//Initialize front-end
 	guiContainer main("primary container",
@@ -77,11 +77,12 @@ void init(SmartEVW evw) {
 		});
 
 	primaryGuiContainer = main;
-	primaryGuiContainer.windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus;
+	primaryGuiContainer.windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoBackground;
 
 	NodeView::init();
 	RenderView::init();
 	Filetree::init();
+	DebugView::init();
 
 }
 

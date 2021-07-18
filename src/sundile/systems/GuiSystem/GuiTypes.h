@@ -7,10 +7,13 @@ namespace sundile {
 		entt::id_type id = -1;
 		entt::entity entt;
 	};
+	bool operator< (const guiMeta left, const guiMeta right) {
+		return left.id < right.id;
+	}
 
 	// Contains the Dear IMGUI instructions for registered components
 	typedef std::function<void(const guiMeta&)> guiRenderFunc;
-	static const guiMeta nullMeta;
+	//static const guiMeta nullMeta;
 	static const guiRenderFunc nullRenderFunc = [](const guiMeta&) { ImGui::Text("(empty)"); };
 
 	//[SECTION] - GuiSystem Scope
@@ -103,7 +106,7 @@ namespace sundile {
 	// Contains render functions
 	struct guiIndex {
 		std::string name = "(unregistered component(s))";
-		guiRenderFunc f = nullRenderFunc; //by default, do nothing
+		guiRenderFunc renderFunc = nullRenderFunc; //by default, do nothing
 		entt::id_type id = -1;
 	};
 	// Contains metas, which have the actual values to be passed to the function stored in the corresponding guiIndex
@@ -111,7 +114,8 @@ namespace sundile {
 		guiIndex index;
 		guiMeta meta;
 		std::string name = "(unset)";
-		bool operator ==(listComponent other) { return this->index.id == other.index.id; }
+		bool operator ==(const listComponent& other) const { return this->index.id == other.index.id; }
+		bool operator <(const listComponent& other) const { return this->index.id < other.index.id; }
 		listComponent(const listComponent& other) : index(other.index), meta(other.meta), name(other.index.name) {};
 		listComponent() = default;
 	};
@@ -120,7 +124,8 @@ namespace sundile {
 		std::string name = "(unset)";
 		entt::entity entity = entt::null;
 		guiComponentList componentList = {};
-		bool operator ==(listEntity other) { return this->entity == other.entity; }
+		bool operator ==(const listEntity& other) const { return this->entity == other.entity; }
+		bool operator <(const listEntity& other) const { return this->entity < other.entity; }
 		listEntity(const listEntity& other) : entity(other.entity), name(other.name), componentList(other.componentList) {};
 		listEntity() = default;
 	};
@@ -250,7 +255,7 @@ namespace sundile {
 	// Member Variables
 	static std::vector<guiIndex> guiIndices;
 	static std::vector<guiMeta> metaList;
-	static std::vector<listEntity> entityList;
+	//static std::vector<listEntity> entityList;
 	static std::map<const char*, void*> clipboardList;
 	static const listEntity nullListEntity;
 	static entt::registry guiRegistry;

@@ -10,8 +10,8 @@
 #define SHADER_H
 
 SYSTEM(ShaderSystem)
-	//-- Registry
-	std::vector<Shader> ShaderRegistry;
+//-- Registry
+	static std::vector<Shader> ShaderRegistry;
 
 	//-- Error Checking
 	void checkError(const char* type, unsigned int item) {
@@ -44,6 +44,84 @@ SYSTEM(ShaderSystem)
 			std::cout << "OPENGL ERROR::" << error << std::endl;
 			SUNDILE_DEBUG_BREAK
 		}
+	}
+
+	//-- Use
+	void use(Shader s) {
+		glUseProgram(s);
+		checkError();
+	};
+
+	//--
+	//-- Utility Functions
+	//--
+	void setBool(Shader s, const std::string& name, bool value)
+	{
+		glUniform1i(glGetUniformLocation(s, name.c_str()), (int)value);
+		checkError();
+	}
+	// ------------------------------------------------------------------------
+	void setInt(Shader s, const std::string& name, int value)
+	{
+		glUniform1i(glGetUniformLocation(s, name.c_str()), value);
+		checkError();
+	}
+	// ------------------------------------------------------------------------
+	void setFloat(Shader s, const std::string& name, float value)
+	{
+		glUniform1f(glGetUniformLocation(s, name.c_str()), value);
+		checkError();
+	}
+	// ------------------------------------------------------------------------
+	void setVec2(Shader s, const std::string& name, const glm::vec2& value)
+	{
+		glUniform2fv(glGetUniformLocation(s, name.c_str()), 1, &value[0]);
+		checkError();
+	}
+	void setVec2(Shader s, const std::string& name, float x, float y)
+	{
+		glUniform2f(glGetUniformLocation(s, name.c_str()), x, y);
+		checkError();
+	}
+	// ------------------------------------------------------------------------
+	void setVec3(Shader s, const std::string& name, const glm::vec3& value)
+	{
+		glUniform3fv(glGetUniformLocation(s, name.c_str()), 1, &value[0]);
+		checkError();
+	}
+	void setVec3(Shader s, const std::string& name, float x, float y, float z)
+	{
+		glUniform3f(glGetUniformLocation(s, name.c_str()), x, y, z);
+		checkError();
+	}
+	// ------------------------------------------------------------------------
+	void setVec4(Shader s, const std::string& name, const glm::vec4& value)
+	{
+		glUniform4fv(glGetUniformLocation(s, name.c_str()), 1, &value[0]);
+		checkError();
+	}
+	void setVec4(Shader s, const std::string& name, float x, float y, float z, float w)
+	{
+		glUniform4f(glGetUniformLocation(s, name.c_str()), x, y, z, w);
+		checkError();
+	}
+	// ------------------------------------------------------------------------
+	void setMat2(Shader s, const std::string& name, const glm::mat2& mat)
+	{
+		glUniformMatrix2fv(glGetUniformLocation(s, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+		checkError();
+	}
+	// ------------------------------------------------------------------------
+	void setMat3(Shader s, const std::string& name, const glm::mat3& mat)
+	{
+		glUniformMatrix3fv(glGetUniformLocation(s, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+		checkError();
+	}
+	// ------------------------------------------------------------------------
+	void setMat4(Shader s, const std::string& name, const glm::mat4& mat)
+	{
+		glUniformMatrix4fv(glGetUniformLocation(s, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+		checkError();
 	}
 
 	//-- Create and Initialize
@@ -135,8 +213,30 @@ SYSTEM(ShaderSystem)
 
 		checkError();
 
-		if (success) {
+		if (success) 
+		{
 			ShaderRegistry.push_back(s);
+
+			GLint i;
+			GLint count;
+
+			GLint size; // size of the variable
+			GLenum type; // type of the variable (float, vec3 or mat4, etc)
+
+			const GLsizei bufSize = 16; // maximum name length
+			GLchar name[bufSize]; // variable name in GLSL
+			GLsizei length; // name length
+
+			glGetProgramiv(s, GL_ACTIVE_UNIFORMS, &count);
+			printf("Active Uniforms: %d\n", count);
+
+			for (i = 0; i < count; i++)
+			{
+				glGetActiveUniform(s, (GLuint)i, bufSize, &length, &size, &type, name);
+
+				printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
+			}
+
 			return s;
 		}
 		else {
@@ -145,90 +245,18 @@ SYSTEM(ShaderSystem)
 			SUNDILE_DEBUG_BREAK
 				return 0;
 		}
-
 	}
 	Shader create(fs::path vertexPath, fs::path fragmentPath) {
 		Shader s;
 		return create(s, vertexPath, fragmentPath);
 	}
 
-	//-- Use
-	void use(Shader s) {
-		glUseProgram(s);
-		checkError();
+	//TODO
+	static guiRenderFunc DefineGui = [](const guiMeta& meta) -> void {
+
 	};
 
-	//--
-	//-- Utility Functions
-	//--
-	void setBool(Shader s, const std::string& name, bool value)
-	{
-		glUniform1i(glGetUniformLocation(s, name.c_str()), (int)value);
-		checkError();
-	}
-	// ------------------------------------------------------------------------
-	void setInt(Shader s, const std::string& name, int value)
-	{
-		glUniform1i(glGetUniformLocation(s, name.c_str()), value);
-		checkError();
-	}
-	// ------------------------------------------------------------------------
-	void setFloat(Shader s, const std::string& name, float value)
-	{
-		glUniform1f(glGetUniformLocation(s, name.c_str()), value);
-		checkError();
-	}
-	// ------------------------------------------------------------------------
-	void setVec2(Shader s, const std::string& name, const glm::vec2& value)
-	{
-		glUniform2fv(glGetUniformLocation(s, name.c_str()), 1, &value[0]);
-		checkError();
-	}
-	void setVec2(Shader s, const std::string& name, float x, float y)
-	{
-		glUniform2f(glGetUniformLocation(s, name.c_str()), x, y);
-		checkError();
-	}
-	// ------------------------------------------------------------------------
-	void setVec3(Shader s, const std::string& name, const glm::vec3& value)
-	{
-		glUniform3fv(glGetUniformLocation(s, name.c_str()), 1, &value[0]);
-		checkError();
-	}
-	void setVec3(Shader s, const std::string& name, float x, float y, float z)
-	{
-		glUniform3f(glGetUniformLocation(s, name.c_str()), x, y, z);
-		checkError();
-	}
-	// ------------------------------------------------------------------------
-	void setVec4(Shader s, const std::string& name, const glm::vec4& value)
-	{
-		glUniform4fv(glGetUniformLocation(s, name.c_str()), 1, &value[0]);
-		checkError();
-	}
-	void setVec4(Shader s, const std::string& name, float x, float y, float z, float w)
-	{
-		glUniform4f(glGetUniformLocation(s, name.c_str()), x, y, z, w);
-		checkError();
-	}
-	// ------------------------------------------------------------------------
-	void setMat2(Shader s, const std::string& name, const glm::mat2& mat)
-	{
-		glUniformMatrix2fv(glGetUniformLocation(s, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-		checkError();
-	}
-	// ------------------------------------------------------------------------
-	void setMat3(Shader s, const std::string& name, const glm::mat3& mat)
-	{
-		glUniformMatrix3fv(glGetUniformLocation(s, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-		checkError();
-	}
-	// ------------------------------------------------------------------------
-	void setMat4(Shader s, const std::string& name, const glm::mat4& mat)
-	{
-		glUniformMatrix4fv(glGetUniformLocation(s, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-		checkError();
-	}
+
 
 END_SYSTEM
 #endif

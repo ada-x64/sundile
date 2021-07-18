@@ -34,6 +34,7 @@ COMPONENT(WindowContainer)
 	bool			guiEnabled = false;
 	const char* title = "sundile";
 	unsigned int id = -1;
+	Input input;
 
 	bool operator == (WindowContainer& other) {
 		return (this->window == other.window);
@@ -47,7 +48,6 @@ COMPONENT(WindowContainer)
 		glfwSetWindowTitle(window,title);
 	}
 
-	SERIALIZE(WindowContainer, WIDTH, HEIGHT);
 END_COMPONENT
 
 namespace sundile {

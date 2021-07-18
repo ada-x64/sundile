@@ -11,7 +11,7 @@ SYSTEM(GuiSystem)
 		if (!ctx) { ctx = ImGui::CreateContext(); ImGui::SetCurrentContext(ctx); }
 		return ctx;
 	}
-	void terminate(const TerminateEvent& ev) {
+	void terminate(const TerminateEvent<SmartEVW>& ev) {
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
