@@ -1,3 +1,5 @@
+# This repository has been archived. Development has been moved to [sundile_rs](https://github.com/ada-x64/sundile_rs).
+
 # sundile
 
 sundile is a 100% open-source, Modern C++, ECS-based game engine prototype written by [ada](https://github.com/ada-rose-dev).
